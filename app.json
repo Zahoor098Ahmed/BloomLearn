@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "KiddoCare",
+    "slug": "kiddocare",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "KiddoCare uses the camera to recognize your child and personalize their experience."
+      }
+    },
+    "android": {
+      "package": "com.timeglobaltech.kiddocare",
+      "versionCode": 1,
+      "permissions": [
+        "CAMERA",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "KiddoCare uses the camera to recognize your child and personalize their experience."
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "8045b28f-8703-402a-a17e-5f5de3dd4fe0"
+      }
+    },
+    "owner": "developer_32"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "description": "This app provides personalized content for special needs children through on-device face recognition, ensuring tailored support and resources for their unique needs.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
