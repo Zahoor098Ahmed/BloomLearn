@@ -21,6 +21,9 @@ import RewardsScreen from "./src/screens/RewardsScreen";
 import CalmDownScreen from "./src/screens/CalmDownScreen";
 import AccessibilityScreen from "./src/screens/AccessibilityScreen";
 import DoctorPanelScreen from "./src/screens/DoctorPanelScreen";
+import CategoryBuilderScreen from "./src/screens/CategoryBuilderScreen";
+import MyCategoriesScreen from "./src/screens/MyCategoriesScreen";
+import SentencePictureScreen from "./src/screens/SentencePictureScreen";
 
 const TAB_LABELS: Record<TabScreen, string> = {
   home: "Home",
@@ -130,6 +133,18 @@ function AppInner() {
 
   if (screen === "accessibility") {
     return <AccessibilityScreen onBack={() => go(currentChild ? "more" : "parent-setup")} />;
+  }
+
+  if (screen === "my-categories") {
+    return <MyCategoriesScreen onBack={() => go(currentChild ? "more" : "parent-setup")} onCreate={() => go("category-builder")} />;
+  }
+
+  if (screen === "category-builder") {
+    return <CategoryBuilderScreen onBack={() => go("my-categories")} onSaved={() => go("my-categories")} />;
+  }
+
+  if (screen === "sentence-picture") {
+    return <SentencePictureScreen onBack={() => go(currentChild ? "more" : "parent-setup")} />;
   }
 
   return <FaceScanScreen onMatch={handleMatch} onNoMatch={() => go("parent-setup")} onParentArea={() => go("parent-setup")} />;

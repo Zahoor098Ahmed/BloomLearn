@@ -98,7 +98,10 @@ export type AppScreen =
   | 'rewards'
   | 'calm-down'
   | 'accessibility'
-  | 'doctor-panel';
+  | 'doctor-panel'
+  | 'category-builder'
+  | 'my-categories'
+  | 'sentence-picture';
 
 export type TabScreen = 'home' | 'speak' | 'schedule' | 'games' | 'progress';
 
@@ -110,4 +113,46 @@ export interface ContentItem {
   minAge: number;
   maxAge: number;
   color: string;
+}
+
+// ---------------------------------------------------------------------------
+// Additive feature modules (Category Builder + Sentence Picture).
+// Entirely separate from the existing AAC board; only consumed by the new
+// screens/modules. Nothing here touches existing data structures.
+// ---------------------------------------------------------------------------
+
+export interface CustomWord {
+  id: string;
+  label: string;
+  phrase: string;
+  emoji: string;
+  imageUri?: string;
+  order: number;
+}
+
+export interface CustomCategory {
+  id: string;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+  source: 'voice' | 'list' | 'generated';
+  grouping: 'none' | 'alpha-range';
+  words: CustomWord[];
+}
+
+export interface ParsedCategoryCommand {
+  categoryName: string;
+  requestedCount: number | null;
+  explicitItems: string[];
+  matchedSeed: string | null;
+}
+
+export interface SentenceScene {
+  raw: string;
+  adjectives: string[];
+  color: string | null;
+  subject: string | null;
+  preposition: string | null;
+  reference: string | null;
+  conceptKey: string | null;
 }

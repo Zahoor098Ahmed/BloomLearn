@@ -12,6 +12,9 @@ interface Props {
 }
 
 const ROWS: { icon: keyof typeof Ionicons.glyphMap; label: string; screen: AppScreen; color: string }[] = [
+  { icon: "sparkles", label: "Category Builder", screen: "category-builder", color: colors.greenDeep },
+  { icon: "albums", label: "My Categories", screen: "my-categories", color: colors.blueDeep },
+  { icon: "image", label: "Sentence Picture", screen: "sentence-picture", color: colors.purpleDeep },
   { icon: "star", label: "Rewards & Stars", screen: "rewards", color: colors.yellowDeep },
   { icon: "leaf", label: "Calm Down", screen: "calm-down", color: colors.greenDeep },
   { icon: "medkit", label: "Doctor Panel", screen: "doctor-panel", color: colors.pinkDeep },

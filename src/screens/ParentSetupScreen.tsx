@@ -20,6 +20,8 @@ export default function ParentSetupScreen({ onNavigate, onBack }: Props) {
     { label: t("addChild", lang), icon: "👶", screen: "enroll-child", variant: "primary" },
     { label: t("parentHub", lang), icon: "👨‍👩‍👧", screen: "parent-hub", variant: "mint" },
     { label: t("doctorPanel", lang), icon: "👨‍⚕️", screen: "doctor-panel", variant: "lavender" },
+    { label: "Category Builder", icon: "✨", screen: "my-categories", variant: "mint" },
+    { label: "Sentence Picture", icon: "🖼️", screen: "sentence-picture", variant: "lavender" },
     { label: t("settings", lang), icon: "⚙️", screen: "accessibility", variant: "sky" },
   ];
 
