@@ -16,18 +16,17 @@
     },
     "android": {
       "package": "com.timeglobaltech.kiddocare",
-      "versionCode": 2,
-      "permissions": [
-        "CAMERA",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ]
+      "versionCode": 3,
+      "permissions": ["android.permission.CAMERA"],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "plugins": [
       [
         "expo-camera",
         {
-          "cameraPermission": "KiddoCare uses the camera to recognize your child and personalize their experience."
+          "cameraPermission": "KiddoCare uses the camera to recognize your child and personalize their experience.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
         }
       ],
       "expo-font"
