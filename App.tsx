@@ -71,7 +71,17 @@ function AppInner() {
 
   if (isTabScreen(screen) && currentChild) {
     const onTabChange = (tab: TabScreen) => go(tab);
-    if (screen === "home") return <HomeScreen child={currentChild} tab={screen} onTabChange={onTabChange} onOpenMore={() => go("more")} labels={TAB_LABELS} />;
+    if (screen === "home")
+      return (
+        <HomeScreen
+          child={currentChild}
+          tab={screen}
+          onTabChange={onTabChange}
+          onOpenMore={() => go("more")}
+          onOpenPictureTalk={() => go("sentence-picture")}
+          labels={TAB_LABELS}
+        />
+      );
     if (screen === "speak") return <AACBoardScreen child={currentChild} tab={screen} onTabChange={onTabChange} labels={TAB_LABELS} />;
     if (screen === "schedule") return <VisualScheduleScreen child={currentChild} tab={screen} onTabChange={onTabChange} labels={TAB_LABELS} />;
     if (screen === "games") return <GamesScreen child={currentChild} tab={screen} onTabChange={onTabChange} labels={TAB_LABELS} />;
@@ -144,7 +154,7 @@ function AppInner() {
   }
 
   if (screen === "sentence-picture") {
-    return <SentencePictureScreen onBack={() => go(currentChild ? "more" : "parent-setup")} />;
+    return <SentencePictureScreen onBack={() => go(currentChild ? "home" : "parent-setup")} />;
   }
 
   return <FaceScanScreen onMatch={handleMatch} onNoMatch={() => go("parent-setup")} onParentArea={() => go("parent-setup")} />;
