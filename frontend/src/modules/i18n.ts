@@ -61,7 +61,10 @@ export type TKey =
   | 'setBoard' | 'setHaptics' | 'setTilesPerRow' | 'setAccessibility' | 'setKiosk'
   | 'setLockOpen' | 'setKioskInfo' | 'setParentControls' | 'setChangePasscode'
   | 'setSetPasscode' | 'setState' | 'setNotSet' | 'setPixabay' | 'setBackup'
-  | 'setExport' | 'setRestore';
+  | 'setExport' | 'setRestore'
+  | 'pLegendExcellent' | 'pLegendGood' | 'pLegendNeeds'
+  | 'pSummaryNone' | 'pSummaryUsing' | 'pSummaryOften' | 'pSummaryAnd'
+  | 'pRoutinesStrong' | 'pRoutinesTrack' | 'pRoutinesMore' | 'pSummaryTail';
 
 type TMap = Record<TKey, string>;
 type AllTranslations = { 'en-US': TMap } & Partial<Record<LanguageCode, Partial<TMap>>>;
@@ -216,6 +219,11 @@ const T: AllTranslations = {
     setParentControls: 'Parent controls', setChangePasscode: 'Change admin passcode', setSetPasscode: 'Set admin passcode',
     setState: 'Set', setNotSet: 'Not set', setPixabay: 'Pixabay image key (optional)',
     setBackup: 'Backup', setExport: 'Export', setRestore: 'Restore',
+    pLegendExcellent: '≥ 80% Excellent', pLegendGood: '60–80% Good', pLegendNeeds: '< 60% Needs attention',
+    pSummaryNone: "hasn't used the Speak board yet this week. Encourage a few AAC sessions to start building vocabulary insights.",
+    pSummaryUsing: 'is using the AAC board consistently', pSummaryOften: 'most often with', pSummaryAnd: 'and',
+    pRoutinesStrong: 'Daily routines are strong.', pRoutinesTrack: 'Daily routines are on track.', pRoutinesMore: 'Daily routines could use more consistency.',
+    pSummaryTail: 'Consider encouraging more question words.',
   },
   'ar-SA': {
     appName: 'كيدو كير',
@@ -366,6 +374,11 @@ const T: AllTranslations = {
     setParentControls: 'ضوابط الوالدين', setChangePasscode: 'تغيير رمز المشرف', setSetPasscode: 'تعيين رمز المشرف',
     setState: 'مُعيّن', setNotSet: 'غير مُعيّن', setPixabay: 'مفتاح صور Pixabay (اختياري)',
     setBackup: 'النسخ الاحتياطي', setExport: 'تصدير', setRestore: 'استعادة',
+    pLegendExcellent: '≥ ٨٠٪ ممتاز', pLegendGood: '٦٠–٨٠٪ جيد', pLegendNeeds: '< ٦٠٪ يحتاج انتباهاً',
+    pSummaryNone: 'لم يستخدم لوحة التحدث هذا الأسبوع بعد. شجّعوا على بضع جلسات تواصل لبناء رؤى المفردات.',
+    pSummaryUsing: 'يستخدم لوحة التواصل بانتظام', pSummaryOften: 'غالباً بكلمة', pSummaryAnd: 'و',
+    pRoutinesStrong: 'الروتين اليومي قوي.', pRoutinesTrack: 'الروتين اليومي على المسار.', pRoutinesMore: 'الروتين اليومي يحتاج ثباتاً أكثر.',
+    pSummaryTail: 'فكّروا في تشجيع المزيد من كلمات الأسئلة.',
   },
   'ur-PK': {
     appName: 'کڈو کیئر',
@@ -751,4 +764,88 @@ const GAME_ANSWERS: Partial<Record<LanguageCode, Record<string, string>>> = {
 };
 export function gameAnswerLabel(englishAnswer: string, lang: LanguageCode): string {
   return GAME_ANSWERS[lang]?.[englishAnswer] ?? englishAnswer;
+}
+
+/** Localised diagnosis / needs labels (a fixed set — not user data). */
+const DIAGNOSIS_I18N: Partial<Record<LanguageCode, Record<string, string>>> = {
+  'ar-SA': {
+    'autism': 'التوحد (ASD)', 'down-syndrome': 'متلازمة داون', 'speech-delay': 'تأخر النطق / اللغة',
+    'adhd': 'فرط الحركة ونقص الانتباه', 'hearing-impairment': 'ضعف السمع', 'visual-impairment': 'ضعف البصر',
+    'dyslexia': 'عسر القراءة / صعوبة تعلم', 'cerebral-palsy': 'الشلل الدماغي / صعوبة حركية',
+    'intellectual-disability': 'إعاقة ذهنية', 'sensory-processing': 'اضطراب المعالجة الحسية',
+    'non-verbal': 'غير ناطق', 'general': 'احتياجات خاصة عامة',
+  },
+  'ur-PK': {
+    'autism': 'آٹزم (ASD)', 'down-syndrome': 'ڈاؤن سنڈروم', 'speech-delay': 'گفتار / زبان میں تاخیر',
+    'adhd': 'اے ڈی ایچ ڈی', 'hearing-impairment': 'سماعت کی کمزوری', 'visual-impairment': 'بینائی کی کمزوری',
+    'dyslexia': 'ڈسلیکسیا / سیکھنے کی معذوری', 'cerebral-palsy': 'دماغی فالج / حرکت میں دشواری',
+    'intellectual-disability': 'ذہنی معذوری', 'sensory-processing': 'حسی پروسیسنگ ڈس آرڈر',
+    'non-verbal': 'غیر لسانی', 'general': 'عمومی خصوصی ضروریات',
+  },
+};
+export function diagnosisLabel(key: string, englishFallback: string, lang: LanguageCode): string {
+  return DIAGNOSIS_I18N[lang]?.[key] ?? englishFallback;
+}
+
+/**
+ * A broad English→Arabic/Urdu word dictionary for the built-in vocabulary
+ * (starter board + bulk-build seed lists). Words not listed keep their
+ * original text — a caregiver's custom word is never guessed at.
+ */
+const WORD_AR: Record<string, string> = {
+  // days & months
+  Monday: 'الإثنين', Tuesday: 'الثلاثاء', Wednesday: 'الأربعاء', Thursday: 'الخميس', Friday: 'الجمعة', Saturday: 'السبت', Sunday: 'الأحد',
+  January: 'يناير', February: 'فبراير', March: 'مارس', April: 'أبريل', May: 'مايو', June: 'يونيو', July: 'يوليو',
+  August: 'أغسطس', September: 'سبتمبر', October: 'أكتوبر', November: 'نوفمبر', December: 'ديسمبر',
+  // animals
+  Ant: 'نملة', Bear: 'دب', Bee: 'نحلة', Bird: 'طائر', Butterfly: 'فراشة', Camel: 'جمل', Cat: 'قطة', Chicken: 'دجاجة', Cow: 'بقرة',
+  Crab: 'سلطعون', Crocodile: 'تمساح', Deer: 'غزال', Dog: 'كلب', Dolphin: 'دلفين', Donkey: 'حمار', Duck: 'بطة', Eagle: 'نسر',
+  Elephant: 'فيل', Fish: 'سمكة', Fox: 'ثعلب', Frog: 'ضفدع', Giraffe: 'زرافة', Goat: 'ماعز', Gorilla: 'غوريلا', Hippo: 'فرس النهر',
+  Horse: 'حصان', Kangaroo: 'كنغر', Koala: 'كوالا', Lion: 'أسد', Lizard: 'سحلية', Monkey: 'قرد', Mouse: 'فأر', Octopus: 'أخطبوط',
+  Owl: 'بومة', Panda: 'باندا', Parrot: 'ببغاء', Penguin: 'بطريق', Pig: 'خنزير', Rabbit: 'أرنب', Rhino: 'وحيد القرن',
+  Rooster: 'ديك', Seal: 'فقمة', Shark: 'قرش', Sheep: 'خروف', Snail: 'حلزون', Snake: 'ثعبان', Spider: 'عنكبوت',
+  Squirrel: 'سنجاب', Swan: 'بجعة', Tiger: 'نمر', Turtle: 'سلحفاة', Whale: 'حوت', Wolf: 'ذئب', Zebra: 'حمار وحشي',
+  // fruits & veg & food
+  Apple: 'تفاحة', Apricot: 'مشمش', Avocado: 'أفوكادو', Banana: 'موزة', Cherry: 'كرز', Coconut: 'جوز الهند', Grape: 'عنب',
+  Kiwi: 'كيوي', Lemon: 'ليمون', Mango: 'مانجو', Melon: 'شمام', Orange: 'برتقالة', Peach: 'خوخ', Pear: 'كمثرى',
+  Pineapple: 'أناناس', Strawberry: 'فراولة', Watermelon: 'بطيخ', Carrot: 'جزرة', Potato: 'بطاطا', Corn: 'ذرة', Tomato: 'طماطم',
+  Onion: 'بصل', Garlic: 'ثوم', Cucumber: 'خيار', Bread: 'خبز', Rice: 'أرز', Egg: 'بيضة', Cheese: 'جبن', Milk: 'حليب',
+  Water: 'ماء', Juice: 'عصير', Cake: 'كعكة', Cookie: 'بسكويت', Pizza: 'بيتزا', Soup: 'حساء', Chicken_food: 'دجاج',
+  // sports
+  Baseball: 'بيسبول', Basketball: 'كرة السلة', Boxing: 'ملاكمة', Cricket: 'كريكيت', Cycling: 'ركوب الدراجة', Golf: 'غولف',
+  Hockey: 'هوكي', Running: 'الجري', Skating: 'تزلج', Skiing: 'تزلج على الجليد', Soccer: 'كرة القدم', Surfing: 'ركوب الأمواج',
+  Swimming: 'سباحة', Tennis: 'تنس', Volleyball: 'كرة الطائرة',
+  // school supplies
+  Backpack: 'حقيبة ظهر', Book: 'كتاب', Crayon: 'قلم شمعي', Eraser: 'ممحاة', Folder: 'مجلد', Glue: 'غراء', Marker: 'قلم تحديد',
+  Notebook: 'دفتر', Pen: 'قلم', Pencil: 'قلم رصاص', Ruler: 'مسطرة', Scissors: 'مقص',
+  // colors & shapes
+  Red: 'أحمر', Orange_c: 'برتقالي', Yellow: 'أصفر', Green: 'أخضر', Blue: 'أزرق', Purple: 'بنفسجي', Pink: 'وردي',
+  Brown: 'بني', Black: 'أسود', White: 'أبيض', Gray: 'رمادي',
+  Circle: 'دائرة', Square: 'مربع', Triangle: 'مثلث', Rectangle: 'مستطيل', Oval: 'بيضاوي', Star: 'نجمة', Heart: 'قلب', Diamond: 'معيّن',
+  // vehicles / weather / clothes / body / family
+  Car: 'سيارة', Bus: 'حافلة', Train: 'قطار', Airplane: 'طائرة', Boat: 'قارب', Bicycle: 'دراجة', Truck: 'شاحنة',
+  Sunny: 'مشمس', Rain: 'مطر', Snow: 'ثلج', Cloudy: 'غائم', Wind: 'رياح', Storm: 'عاصفة', Rainbow: 'قوس قزح',
+  Shirt: 'قميص', Pants: 'بنطال', Dress: 'فستان', Shoes: 'حذاء', Hat: 'قبعة', Socks: 'جوارب', Jacket: 'سترة',
+  Eye: 'عين', Ear: 'أذن', Nose: 'أنف', Mouth: 'فم', Hand: 'يد', Foot: 'قدم', Head: 'رأس', Hair: 'شعر',
+  Baby: 'طفل', Brother: 'أخ', Sister: 'أخت', Mom: 'أم', Dad: 'أب', Grandma: 'جدة', Grandpa: 'جد', Aunt: 'خالة', Uncle: 'عم',
+};
+const WORD_UR: Record<string, string> = {
+  Monday: 'پیر', Tuesday: 'منگل', Wednesday: 'بدھ', Thursday: 'جمعرات', Friday: 'جمعہ', Saturday: 'ہفتہ', Sunday: 'اتوار',
+  January: 'جنوری', February: 'فروری', March: 'مارچ', April: 'اپریل', May: 'مئی', June: 'جون', July: 'جولائی',
+  August: 'اگست', September: 'ستمبر', October: 'اکتوبر', November: 'نومبر', December: 'دسمبر',
+  Cat: 'بلی', Dog: 'کتا', Cow: 'گائے', Horse: 'گھوڑا', Lion: 'شیر', Bird: 'پرندہ', Fish: 'مچھلی', Elephant: 'ہاتھی',
+  Apple: 'سیب', Banana: 'کیلا', Orange: 'مالٹا', Grape: 'انگور', Mango: 'آم', Bread: 'روٹی', Rice: 'چاول', Milk: 'دودھ',
+  Water: 'پانی', Juice: 'جوس', Egg: 'انڈا',
+  Baseball: 'بیس بال', Basketball: 'باسکٹ بال', Cricket: 'کرکٹ', Cycling: 'سائیکلنگ', Soccer: 'فٹ بال', Swimming: 'تیراکی',
+  Tennis: 'ٹینس', Running: 'دوڑ', Hockey: 'ہاکی',
+  Book: 'کتاب', Pen: 'قلم', Pencil: 'پنسل', Eraser: 'ربڑ', Ruler: 'رولر', Scissors: 'قینچی', Bag: 'بستہ', Notebook: 'کاپی',
+  Red: 'سرخ', Yellow: 'پیلا', Green: 'سبز', Blue: 'نیلا', Black: 'کالا', White: 'سفید', Pink: 'گلابی', Brown: 'بھورا',
+  Circle: 'دائرہ', Square: 'مربع', Triangle: 'مثلث', Star: 'ستارہ', Heart: 'دل',
+  Car: 'گاڑی', Bus: 'بس', Train: 'ریل', Airplane: 'جہاز', Bicycle: 'سائیکل',
+};
+
+export function wordLabel(englishLabel: string, lang: LanguageCode): string {
+  const dict = lang === 'ar-SA' ? WORD_AR : lang === 'ur-PK' ? WORD_UR : null;
+  if (!dict) return englishLabel;
+  return dict[englishLabel] ?? starterLabel(englishLabel, lang) ?? englishLabel;
 }

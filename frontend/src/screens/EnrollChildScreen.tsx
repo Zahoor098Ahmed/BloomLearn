@@ -7,7 +7,7 @@ import { DIAGNOSIS_LABELS } from "../types";
 import { captureEmbedding } from "../modules/faceEngine";
 import { addChild, defaultTags } from "../modules/storage";
 import { useSettings } from "../context/SettingsContext";
-import { t } from "../modules/i18n";
+import { t, diagnosisLabel } from "../modules/i18n";
 import { speak } from "../modules/tts";
 import Mascot from "../components/Mascot";
 import BigButton from "../components/BigButton";
@@ -144,7 +144,7 @@ export default function EnrollChildScreen({ onDone, onBack }: Props) {
                     const active = diagnoses.includes(d);
                     return (
                       <Pressable key={d} onPress={() => toggleDiagnosis(d)} style={[styles.tag, active && styles.tagActive]}>
-                        <Text style={[styles.tagText, active && { color: "white" }]}>{DIAGNOSIS_LABELS[d]}</Text>
+                        <Text style={[styles.tagText, active && { color: "white" }]}>{diagnosisLabel(d, DIAGNOSIS_LABELS[d], lang)}</Text>
                       </Pressable>
                     );
                   })}

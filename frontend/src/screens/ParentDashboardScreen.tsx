@@ -6,7 +6,7 @@ import type { ChildProfile, TabScreen } from "../types";
 import { DIAGNOSIS_LABELS } from "../types";
 import { getUsage, updateChild } from "../modules/storage";
 import { useSettings } from "../context/SettingsContext";
-import { t, type TKey } from "../modules/i18n";
+import { t, diagnosisLabel, type TKey } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import { colors, radius } from "../theme";
@@ -145,7 +145,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
         <View style={styles.diagRow}>
           {child.diagnoses.map((d) => (
             <View key={d} style={styles.diagChip}>
-              <Text style={styles.diagChipText}>{DIAGNOSIS_LABELS[d]}</Text>
+              <Text style={styles.diagChipText}>{diagnosisLabel(d, DIAGNOSIS_LABELS[d], lang)}</Text>
             </View>
           ))}
         </View>
@@ -202,10 +202,10 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
                 <Text style={styles.summaryTitle}>{tt("pWeekSummary")}</Text>
                 <Text style={styles.summaryBody}>
                   {topWords.length === 0
-                    ? `${child.name} hasn't used the Speak board yet this week. Encourage a few AAC sessions to start building vocabulary insights.`
-                    : `${child.name} is using the AAC board consistently${topWords[0] ? `, most often with '${topWords[0][0]}'` : ""}${
-                        topWords[1] ? ` and '${topWords[1][0]}'` : ""
-                      }. ${avgAdherence >= 80 ? "Daily routines are strong." : avgAdherence >= 60 ? "Daily routines are on track." : "Daily routines could use more consistency."} Consider encouraging more question words.`}
+                    ? `${child.name} ${tt("pSummaryNone")}`
+                    : `${child.name} ${tt("pSummaryUsing")}${topWords[0] ? ` — ${tt("pSummaryOften")} '${topWords[0][0]}'` : ""}${
+                        topWords[1] ? ` ${tt("pSummaryAnd")} '${topWords[1][0]}'` : ""
+                      }. ${avgAdherence >= 80 ? tt("pRoutinesStrong") : avgAdherence >= 60 ? tt("pRoutinesTrack") : tt("pRoutinesMore")} ${tt("pSummaryTail")}`}
                 </Text>
               </View>
 
@@ -301,9 +301,9 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
                   ))}
                 </View>
                 <View style={styles.legend}>
-                  <LegendItem color={colors.greenDeep} label="≥ 80% Excellent" />
-                  <LegendItem color={colors.yellowDeep} label="60–80% Good" />
-                  <LegendItem color={colors.orangeDeep} label="< 60% Needs attention" />
+                  <LegendItem color={colors.greenDeep} label={tt("pLegendExcellent")} />
+                  <LegendItem color={colors.yellowDeep} label={tt("pLegendGood")} />
+                  <LegendItem color={colors.orangeDeep} label={tt("pLegendNeeds")} />
                 </View>
               </View>
 

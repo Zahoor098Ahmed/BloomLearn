@@ -5,7 +5,7 @@ import type { ChildProfile, ContentTag } from "../types";
 import { CONTENT_TAG_LABELS, DIAGNOSIS_LABELS } from "../types";
 import { loadChildren, updateChild, getUsage } from "../modules/storage";
 import { useSettings } from "../context/SettingsContext";
-import { t } from "../modules/i18n";
+import { t, diagnosisLabel } from "../modules/i18n";
 import Mascot from "../components/Mascot";
 import Card from "../components/Card";
 import { colors, radius } from "../theme";
@@ -74,7 +74,7 @@ export default function DoctorPanelScreen({ onBack }: Props) {
                     <View style={styles.chipRow}>
                       {child.diagnoses.slice(0, 2).map((d) => (
                         <View key={d} style={styles.chip}>
-                          <Text style={styles.chipText}>{DIAGNOSIS_LABELS[d]}</Text>
+                          <Text style={styles.chipText}>{diagnosisLabel(d, DIAGNOSIS_LABELS[d], lang)}</Text>
                         </View>
                       ))}
                       {child.diagnoses.length > 2 && <Text style={styles.chipMore}>+{child.diagnoses.length - 2}</Text>}
@@ -101,7 +101,7 @@ export default function DoctorPanelScreen({ onBack }: Props) {
                     <View style={styles.chipRow}>
                       {selected.diagnoses.map((d) => (
                         <View key={d} style={styles.chip}>
-                          <Text style={styles.chipText}>{DIAGNOSIS_LABELS[d]}</Text>
+                          <Text style={styles.chipText}>{diagnosisLabel(d, DIAGNOSIS_LABELS[d], lang)}</Text>
                         </View>
                       ))}
                     </View>

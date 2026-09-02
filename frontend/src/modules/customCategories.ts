@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { CustomCategory, CustomWord, TileSize, LanguageCode } from "../types";
-import { starterLabel } from "./i18n";
+import { starterLabel, wordLabel } from "./i18n";
 
 // English anchors for the seed content, so re-translation can map back.
 const SEED_WORD_EN: Record<string, string[]> = {
@@ -101,51 +101,68 @@ const STARTER: { name: string; icon: string; words: [string, string][] }[] = [
   },
 ];
 
+// Built-in folder names (starter board + bulk-build seed lists), by language.
 const FOLDER_NAMES: Partial<Record<LanguageCode, Record<string, string>>> = {
-  "ar-SA": { Core: "أساسي", Food: "طعام", Feelings: "مشاعر", People: "أشخاص", Actions: "أفعال" },
-  "ur-PK": { Core: "بنیادی", Food: "کھانا", Feelings: "احساسات", People: "لوگ", Actions: "کام" },
+  "ar-SA": {
+    Core: "أساسي", Food: "طعام", Feelings: "مشاعر", People: "أشخاص", Actions: "أفعال",
+    "My Words": "كلماتي", "New Folder": "مجلد جديد",
+    Animals: "حيوانات", Fruits: "فواكه", Vegetables: "خضروات", Colors: "ألوان", Shapes: "أشكال",
+    Vehicles: "مركبات", "Body Parts": "أجزاء الجسم", Clothes: "ملابس", Weather: "الطقس", Family: "العائلة",
+    Jobs: "وظائف", Sports: "رياضة", Instruments: "آلات موسيقية", "School Supplies": "أدوات مدرسية",
+    Furniture: "أثاث", Feelings2: "مشاعر", "Days of the Week": "أيام الأسبوع", Months: "الشهور", Numbers: "أرقام", Letters: "حروف",
+  },
+  "ur-PK": {
+    Core: "بنیادی", Food: "کھانا", Feelings: "احساسات", People: "لوگ", Actions: "کام",
+    "My Words": "میرے الفاظ", "New Folder": "نیا فولڈر",
+    Animals: "جانور", Fruits: "پھل", Vegetables: "سبزیاں", Colors: "رنگ", Shapes: "شکلیں",
+    Vehicles: "گاڑیاں", "Body Parts": "جسم کے حصے", Clothes: "کپڑے", Weather: "موسم", Family: "خاندان",
+    Jobs: "پیشے", Sports: "کھیل", "School Supplies": "اسکول کا سامان", "Days of the Week": "ہفتے کے دن", Months: "مہینے",
+  },
 };
 function folderName(en: string) {
   return FOLDER_NAMES[seedLang]?.[en] ?? en;
 }
 
+// reverse map: any localised folder name → its English anchor
 const FOLDER_EN_BY_LANG: Record<string, string> = (() => {
   const m: Record<string, string> = {};
   for (const lang of Object.keys(FOLDER_NAMES) as LanguageCode[]) {
-    for (const [en, local] of Object.entries(FOLDER_NAMES[lang] ?? {})) m[local] = en;
+    for (const [en, local] of Object.entries(FOLDER_NAMES[lang] ?? {})) m[local.toLowerCase()] = en;
   }
-  for (const en of Object.keys(SEED_WORD_EN)) m[en] = en;
+  for (const en of Object.keys(FOLDER_NAMES["ar-SA"] ?? {})) m[en.toLowerCase()] = en;
   return m;
 })();
 
 /**
- * Re-translate the built-in starter board (source: "seed") into the given
- * language. Only touches seed content — caregiver-made folders/words are left
- * exactly as they are. Call this whenever the language changes.
+ * Re-translate the built-in vocabulary (starter board + bulk-generated
+ * categories) into the given language. Words come from a fixed dictionary, so
+ * a caregiver's own custom word (not in the dictionary) is left untouched.
+ * Call this whenever the language changes.
  */
 export function retranslateSeedBoard(lang: LanguageCode) {
   let changed = false;
   for (const cat of cache) {
-    if (cat.source !== "seed") continue;
-    const enName = FOLDER_EN_BY_LANG[cat.name] ?? cat.name;
-    const newName = FOLDER_NAMES[lang]?.[enName] ?? enName;
+    if (!["seed", "generated", "list", "voice"].includes(cat.source)) continue;
+
+    // folder name
+    const enName = FOLDER_EN_BY_LANG[cat.name.toLowerCase()] ?? cat.name;
+    const newName = FOLDER_NAMES[lang]?.[enName] ?? (lang === "en-US" ? enName : cat.name);
     if (newName !== cat.name) {
       cat.name = newName;
       changed = true;
     }
+
+    // words — seed folders map by position; everything else by dictionary lookup
     const enWords = SEED_WORD_EN[enName];
-    if (enWords) {
-      cat.words.forEach((w, i) => {
-        const en = enWords[i];
-        if (!en) return;
-        const localized = starterLabel(en, lang);
-        if (w.label !== localized) {
-          w.label = localized;
-          w.phrase = localized;
-          changed = true;
-        }
-      });
-    }
+    cat.words.forEach((w, i) => {
+      const en = enWords?.[i];
+      const localized = en ? starterLabel(en, lang) : wordLabel(w.label, lang);
+      if (localized && localized !== w.label) {
+        w.label = localized;
+        w.phrase = localized;
+        changed = true;
+      }
+    });
   }
   if (changed) {
     cache = [...cache];

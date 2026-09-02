@@ -5,7 +5,7 @@ import type { ChildProfile } from "../types";
 import { DIAGNOSIS_LABELS } from "../types";
 import { loadChildren, deleteChild, getUsage } from "../modules/storage";
 import { useSettings } from "../context/SettingsContext";
-import { t } from "../modules/i18n";
+import { t, diagnosisLabel } from "../modules/i18n";
 import Mascot from "../components/Mascot";
 import Card from "../components/Card";
 import BigButton from "../components/BigButton";
@@ -93,7 +93,7 @@ export default function ParentHubScreen({ onBack, onAddChild }: Props) {
                   <View style={styles.tagWrap}>
                     {child.diagnoses.slice(0, 3).map((d) => (
                       <View key={d} style={styles.tag}>
-                        <Text style={styles.tagText}>{DIAGNOSIS_LABELS[d]}</Text>
+                        <Text style={styles.tagText}>{diagnosisLabel(d, DIAGNOSIS_LABELS[d], lang)}</Text>
                       </View>
                     ))}
                     {child.diagnoses.length > 3 && <Text style={styles.moreText}>+{child.diagnoses.length - 3} more</Text>}
