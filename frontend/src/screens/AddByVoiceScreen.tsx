@@ -19,6 +19,7 @@ import {
 } from "../modules/imageSearch";
 import { topLevelCategories, createBlankCategory, addWord } from "../modules/customCategories";
 import { resolveEmoji } from "../modules/wordImage";
+import { t, type TKey } from "../modules/i18n";
 import { colors, radius } from "../theme";
 
 interface Props {
@@ -37,6 +38,7 @@ const CAT_ICONS = ["📁", "💬", "🍎", "🙂", "👪", "🏃", "🎨", "🧩
 export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCategoryId, childMode }: Props) {
   const { settings } = useSettings();
   const langHint = (settings.language || "en-US").split("-")[0];
+  const tt = (k: TKey) => t(k, settings.language);
 
   const [step, setStep] = useState<Step>("speak");
   const [recording, setRecording] = useState(false);
@@ -195,8 +197,18 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
               <Ionicons name="close" size={20} color="white" />
             </Pressable>
             <View style={{ flex: 1 }}>
-              <Text style={styles.htitle}>{childMode ? "Make a Word" : "Add by Voice"}</Text>
-              <Text style={styles.hsub}>Step {stepNum} of {totalSteps} · {step === "speak" ? "Speak" : step === "confirm" ? "Check the word" : step === "image" ? "Pick a picture" : "Pick a folder"}</Text>
+              <Text style={styles.htitle}>{tt("makeAWord")}</Text>
+              <Text style={styles.hsub}>
+                {tt("step")} {stepNum} {tt("of")} {totalSteps}
+                {" · "}
+                {step === "speak"
+                  ? tt("sayTheWord")
+                  : step === "confirm"
+                    ? tt("checkTheWord")
+                    : step === "image"
+                      ? tt("pickPicture")
+                      : tt("whichFolder")}
+              </Text>
             </View>
             {step !== "speak" && step !== "done" && (
               <Pressable onPress={() => setStep(step === "confirm" ? "speak" : step === "image" ? "confirm" : "image")} style={styles.hbtn}>
@@ -209,21 +221,14 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
             {/* STEP 1 — SPEAK */}
             {step === "speak" && (
               <View style={styles.centerStep}>
-                <Text style={styles.stepTitle}>Say the word out loud</Text>
-                <Text style={styles.stepHint}>
-                  Tap the microphone, say one word (like "juice"), then tap it again to stop.
-                </Text>
+                <Text style={styles.stepTitle}>{tt("sayTheWord")}</Text>
+                <Text style={styles.stepHint}>{tt("sayTheWordHint")}</Text>
                 <Pressable onPress={toggleMic} disabled={!!thinking} style={[styles.micBig, recording && styles.micBigOn]}>
                   <Ionicons name={recording ? "stop" : "mic"} size={44} color="white" />
                 </Pressable>
-                <Text style={styles.micState}>{recording ? "Listening… tap to stop" : thinking || "Tap to start"}</Text>
-                {!isAiConfigured() && (
-                  <Text style={styles.warn}>
-                    Speech typing needs an OpenAI key (Settings). Without it, tap the mic then choose "Type it".
-                  </Text>
-                )}
+                <Text style={styles.micState}>{recording ? tt("listeningTap") : thinking || tt("tapToStart")}</Text>
                 <Pressable onPress={() => setStep("confirm")} style={styles.linkBtn}>
-                  <Text style={styles.linkText}>Skip — type the word instead</Text>
+                  <Text style={styles.linkText}>{tt("skipTypeInstead")}</Text>
                 </Pressable>
               </View>
             )}
@@ -231,19 +236,19 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
             {/* STEP 2 — CONFIRM TEXT */}
             {step === "confirm" && (
               <View style={{ gap: 12 }}>
-                <Text style={styles.stepTitle}>Is this the right word?</Text>
-                <Text style={styles.stepHint}>Speech recognition can mishear. Fix it here before continuing.</Text>
+                <Text style={styles.stepTitle}>{tt("checkTheWord")}</Text>
+                <Text style={styles.stepHint}>{tt("checkTheWordHint")}</Text>
                 <TextInput
                   value={word}
                   onChangeText={setWord}
-                  placeholder="type the word…"
+                  placeholder={tt("typeTheWord")}
                   placeholderTextColor={colors.textLight}
                   style={styles.bigInput}
                   autoFocus
                 />
                 <Pressable onPress={() => speak(word || "", settings.language, settings.soundEnabled)} style={styles.previewBtn}>
                   <Ionicons name="volume-medium" size={16} color={colors.forestDark} />
-                  <Text style={styles.previewText}>Hear it</Text>
+                  <Text style={styles.previewText}>{tt("hearIt")}</Text>
                 </Pressable>
                 <Pressable
                   onPress={() => {
@@ -253,7 +258,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
                   }}
                   style={styles.nextBtn}
                 >
-                  <Text style={styles.nextText}>Next — find a picture</Text>
+                  <Text style={styles.nextText}>{tt("nextFindPicture")}</Text>
                   <Ionicons name="arrow-forward" size={18} color="white" />
                 </Pressable>
               </View>
@@ -262,18 +267,18 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
             {/* STEP 3 — PICK IMAGE */}
             {step === "image" && (
               <View style={{ gap: 12 }}>
-                <Text style={styles.stepTitle}>Pick a picture for "{word}"</Text>
-                <Text style={styles.stepHint}>These are searched pictures, not AI-made. Choose the clearest one, or take your own photo.</Text>
+                <Text style={styles.stepTitle}>{tt("pickPicture")}</Text>
+                <Text style={styles.stepHint}>{tt("pickPictureHint")}</Text>
 
                 <View style={styles.tabRow}>
                   <Pressable onPress={() => { setAiPreview(null); runSearch("arasaac", word); }} style={[styles.tab, imgSource === "arasaac" && !aiPreview && styles.tabOn]}>
-                    <Text style={[styles.tabText, imgSource === "arasaac" && !aiPreview && { color: "white" }]}>Symbols</Text>
+                    <Text style={[styles.tabText, imgSource === "arasaac" && !aiPreview && { color: "white" }]}>{tt("symbols")}</Text>
                   </Pressable>
                   <Pressable onPress={() => { setAiPreview(null); runSearch("pixabay", word); }} style={[styles.tab, imgSource === "pixabay" && !aiPreview && styles.tabOn]}>
-                    <Text style={[styles.tabText, imgSource === "pixabay" && !aiPreview && { color: "white" }]}>Photos{hasPixabayKey() ? "" : " ·key"}</Text>
+                    <Text style={[styles.tabText, imgSource === "pixabay" && !aiPreview && { color: "white" }]}>{tt("photos")}</Text>
                   </Pressable>
                   <Pressable onPress={() => { setHits([]); setImgError(null); if (!aiPreview) makeAiImage(false); }} style={[styles.tab, !!aiPreview && styles.tabOn]}>
-                    <Text style={[styles.tabText, !!aiPreview && { color: "white" }]}>✨ AI made</Text>
+                    <Text style={[styles.tabText, !!aiPreview && { color: "white" }]}>✨ {tt("aiMade")}</Text>
                   </Pressable>
                 </View>
 
@@ -285,11 +290,11 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
                     <View style={{ flexDirection: "row", gap: 10 }}>
                       <Pressable onPress={() => makeAiImage(true)} style={styles.fallbackBtn}>
                         <Ionicons name="refresh" size={16} color={colors.forestDark} />
-                        <Text style={styles.fallbackText}>Try again</Text>
+                        <Text style={styles.fallbackText}>{tt("tryAgain")}</Text>
                       </Pressable>
                       <Pressable onPress={useAiImage} style={[styles.nextBtn, { flex: 1, marginTop: 0 }]}>
                         <Ionicons name="checkmark" size={16} color="white" />
-                        <Text style={styles.nextText}>Use this picture</Text>
+                        <Text style={styles.nextText}>{tt("useThisPicture")}</Text>
                       </Pressable>
                     </View>
                     <Text style={styles.stepHint}>AI-made pictures use OpenAI. Add a key in Settings — the button is ready for it.</Text>
@@ -307,15 +312,15 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
                     <View style={styles.fallbackRow}>
                       <Pressable onPress={useCamera} style={styles.fallbackBtn}>
                         <Ionicons name="camera" size={16} color={colors.forestDark} />
-                        <Text style={styles.fallbackText}>Camera</Text>
+                        <Text style={styles.fallbackText}>{tt("camera")}</Text>
                       </Pressable>
                       <Pressable onPress={useGallery} style={styles.fallbackBtn}>
                         <Ionicons name="images" size={16} color={colors.forestDark} />
-                        <Text style={styles.fallbackText}>Gallery</Text>
+                        <Text style={styles.fallbackText}>{tt("gallery")}</Text>
                       </Pressable>
                       <Pressable onPress={() => finishImage(undefined)} style={styles.fallbackBtn}>
                         <Text style={{ fontSize: 15 }}>{resolveEmoji(word.trim())}</Text>
-                        <Text style={styles.fallbackText}>Use symbol</Text>
+                        <Text style={styles.fallbackText}>{tt("useSymbol")}</Text>
                       </Pressable>
                     </View>
                   </>
@@ -326,7 +331,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
             {/* STEP 4 — PICK CATEGORY */}
             {step === "category" && (
               <View style={{ gap: 12 }}>
-                <Text style={styles.stepTitle}>Which folder does "{word}" go in?</Text>
+                <Text style={styles.stepTitle}>{tt("whichFolder")}</Text>
                 {imageUri && <Image source={{ uri: imageUri }} style={styles.chosenImg} />}
                 <View style={styles.catGrid}>
                   {cats.map((c) => (
@@ -337,7 +342,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
                   ))}
                   <Pressable onPress={() => setNewCatOpen(true)} style={[styles.catCard, styles.catCardNew]}>
                     <Ionicons name="add" size={24} color={colors.forest} />
-                    <Text style={styles.catCardText}>New folder</Text>
+                    <Text style={styles.catCardText}>{tt("newFolder")}</Text>
                   </Pressable>
                 </View>
               </View>
@@ -347,14 +352,14 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
             {step === "done" && (
               <View style={styles.centerStep}>
                 <Ionicons name="checkmark-circle" size={56} color={colors.greenDeep} />
-                <Text style={styles.stepTitle}>"{word}" added</Text>
-                <Text style={styles.stepHint}>The child hears it spoken by the app when they tap the tile.</Text>
+                <Text style={styles.stepTitle}>{tt("wordAdded")}</Text>
+                <Text style={styles.stepHint}>{tt("wordAddedHint")}</Text>
                 <Pressable onPress={() => reset()} style={styles.nextBtn}>
                   <Ionicons name="mic" size={16} color="white" />
-                  <Text style={styles.nextText}>Add another by voice</Text>
+                  <Text style={styles.nextText}>{tt("addAnother")}</Text>
                 </Pressable>
                 <Pressable onPress={onClose} style={styles.linkBtn}>
-                  <Text style={styles.linkText}>Done</Text>
+                  <Text style={styles.linkText}>{tt("done")}</Text>
                 </Pressable>
               </View>
             )}
@@ -371,7 +376,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
         <Modal visible={newCatOpen} transparent animationType="fade" onRequestClose={() => setNewCatOpen(false)}>
           <View style={styles.modalBackdrop}>
             <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>New folder</Text>
+              <Text style={styles.modalTitle}>{tt("newFolder")}</Text>
               <TextInput value={newCatName} onChangeText={setNewCatName} placeholder="Folder name" placeholderTextColor={colors.textLight} style={styles.bigInput} />
               <View style={styles.iconWrap}>
                 {CAT_ICONS.map((ic) => (

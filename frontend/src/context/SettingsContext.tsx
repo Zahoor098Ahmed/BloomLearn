@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { AppSettings } from "../types";
 import { loadSettings, saveSettings, hydrateStorage, isHydrated } from "../modules/storage";
+import { applyLanguageDirection } from "../modules/i18n";
+import { setSeedLanguage } from "../modules/customCategories";
+import { setHapticsEnabled } from "../modules/haptics";
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -17,7 +20,16 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (ready) return;
     hydrateStorage().then(() => {
-      setSettings(loadSettings());
+      const s = loadSettings();
+      setSeedLanguage(s.language);
+      setHapticsEnabled(s.hapticsEnabled);
+      // sets RTL for the *next* app start if it differs from the current one
+      try {
+        applyLanguageDirection(s.language);
+      } catch {
+        /* ignore */
+      }
+      setSettings(s);
       setReady(true);
     });
   }, []);

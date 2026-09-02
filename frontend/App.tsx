@@ -5,6 +5,7 @@ import { StatusBar } from "expo-status-bar";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { SettingsProvider, useSettings } from "./src/context/SettingsContext";
 import { setHapticsEnabled } from "./src/modules/haptics";
+import { t } from "./src/modules/i18n";
 import type { AppScreen, ChildProfile, TabScreen } from "./src/types";
 import { colors } from "./src/theme";
 import PinGate from "./src/components/PinGate";
@@ -28,14 +29,6 @@ import CategoryBuilderScreen from "./src/screens/CategoryBuilderScreen";
 import MyCategoriesScreen from "./src/screens/MyCategoriesScreen";
 import SentencePictureScreen from "./src/screens/SentencePictureScreen";
 
-const TAB_LABELS: Record<TabScreen, string> = {
-  home: "Home",
-  speak: "Speak",
-  schedule: "Schedule",
-  games: "Games",
-  progress: "Progress",
-};
-
 const TAB_SCREENS: TabScreen[] = ["home", "speak", "schedule", "games", "progress"];
 
 function isTabScreen(s: AppScreen): s is TabScreen {
@@ -48,6 +41,15 @@ function AppInner() {
   const { ready, settings } = useSettings();
   const [screen, setScreen] = useState<AppScreen>("landing");
   const [currentChild, setCurrentChild] = useState<ChildProfile | null>(null);
+
+  const lang = settings.language;
+  const TAB_LABELS: Record<TabScreen, string> = {
+    home: t("home", lang),
+    speak: t("talk", lang),
+    schedule: t("myDay", lang),
+    games: t("games", lang),
+    progress: t("progress", lang),
+  };
 
   // keep the haptics module in sync with the setting
   useEffect(() => {

@@ -1,3 +1,4 @@
+import { I18nManager } from 'react-native';
 import type { Language, LanguageCode } from '../types';
 
 export const LANGUAGES: Language[] = [
@@ -22,10 +23,19 @@ export type TKey =
   | 'myDay' | 'breatheStart' | 'feelingCalm' | 'tapToSpeak' | 'sentence'
   | 'needsCategory' | 'feelingsCategory' | 'peopleCategory' | 'actionsCategory' | 'foodCategory'
   | 'scanningMessage' | 'enrollStep1' | 'enrollStep2' | 'enrollStep3' | 'childAdded'
-  | 'noChildren' | 'deleteChild' | 'editChild' | 'allowedContent' | 'hello_child';
+  | 'noChildren' | 'deleteChild' | 'editChild' | 'allowedContent' | 'hello_child'
+  // --- AAC board + voice-add (added for full localisation) ---
+  | 'talk' | 'home' | 'buildSentence' | 'speakSentence' | 'removeLast' | 'clearSentence'
+  | 'makeAWord' | 'emptyFolder' | 'sayTheWord' | 'sayTheWordHint' | 'tapToStart'
+  | 'listeningTap' | 'checkTheWord' | 'checkTheWordHint' | 'typeTheWord' | 'hearIt'
+  | 'nextFindPicture' | 'pickPicture' | 'pickPictureHint' | 'symbols' | 'photos' | 'aiMade'
+  | 'camera' | 'gallery' | 'useSymbol' | 'tryAgain' | 'useThisPicture' | 'whichFolder'
+  | 'newFolder' | 'createSave' | 'wordAdded' | 'wordAddedHint' | 'addAnother' | 'done'
+  | 'skipTypeInstead' | 'step' | 'of' | 'reopenForLanguage'
+  | 'games' | 'progress';
 
 type TMap = Record<TKey, string>;
-type AllTranslations = Record<LanguageCode, TMap>;
+type AllTranslations = { 'en-US': TMap } & Partial<Record<LanguageCode, Partial<TMap>>>;
 
 const T: AllTranslations = {
   'en-US': {
@@ -95,6 +105,46 @@ const T: AllTranslations = {
     editChild: 'Edit',
     allowedContent: 'Allowed Content',
     hello_child: 'Hello',
+    talk: 'Talk',
+    home: 'Home',
+    buildSentence: 'Tap pictures to build a sentence…',
+    speakSentence: 'Speak sentence',
+    removeLast: 'Remove last word',
+    clearSentence: 'Clear sentence',
+    makeAWord: 'Make a word',
+    emptyFolder: 'This folder is empty. Add words with the mic button, or in the Board editor.',
+    sayTheWord: 'Say the word out loud',
+    sayTheWordHint: 'Tap the microphone, say one word, then tap it again to stop.',
+    tapToStart: 'Tap to start',
+    listeningTap: 'Listening… tap to stop',
+    checkTheWord: 'Is this the right word?',
+    checkTheWordHint: 'Speech can be misheard. Fix it here before continuing.',
+    typeTheWord: 'type the word…',
+    hearIt: 'Hear it',
+    nextFindPicture: 'Next — find a picture',
+    pickPicture: 'Pick a picture',
+    pickPictureHint: 'These are searched pictures. Choose the clearest one, or take your own photo.',
+    symbols: 'Symbols',
+    photos: 'Photos',
+    aiMade: 'AI made',
+    camera: 'Camera',
+    gallery: 'Gallery',
+    useSymbol: 'Use symbol',
+    tryAgain: 'Try again',
+    useThisPicture: 'Use this picture',
+    whichFolder: 'Which folder does it go in?',
+    newFolder: 'New folder',
+    createSave: 'Create & save',
+    wordAdded: 'Word added',
+    wordAddedHint: 'The child hears it spoken by the app when they tap the tile.',
+    addAnother: 'Add another',
+    done: 'Done',
+    skipTypeInstead: 'Skip — type the word instead',
+    step: 'Step',
+    of: 'of',
+    reopenForLanguage: 'Please close and reopen the app to finish switching the language and text direction.',
+    games: 'Games',
+    progress: 'Progress',
   },
   'ar-SA': {
     appName: 'كيدو كير',
@@ -163,6 +213,46 @@ const T: AllTranslations = {
     editChild: 'تعديل',
     allowedContent: 'المحتوى المسموح',
     hello_child: 'مرحبا',
+    talk: 'تحدث',
+    home: 'الرئيسية',
+    buildSentence: 'اضغط الصور لتكوين جملة…',
+    speakSentence: 'انطق الجملة',
+    removeLast: 'حذف آخر كلمة',
+    clearSentence: 'مسح الجملة',
+    makeAWord: 'أنشئ كلمة',
+    emptyFolder: 'هذا المجلد فارغ. أضف كلمات بزر الميكروفون أو من محرر اللوحة.',
+    sayTheWord: 'انطق الكلمة بصوت عالٍ',
+    sayTheWordHint: 'اضغط الميكروفون، قل كلمة واحدة، ثم اضغط مرة أخرى للتوقف.',
+    tapToStart: 'اضغط للبدء',
+    listeningTap: 'أستمع… اضغط للتوقف',
+    checkTheWord: 'هل هذه الكلمة الصحيحة؟',
+    checkTheWordHint: 'قد يُساء سماع الكلام. صحّحها هنا قبل المتابعة.',
+    typeTheWord: 'اكتب الكلمة…',
+    hearIt: 'استمع',
+    nextFindPicture: 'التالي — ابحث عن صورة',
+    pickPicture: 'اختر صورة',
+    pickPictureHint: 'هذه صور من البحث. اختر أوضحها أو التقط صورتك.',
+    symbols: 'رموز',
+    photos: 'صور',
+    aiMade: 'ذكاء اصطناعي',
+    camera: 'الكاميرا',
+    gallery: 'المعرض',
+    useSymbol: 'استخدم رمزاً',
+    tryAgain: 'حاول مجدداً',
+    useThisPicture: 'استخدم هذه الصورة',
+    whichFolder: 'في أي مجلد توضع؟',
+    newFolder: 'مجلد جديد',
+    createSave: 'إنشاء وحفظ',
+    wordAdded: 'تمت إضافة الكلمة',
+    wordAddedHint: 'يسمعها الطفل من التطبيق عند لمس البطاقة.',
+    addAnother: 'أضف أخرى',
+    done: 'تم',
+    skipTypeInstead: 'تخطَّ — اكتب الكلمة بدلاً من ذلك',
+    step: 'خطوة',
+    of: 'من',
+    reopenForLanguage: 'يرجى إغلاق التطبيق وإعادة فتحه لإكمال تغيير اللغة واتجاه النص.',
+    games: 'ألعاب',
+    progress: 'التقدم',
   },
   'ur-PK': {
     appName: 'کڈو کیئر',
@@ -231,6 +321,46 @@ const T: AllTranslations = {
     editChild: 'ترمیم',
     allowedContent: 'اجازت یافتہ مواد',
     hello_child: 'سلام',
+    talk: 'بات کریں',
+    home: 'ہوم',
+    buildSentence: 'جملہ بنانے کے لیے تصویروں پر ٹیپ کریں…',
+    speakSentence: 'جملہ بولیں',
+    removeLast: 'آخری لفظ ہٹائیں',
+    clearSentence: 'جملہ صاف کریں',
+    makeAWord: 'لفظ بنائیں',
+    emptyFolder: 'یہ فولڈر خالی ہے۔ مائیک بٹن سے یا بورڈ ایڈیٹر میں الفاظ شامل کریں۔',
+    sayTheWord: 'لفظ بلند آواز میں بولیں',
+    sayTheWordHint: 'مائیک دبائیں، ایک لفظ بولیں، پھر رکنے کے لیے دوبارہ دبائیں۔',
+    tapToStart: 'شروع کرنے کے لیے ٹیپ کریں',
+    listeningTap: 'سن رہا ہوں… رکنے کے لیے ٹیپ کریں',
+    checkTheWord: 'کیا یہ صحیح لفظ ہے؟',
+    checkTheWordHint: 'آواز غلط سنی جا سکتی ہے۔ آگے بڑھنے سے پہلے ٹھیک کریں۔',
+    typeTheWord: 'لفظ لکھیں…',
+    hearIt: 'سنیں',
+    nextFindPicture: 'اگلا — تصویر ڈھونڈیں',
+    pickPicture: 'تصویر منتخب کریں',
+    pickPictureHint: 'یہ تلاش کی گئی تصویریں ہیں۔ سب سے واضح چنیں یا اپنی تصویر لیں۔',
+    symbols: 'علامتیں',
+    photos: 'تصاویر',
+    aiMade: 'اے آئی',
+    camera: 'کیمرا',
+    gallery: 'گیلری',
+    useSymbol: 'علامت استعمال کریں',
+    tryAgain: 'دوبارہ کریں',
+    useThisPicture: 'یہ تصویر استعمال کریں',
+    whichFolder: 'یہ کس فولڈر میں جائے گا؟',
+    newFolder: 'نیا فولڈر',
+    createSave: 'بنائیں اور محفوظ کریں',
+    wordAdded: 'لفظ شامل ہو گیا',
+    wordAddedHint: 'ٹائل دبانے پر بچہ ایپ سے یہ سنتا ہے۔',
+    addAnother: 'ایک اور شامل کریں',
+    done: 'مکمل',
+    skipTypeInstead: 'چھوڑیں — لفظ لکھیں',
+    step: 'مرحلہ',
+    of: 'از',
+    reopenForLanguage: 'زبان اور متن کی سمت مکمل تبدیل کرنے کے لیے ایپ بند کر کے دوبارہ کھولیں۔',
+    games: 'کھیل',
+    progress: 'ترقی',
   },
   'hi-IN': {
     appName: 'किडो केयर',
@@ -444,4 +574,49 @@ export function t(key: TKey, lang: LanguageCode): string {
 
 export function isRTL(lang: LanguageCode): boolean {
   return ['ar-SA', 'ur-PK'].includes(lang);
+}
+
+/** BCP-47 tag for the device speech engine. */
+export function speechLocale(lang: LanguageCode): string {
+  return lang; // "ar-SA", "ur-PK", "hi-IN", … all valid for expo-speech
+}
+
+/**
+ * Apply layout direction for a language. Returns true when the direction
+ * actually flipped — the caller must then ask the user to reopen the app,
+ * because React Native only picks up an RTL change on a fresh start.
+ */
+export function applyLanguageDirection(lang: LanguageCode): boolean {
+  const want = isRTL(lang);
+  I18nManager.allowRTL(true);
+  if (I18nManager.isRTL !== want) {
+    I18nManager.forceRTL(want);
+    return true;
+  }
+  return false;
+}
+
+/** Starter board words, localised. Keys are the English label used as the id anchor. */
+export const STARTER_WORDS: Record<LanguageCode | 'default', Record<string, string>> = {
+  default: {},
+  'en-US': {},
+  'ar-SA': {
+    I: 'أنا', you: 'أنت', want: 'أريد', more: 'المزيد', stop: 'توقف', go: 'اذهب', like: 'أحب', help: 'مساعدة', yes: 'نعم', no: 'لا',
+    water: 'ماء', milk: 'حليب', juice: 'عصير', apple: 'تفاحة', banana: 'موز', bread: 'خبز', cookie: 'بسكويت', rice: 'أرز', chicken: 'دجاج', snack: 'وجبة خفيفة',
+    happy: 'سعيد', sad: 'حزين', angry: 'غاضب', scared: 'خائف', tired: 'متعب', hurt: 'أتألم', sick: 'مريض', excited: 'متحمس', calm: 'هادئ', love: 'حب',
+    mom: 'أمي', dad: 'أبي', me: 'أنا', teacher: 'المعلم', friend: 'صديق', baby: 'طفل', doctor: 'الطبيب', grandma: 'جدتي', grandpa: 'جدي', sister: 'أختي',
+    eat: 'آكل', drink: 'أشرب', play: 'ألعب', sleep: 'أنام', read: 'أقرأ', walk: 'أمشي', run: 'أركض', sit: 'أجلس', wash: 'أغسل', open: 'افتح',
+  },
+  'ur-PK': {
+    I: 'میں', you: 'آپ', want: 'چاہیے', more: 'اور', stop: 'رکو', go: 'جاؤ', like: 'پسند', help: 'مدد', yes: 'ہاں', no: 'نہیں',
+    water: 'پانی', milk: 'دودھ', juice: 'جوس', apple: 'سیب', banana: 'کیلا', bread: 'روٹی', cookie: 'بسکٹ', rice: 'چاول', chicken: 'مرغی', snack: 'ناشتا',
+    happy: 'خوش', sad: 'اداس', angry: 'غصہ', scared: 'ڈرا ہوا', tired: 'تھکا', hurt: 'درد', sick: 'بیمار', excited: 'پرجوش', calm: 'پرسکون', love: 'محبت',
+    mom: 'امی', dad: 'ابو', me: 'میں', teacher: 'استاد', friend: 'دوست', baby: 'بچہ', doctor: 'ڈاکٹر', grandma: 'دادی', grandpa: 'دادا', sister: 'بہن',
+    eat: 'کھانا', drink: 'پینا', play: 'کھیلنا', sleep: 'سونا', read: 'پڑھنا', walk: 'چلنا', run: 'دوڑنا', sit: 'بیٹھنا', wash: 'دھونا', open: 'کھولو',
+  },
+  'hi-IN': {}, 'es-ES': {}, 'fr-FR': {},
+};
+
+export function starterLabel(englishLabel: string, lang: LanguageCode): string {
+  return STARTER_WORDS[lang]?.[englishLabel] ?? englishLabel;
 }

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView, Alert, Share, TextInput, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSettings } from "../context/SettingsContext";
-import { LANGUAGES, t } from "../modules/i18n";
+import { LANGUAGES, t, applyLanguageDirection } from "../modules/i18n";
 import type { LanguageCode } from "../types";
 import { loadPasscode, hasPasscode, setPasscode, clearPasscode } from "../modules/passcode";
 import { loadPixabayKey, hasPixabayKey, setPixabayKey } from "../modules/imageSearch";
@@ -194,7 +194,11 @@ export default function AccessibilityScreen({ onBack }: Props) {
               return (
                 <Pressable
                   key={l.code}
-                  onPress={() => update({ language: l.code as LanguageCode })}
+                  onPress={() => {
+                    update({ language: l.code as LanguageCode });
+                    const flipped = applyLanguageDirection(l.code as LanguageCode);
+                    if (flipped) Alert.alert(l.nativeName, t("reopenForLanguage", l.code as LanguageCode));
+                  }}
                   style={[styles.langBtn, active ? styles.langBtnActive : styles.langBtnInactive]}
                 >
                   <Text style={{ fontSize: 22 }}>{l.flag}</Text>

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView, Image } from "react-native";
+import { View, Text, Pressable, StyleSheet, ScrollView, Image, I18nManager } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { ChildProfile, CustomCategory, CustomWord, TabScreen } from "../types";
@@ -14,6 +14,7 @@ import {
 import { playWord, playSentence, type SpokenWord } from "../modules/audio";
 import { recordWordUsage } from "../modules/storage";
 import { tapFeedback, selectFeedback } from "../modules/haptics";
+import { t } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import AddByVoiceScreen from "./AddByVoiceScreen";
@@ -104,7 +105,7 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
 
   const tileSize = { width: `${100 / cols}%` as const };
   const canBack = path.length > 0;
-  const title = current?.name ?? "Talk";
+  const title = current?.name ?? t("talk", lang);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -115,11 +116,11 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
             onPress={() => (canBack ? goCrumb(path.length - 1) : undefined)}
             disabled={!canBack}
             style={[styles.navBtn, !canBack && styles.navBtnGhost]}
-            accessibilityLabel="Go back"
+            accessibilityLabel={t("back", lang)}
           >
-            <Ionicons name="arrow-back" size={20} color={canBack ? colors.forest : colors.textLight} />
+            <Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color={canBack ? colors.forest : colors.textLight} />
           </Pressable>
-          <Pressable onPress={() => goCrumb(0)} disabled={!canBack} style={[styles.navBtn, !canBack && styles.navBtnGhost]} accessibilityLabel="Home">
+          <Pressable onPress={() => goCrumb(0)} disabled={!canBack} style={[styles.navBtn, !canBack && styles.navBtnGhost]} accessibilityLabel={t("home", lang)}>
             <Ionicons name="home" size={18} color={canBack ? colors.forest : colors.textLight} />
           </Pressable>
           <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
@@ -135,7 +136,7 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
             keyboardShouldPersistTaps="handled"
           >
             {sentence.length === 0 ? (
-              <Text style={styles.msgPlaceholder}>Tap pictures to build a sentence…</Text>
+              <Text style={styles.msgPlaceholder}>{t("buildSentence", lang)}</Text>
             ) : (
               sentence.map((c) => (
                 <View key={c.id} style={styles.msgChip}>
@@ -154,7 +155,7 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
             onPress={() => setSentence((p) => p.slice(0, -1))}
             disabled={sentence.length === 0}
             style={[styles.msgMiniBtn, sentence.length === 0 && styles.msgBtnOff]}
-            accessibilityLabel="Remove last word"
+            accessibilityLabel={t("removeLast", lang)}
           >
             <Ionicons name="backspace-outline" size={18} color={colors.textMid} />
           </Pressable>
@@ -162,7 +163,7 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
             onPress={() => setSentence([])}
             disabled={sentence.length === 0}
             style={[styles.msgMiniBtn, sentence.length === 0 && styles.msgBtnOff]}
-            accessibilityLabel="Clear sentence"
+            accessibilityLabel={t("clearSentence", lang)}
           >
             <Ionicons name="trash-outline" size={17} color={colors.textMid} />
           </Pressable>
@@ -170,7 +171,7 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
             onPress={speakSentence}
             disabled={sentence.length === 0}
             style={[styles.playBtn, sentence.length === 0 && styles.msgBtnOff]}
-            accessibilityLabel="Speak sentence"
+            accessibilityLabel={t("speakSentence", lang)}
           >
             <Ionicons name="play" size={22} color="white" />
           </Pressable>
@@ -215,7 +216,7 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
                 </View>
               ))}
               {folders.length === 0 && words.length === 0 && (
-                <Text style={styles.emptyBoard}>This folder is empty. Add words with the mic button, or in the Board editor.</Text>
+                <Text style={styles.emptyBoard}>{t("emptyFolder", lang)}</Text>
               )}
             </>
           )}
@@ -224,9 +225,9 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
       </SafeAreaView>
 
       {/* floating "make a word" */}
-      <Pressable onPress={startVoiceAdd} style={styles.fab} accessibilityLabel="Make a new word by speaking">
+      <Pressable onPress={startVoiceAdd} style={styles.fab} accessibilityLabel={t("makeAWord", lang)}>
         <Ionicons name="mic" size={20} color="white" />
-        <Text style={styles.fabText}>Make a word</Text>
+        <Text style={styles.fabText}>{t("makeAWord", lang)}</Text>
       </Pressable>
 
       <TabBar active={tab} onChange={onTabChange} labels={labels} />

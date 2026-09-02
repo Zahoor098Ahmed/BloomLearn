@@ -1,5 +1,12 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { CustomCategory, CustomWord, TileSize } from "../types";
+import type { CustomCategory, CustomWord, TileSize, LanguageCode } from "../types";
+import { starterLabel } from "./i18n";
+
+/** Set before the first ensureCategoriesLoaded() so the starter board seeds in the chosen language. */
+let seedLang: LanguageCode = "en-US";
+export function setSeedLanguage(lang: LanguageCode) {
+  seedLang = lang;
+}
 
 const KEY = "kiddocare_custom_categories";
 const BACKUP_VERSION = 2;
@@ -84,11 +91,19 @@ const STARTER: { name: string; icon: string; words: [string, string][] }[] = [
   },
 ];
 
+const FOLDER_NAMES: Partial<Record<LanguageCode, Record<string, string>>> = {
+  "ar-SA": { Core: "أساسي", Food: "طعام", Feelings: "مشاعر", People: "أشخاص", Actions: "أفعال" },
+  "ur-PK": { Core: "بنیادی", Food: "کھانا", Feelings: "احساسات", People: "لوگ", Actions: "کام" },
+};
+function folderName(en: string) {
+  return FOLDER_NAMES[seedLang]?.[en] ?? en;
+}
+
 function seedStarterBoard() {
   const now = Date.now();
   cache = STARTER.map((s, i) => ({
     id: uid("cat"),
-    name: s.name,
+    name: folderName(s.name),
     createdAt: now,
     updatedAt: now,
     source: "seed",
@@ -97,15 +112,18 @@ function seedStarterBoard() {
     icon: s.icon,
     parentCategoryId: null,
     order: i,
-    words: s.words.map(([label, emoji], wi) => ({
-      id: uid("w"),
-      label,
-      phrase: label,
-      emoji,
-      useTextToSpeech: true,
-      size: "md" as TileSize,
-      order: wi,
-    })),
+    words: s.words.map(([label, emoji], wi) => {
+      const localized = starterLabel(label, seedLang);
+      return {
+        id: uid("w"),
+        label: localized,
+        phrase: localized,
+        emoji,
+        useTextToSpeech: true,
+        size: "md" as TileSize,
+        order: wi,
+      };
+    }),
   }));
   persist();
 }

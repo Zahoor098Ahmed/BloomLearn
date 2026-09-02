@@ -18,7 +18,7 @@
     },
     "android": {
       "package": "com.timeglobaltech.kiddocare",
-      "versionCode": 14,
+      "versionCode": 15,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
