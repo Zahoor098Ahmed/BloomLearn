@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Modal } from "react-native";
+import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Modal, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
@@ -13,7 +13,8 @@ import {
   REFERENCES,
   CONCEPTS,
 } from "../modules/sentenceScene";
-import { loadStoredKey, setStoredKey, isAiConfigured, generateSentenceImage, cachedImageFor } from "../modules/aiImage";
+import { loadStoredKey, setStoredKey, isAiConfigured, generateSentenceImage, cachedImageFor, transcribeAudio } from "../modules/aiImage";
+import { startRecording, stopRecordingTemp } from "../modules/audio";
 import SceneDrawing from "../components/SceneDrawing";
 import { colors, radius } from "../theme";
 
@@ -39,6 +40,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const [aiReady, setAiReady] = useState(false);
   const [keyModal, setKeyModal] = useState(false);
   const [keyInput, setKeyInput] = useState("");
+  const [recording, setRecording] = useState(false);
+  const [sttBusy, setSttBusy] = useState(false);
 
   const scene = useMemo(() => parseSentence(text), [text]);
   const concept = conceptByKey(scene.conceptKey);
@@ -66,6 +69,31 @@ export default function SentencePictureScreen({ onBack }: Props) {
     setAiLoading(false);
     if (res.dataUri) setAiUri(res.dataUri);
     else setAiError(res.error ?? "Could not make the picture.");
+  }
+
+  async function toggleMic() {
+    if (recording) {
+      setRecording(false);
+      const uri = await stopRecordingTemp();
+      if (!isAiConfigured() || !uri) {
+        // demo: no speech service — let the presenter use the keyboard mic
+        Alert.alert("Speak with the keyboard", "Tap the text box and use the microphone on your keyboard. Real voice typing turns on with an OpenAI key.");
+        return;
+      }
+      setSttBusy(true);
+      const res = await transcribeAudio(uri, (lang || "en-US").split("-")[0]);
+      setSttBusy(false);
+      if (res.text) {
+        setAiUri(null);
+        setText(res.text);
+      } else {
+        Alert.alert("Didn't catch that", res.error ?? "Try again or type it.");
+      }
+      return;
+    }
+    const ok = await startRecording();
+    if (!ok) return Alert.alert("Microphone permission is needed to speak.");
+    setRecording(true);
   }
 
   async function saveKey() {
@@ -156,7 +184,15 @@ export default function SentencePictureScreen({ onBack }: Props) {
             style={styles.input}
             multiline
           />
-          <Text style={styles.micHint}>🎤  Tap the microphone on your keyboard and speak — the picture updates as you talk.</Text>
+          <Pressable onPress={toggleMic} disabled={sttBusy} style={[styles.micRow, recording && styles.micRowOn]}>
+            {sttBusy ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <Ionicons name={recording ? "stop" : "mic"} size={20} color="white" />
+            )}
+            <Text style={styles.micRowText}>{recording ? "Listening… tap to stop" : sttBusy ? "Turning speech into a picture…" : "Speak a sentence"}</Text>
+          </Pressable>
+          <Text style={styles.micHint}>Or tap the text box and use your keyboard's microphone — the picture updates as you talk.</Text>
 
           <View style={styles.actionRow}>
             <Pressable onPress={() => speak(text, lang, settings.soundEnabled)} style={styles.speakBtn}>
@@ -333,7 +369,19 @@ const styles = StyleSheet.create({
     minHeight: 60,
     textAlignVertical: "top",
   },
-  micHint: { fontSize: 11.5, color: colors.textMid, marginTop: -6, lineHeight: 16 },
+  micRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: colors.forest,
+    borderRadius: radius,
+    paddingVertical: 15,
+    marginTop: 4,
+  },
+  micRowOn: { backgroundColor: colors.pinkDeep },
+  micRowText: { color: "white", fontWeight: "800", fontSize: 15 },
+  micHint: { fontSize: 11.5, color: colors.textMid, marginTop: 4, lineHeight: 16 },
   actionRow: { flexDirection: "row", gap: 10 },
   speakBtn: {
     flex: 1,
