@@ -5,6 +5,8 @@ import { Ionicons } from "@expo/vector-icons";
 import type { ChildProfile, TabScreen } from "../types";
 import { DIAGNOSIS_LABELS } from "../types";
 import { getUsage, updateChild } from "../modules/storage";
+import { useSettings } from "../context/SettingsContext";
+import { t, type TKey } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import { colors, radius } from "../theme";
@@ -19,11 +21,11 @@ interface Props {
 
 type SubTab = "overview" | "vocabulary" | "schedule" | "privacy";
 
-const SUB_TABS: { key: SubTab; label: string }[] = [
-  { key: "overview", label: "Overview" },
-  { key: "vocabulary", label: "Vocabulary" },
-  { key: "schedule", label: "Schedule" },
-  { key: "privacy", label: "Privacy" },
+const SUB_TABS: { key: SubTab; labelKey: TKey }[] = [
+  { key: "overview", labelKey: "pOverview" },
+  { key: "vocabulary", labelKey: "pVocabulary" },
+  { key: "schedule", labelKey: "pSchedule" },
+  { key: "privacy", labelKey: "pPrivacy" },
 ];
 
 const DAYS = ["M", "T", "W", "T", "F", "S", "S"];
@@ -36,6 +38,9 @@ function adherenceColor(percent: number): string {
 }
 
 export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdateChild, labels }: Props) {
+  const { settings } = useSettings();
+  const lang = settings.language;
+  const tt = (k: TKey) => t(k, lang);
   const [subTab, setSubTab] = useState<SubTab>("overview");
   const usage = useMemo(() => getUsage(child.id), [child.id]);
 
@@ -56,11 +61,11 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
   const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   const milestones = [
-    { icon: "🗣️", label: "First words spoken", done: totalWords > 0 },
-    { icon: "📚", label: "10 different words used", done: uniqueWords >= 10 },
-    { icon: "🎯", label: "80%+ routine adherence", done: avgAdherence >= 80 },
-    { icon: "🔥", label: "3-day game streak", done: usage.gameStreak >= 3 },
-    { icon: "⭐", label: "25 stars earned", done: (child.stars ?? 0) >= 25 },
+    { icon: "🗣️", label: tt("pM1"), done: totalWords > 0 },
+    { icon: "📚", label: tt("pM2"), done: uniqueWords >= 10 },
+    { icon: "🎯", label: tt("pM3"), done: avgAdherence >= 80 },
+    { icon: "🔥", label: tt("pM4"), done: usage.gameStreak >= 3 },
+    { icon: "⭐", label: tt("pM5"), done: (child.stars ?? 0) >= 25 },
   ];
   const milestonesHit = milestones.filter((m) => m.done).length;
 
@@ -120,7 +125,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
           <Pressable onPress={() => onTabChange("home")} style={styles.backBtn}>
             <Ionicons name="chevron-back" size={22} color={colors.textDark} />
           </Pressable>
-          <Text style={styles.headerTitle}>Parent Dashboard</Text>
+          <Text style={styles.headerTitle}>{tt("progress")}</Text>
           <LangBadge />
         </View>
 
@@ -131,10 +136,10 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
           <View style={{ flex: 1 }}>
             <Text style={styles.childName}>{child.name}</Text>
             <Text style={styles.childSub}>
-              Age {child.age} · {daysActive} day{daysActive !== 1 ? "s" : ""} active
+              {child.age} · {daysActive} {tt("pDaysActive")}
             </Text>
           </View>
-          <Text style={styles.activeText}>Active</Text>
+          <Text style={styles.activeText}>{tt("pActive")}</Text>
         </View>
 
         <View style={styles.diagRow}>
@@ -150,7 +155,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
             const active = subTab === s.key;
             return (
               <Pressable key={s.key} onPress={() => setSubTab(s.key)} style={styles.subTabBtn}>
-                <Text style={[styles.subTabText, active && { color: colors.indigo, fontWeight: "800" }]}>{s.label}</Text>
+                <Text style={[styles.subTabText, active && { color: colors.indigo, fontWeight: "800" }]}>{tt(s.labelKey)}</Text>
                 {active && <View style={styles.subTabUnderline} />}
               </Pressable>
             );
@@ -164,37 +169,37 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
                 <View style={styles.statCard}>
                   <Text style={{ fontSize: 18 }}>💬</Text>
                   <Text style={[styles.statValue, { color: colors.indigo }]}>{wordsThisWeek}</Text>
-                  <Text style={styles.statLabel}>words used this week</Text>
+                  <Text style={styles.statLabel}>{tt("pWordsWeek")}</Text>
                 </View>
                 <View style={styles.statCard}>
                   <Text style={{ fontSize: 18 }}>🎯</Text>
                   <Text style={[styles.statValue, { color: colors.greenDeep }]}>{avgAdherence}%</Text>
-                  <Text style={styles.statLabel}>Schedule adherence</Text>
+                  <Text style={styles.statLabel}>{tt("pAdherence")}</Text>
                 </View>
                 <View style={styles.statCard}>
                   <Text style={{ fontSize: 18 }}>🔥</Text>
                   <Text style={[styles.statValue, { color: colors.orangeDeep }]}>{usage.gameStreak}</Text>
-                  <Text style={styles.statLabel}>Game streak (days)</Text>
+                  <Text style={styles.statLabel}>{tt("pGameStreak")}</Text>
                 </View>
               </View>
 
               <View style={styles.vocabRow}>
                 <View style={styles.vocabCell}>
                   <Text style={styles.vocabValue}>{totalWords}</Text>
-                  <Text style={styles.vocabLabel}>total words spoken</Text>
+                  <Text style={styles.vocabLabel}>{tt("pTotalWords")}</Text>
                 </View>
                 <View style={styles.vocabCell}>
                   <Text style={styles.vocabValue}>{uniqueWords}</Text>
-                  <Text style={styles.vocabLabel}>different words</Text>
+                  <Text style={styles.vocabLabel}>{tt("pDiffWords")}</Text>
                 </View>
                 <View style={styles.vocabCell}>
                   <Text style={styles.vocabValue}>{wordsChart.some((v) => v > 0) ? DAY_NAMES[bestDayIdx] : "—"}</Text>
-                  <Text style={styles.vocabLabel}>most active day</Text>
+                  <Text style={styles.vocabLabel}>{tt("pMostActive")}</Text>
                 </View>
               </View>
 
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryTitle}>Week summary</Text>
+                <Text style={styles.summaryTitle}>{tt("pWeekSummary")}</Text>
                 <Text style={styles.summaryBody}>
                   {topWords.length === 0
                     ? `${child.name} hasn't used the Speak board yet this week. Encourage a few AAC sessions to start building vocabulary insights.`
@@ -228,7 +233,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
 
               <View style={styles.card}>
                 <View style={styles.milestoneHeader}>
-                  <Text style={styles.cardTitle}>Milestones</Text>
+                  <Text style={styles.cardTitle}>{tt("pMilestones")}</Text>
                   <Text style={styles.milestoneCount}>{milestonesHit}/{milestones.length}</Text>
                 </View>
                 <View style={{ gap: 10 }}>
@@ -247,7 +252,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
               </View>
 
               <View style={styles.summaryCard}>
-                <Text style={styles.summaryTitle}>Recommendations</Text>
+                <Text style={styles.summaryTitle}>{tt("pRecommendations")}</Text>
                 {tips.map((tip, i) => (
                   <Text key={i} style={styles.tipLine}>
                     •  {tip}

@@ -6,6 +6,7 @@ import type { ChildProfile, TabScreen } from "../types";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { recordScheduleAdherence } from "../modules/storage";
+import { t, type TKey } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import { colors, radius } from "../theme";
@@ -21,21 +22,21 @@ type ItemState = "done" | "now" | "upcoming";
 
 interface ScheduleItem {
   time: string;
-  label: string;
+  labelKey: TKey;
   emoji: string;
   state: ItemState;
 }
 
 const INITIAL: ScheduleItem[] = [
-  { time: "08:00", label: "Breakfast", emoji: "🍳", state: "done" },
-  { time: "09:00", label: "Play Time", emoji: "🎮", state: "done" },
-  { time: "10:30", label: "AAC Session", emoji: "💬", state: "now" },
-  { time: "12:00", label: "Lunch", emoji: "🍽️", state: "upcoming" },
-  { time: "13:00", label: "Rest Time", emoji: "😴", state: "upcoming" },
-  { time: "15:00", label: "Skill Activity", emoji: "⭐", state: "upcoming" },
+  { time: "08:00", labelKey: "sBreakfast", emoji: "🍳", state: "done" },
+  { time: "09:00", labelKey: "sPlayTime", emoji: "🎮", state: "done" },
+  { time: "10:30", labelKey: "sAacSession", emoji: "💬", state: "now" },
+  { time: "12:00", labelKey: "sLunch", emoji: "🍽️", state: "upcoming" },
+  { time: "13:00", labelKey: "sRestTime", emoji: "😴", state: "upcoming" },
+  { time: "15:00", labelKey: "sSkillActivity", emoji: "⭐", state: "upcoming" },
 ];
 
-const STATE_LABEL: Record<ItemState, string> = { done: "Done", now: "Now", upcoming: "Upcoming" };
+const STATE_KEY: Record<ItemState, TKey> = { done: "stDone", now: "stNow", upcoming: "stUpcoming" };
 const STATE_COLOR: Record<ItemState, string> = { done: colors.textLight, now: colors.blueDeep, upcoming: colors.orangeDeep };
 
 export default function VisualScheduleScreen({ child, tab, onTabChange, labels }: Props) {
@@ -48,7 +49,7 @@ export default function VisualScheduleScreen({ child, tab, onTabChange, labels }
       const next = prev.map((item, i) => {
         if (i !== idx) return item;
         const nextState: ItemState = item.state === "done" ? "upcoming" : "done";
-        speak(item.label + (nextState === "done" ? ". Done!" : ""), lang, settings.soundEnabled);
+        speak(t(item.labelKey, lang) + (nextState === "done" ? ". " + t("doneSpoken", lang) : ""), lang, settings.soundEnabled);
         return { ...item, state: nextState };
       });
       const percent = (next.filter((i) => i.state === "done").length / next.length) * 100;
@@ -69,13 +70,13 @@ export default function VisualScheduleScreen({ child, tab, onTabChange, labels }
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <View style={styles.header}>
-          <Text style={styles.title}>Today's Schedule</Text>
+          <Text style={styles.title}>{t("todaysSchedule", lang)}</Text>
           <LangBadge />
         </View>
 
         <View style={styles.progressRow}>
           <Text style={styles.progressText}>
-            {doneCount}/{items.length} tasks
+            {doneCount}/{items.length} {t("tasksLabel", lang)}
           </Text>
           <Text style={[styles.progressText, { color: colors.greenDeep, fontWeight: "800" }]}>{percent}%</Text>
         </View>
@@ -106,9 +107,9 @@ export default function VisualScheduleScreen({ child, tab, onTabChange, labels }
                 <Text style={{ fontSize: 20 }}>{item.emoji}</Text>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.cardLabel, item.state === "done" && { textDecorationLine: "line-through", color: colors.textLight }]}>
-                    {item.label}
+                    {t(item.labelKey, lang)}
                   </Text>
-                  <Text style={[styles.cardState, { color: STATE_COLOR[item.state] }]}>{STATE_LABEL[item.state]}</Text>
+                  <Text style={[styles.cardState, { color: STATE_COLOR[item.state] }]}>{t(STATE_KEY[item.state], lang)}</Text>
                 </View>
                 <Text style={styles.cardTime}>{item.time}</Text>
               </Pressable>

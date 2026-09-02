@@ -45,7 +45,13 @@ export type TKey =
   | 'playAGame' | 'parentDashboard' | 'levelDeveloping' | 'nextUp' | 'starsLabel'
   | 'dayStreak' | 'todayLabel' | 'moreStarsToLevel'
   | 'qCommunicate' | 'qPictureTalk' | 'qActivities' | 'happeningNow' | 'nextLabel' | 'nowBadge'
-  | 'sBreakfast' | 'sPlayTime' | 'sAacSession' | 'sLunch';
+  | 'sBreakfast' | 'sPlayTime' | 'sAacSession' | 'sLunch' | 'sRestTime' | 'sSkillActivity'
+  | 'stDone' | 'stNow' | 'stUpcoming' | 'tasksLabel' | 'doneSpoken'
+  // --- progress / parent dashboard ---
+  | 'pOverview' | 'pVocabulary' | 'pSchedule' | 'pPrivacy'
+  | 'pWordsWeek' | 'pAdherence' | 'pGameStreak' | 'pMilestones' | 'pRecommendations'
+  | 'pTotalWords' | 'pDiffWords' | 'pMostActive' | 'pWeekSummary'
+  | 'pM1' | 'pM2' | 'pM3' | 'pM4' | 'pM5' | 'pDaysActive' | 'pActive';
 
 type TMap = Record<TKey, string>;
 type AllTranslations = { 'en-US': TMap } & Partial<Record<LanguageCode, Partial<TMap>>>;
@@ -173,6 +179,14 @@ const T: AllTranslations = {
     qCommunicate: 'Communicate', qPictureTalk: 'Picture Talk', qActivities: 'Activities',
     happeningNow: 'Happening now', nextLabel: 'Next', nowBadge: 'NOW',
     sBreakfast: 'Breakfast', sPlayTime: 'Play Time', sAacSession: 'AAC Session', sLunch: 'Lunch',
+    sRestTime: 'Rest Time', sSkillActivity: 'Skill Activity',
+    stDone: 'Done', stNow: 'Now', stUpcoming: 'Upcoming', tasksLabel: 'tasks', doneSpoken: 'Done!',
+    pOverview: 'Overview', pVocabulary: 'Vocabulary', pSchedule: 'Schedule', pPrivacy: 'Privacy',
+    pWordsWeek: 'words used this week', pAdherence: 'Schedule adherence', pGameStreak: 'Game streak (days)',
+    pMilestones: 'Milestones', pRecommendations: 'Recommendations',
+    pTotalWords: 'total words spoken', pDiffWords: 'different words', pMostActive: 'most active day', pWeekSummary: 'Week summary',
+    pM1: 'First words spoken', pM2: '10 different words used', pM3: '80%+ routine adherence', pM4: '3-day game streak', pM5: '25 stars earned',
+    pDaysActive: 'days active', pActive: 'Active',
   },
   'ar-SA': {
     appName: 'كيدو كير',
@@ -296,6 +310,14 @@ const T: AllTranslations = {
     qCommunicate: 'تواصل', qPictureTalk: 'الحديث بالصور', qActivities: 'أنشطة',
     happeningNow: 'يحدث الآن', nextLabel: 'التالي', nowBadge: 'الآن',
     sBreakfast: 'الفطور', sPlayTime: 'وقت اللعب', sAacSession: 'جلسة تواصل', sLunch: 'الغداء',
+    sRestTime: 'وقت الراحة', sSkillActivity: 'نشاط مهارة',
+    stDone: 'تم', stNow: 'الآن', stUpcoming: 'قادم', tasksLabel: 'مهام', doneSpoken: 'تم!',
+    pOverview: 'نظرة عامة', pVocabulary: 'المفردات', pSchedule: 'الجدول', pPrivacy: 'الخصوصية',
+    pWordsWeek: 'كلمات هذا الأسبوع', pAdherence: 'الالتزام بالجدول', pGameStreak: 'تتابع الألعاب (أيام)',
+    pMilestones: 'الإنجازات', pRecommendations: 'توصيات',
+    pTotalWords: 'إجمالي الكلمات المنطوقة', pDiffWords: 'كلمات مختلفة', pMostActive: 'أكثر يوم نشاطاً', pWeekSummary: 'ملخص الأسبوع',
+    pM1: 'أول كلمات منطوقة', pM2: 'استخدام ١٠ كلمات مختلفة', pM3: 'التزام بالجدول ٨٠٪+', pM4: 'تتابع ألعاب ٣ أيام', pM5: 'كسب ٢٥ نجمة',
+    pDaysActive: 'أيام نشطة', pActive: 'نشط',
   },
   'ur-PK': {
     appName: 'کڈو کیئر',
