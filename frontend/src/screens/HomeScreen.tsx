@@ -3,7 +3,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { ChildProfile, TabScreen } from "../types";
 import { useSettings } from "../context/SettingsContext";
-import { t } from "../modules/i18n";
+import { t, type TKey } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import { colors, radiusLg } from "../theme";
@@ -18,7 +18,7 @@ interface Props {
 }
 
 type QuickItem = {
-  label: string;
+  labelKey: TKey;
   icon: keyof typeof Ionicons.glyphMap;
   bg: string;
   iconColor: string;
@@ -26,17 +26,17 @@ type QuickItem = {
 };
 
 const QUICK_ACCESS: QuickItem[] = [
-  { label: "Communicate", icon: "chatbubble-ellipses", bg: colors.blue, iconColor: colors.blueDeep, go: (p) => p.onTabChange("speak") },
-  { label: "Today's Schedule", icon: "calendar", bg: colors.yellow, iconColor: colors.yellowDeep, go: (p) => p.onTabChange("schedule") },
-  { label: "Picture Talk", icon: "image", bg: colors.forestLight, iconColor: colors.forest, go: (p) => p.onOpenPictureTalk() },
-  { label: "Activities", icon: "shapes", bg: colors.green, iconColor: colors.greenDeep, go: (p) => p.onTabChange("games") },
+  { labelKey: "qCommunicate", icon: "chatbubble-ellipses", bg: colors.blue, iconColor: colors.blueDeep, go: (p) => p.onTabChange("speak") },
+  { labelKey: "todaysSchedule", icon: "calendar", bg: colors.yellow, iconColor: colors.yellowDeep, go: (p) => p.onTabChange("schedule") },
+  { labelKey: "qPictureTalk", icon: "image", bg: colors.forestLight, iconColor: colors.forest, go: (p) => p.onOpenPictureTalk() },
+  { labelKey: "qActivities", icon: "shapes", bg: colors.green, iconColor: colors.greenDeep, go: (p) => p.onTabChange("games") },
 ];
 
 const TODAY_PREVIEW = [
-  { icon: "🍳", label: "Breakfast", time: "08:00", state: "done" as const, color: colors.yellow },
-  { icon: "🧩", label: "Play Time", time: "09:00", state: "done" as const, color: colors.green },
-  { icon: "💬", label: "AAC Session", time: "10:30", state: "now" as const, color: colors.blue },
-  { icon: "🍽️", label: "Lunch", time: "12:00", state: "upcoming" as const, color: colors.orange },
+  { icon: "🍳", labelKey: "sBreakfast" as TKey, time: "08:00", state: "done" as const, color: colors.yellow },
+  { icon: "🧩", labelKey: "sPlayTime" as TKey, time: "09:00", state: "done" as const, color: colors.green },
+  { icon: "💬", labelKey: "sAacSession" as TKey, time: "10:30", state: "now" as const, color: colors.blue },
+  { icon: "🍽️", labelKey: "sLunch" as TKey, time: "12:00", state: "upcoming" as const, color: colors.orange },
 ];
 
 export default function HomeScreen(props: Props) {
@@ -75,8 +75,8 @@ export default function HomeScreen(props: Props) {
                 <Text style={{ fontSize: 20 }}>{nextUp.icon}</Text>
               </View>
               <View style={{ flex: 1 }}>
-                <Text style={styles.nextUpLabel}>{nextUp.state === "now" ? "Happening now" : "Next"} · {nextUp.time}</Text>
-                <Text style={styles.nextUpTitle}>{nextUp.label}</Text>
+                <Text style={styles.nextUpLabel}>{nextUp.state === "now" ? t("happeningNow", lang) : t("nextLabel", lang)} · {nextUp.time}</Text>
+                <Text style={styles.nextUpTitle}>{t(nextUp.labelKey, lang)}</Text>
               </View>
               <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.7)" />
             </Pressable>
@@ -84,19 +84,19 @@ export default function HomeScreen(props: Props) {
         </View>
 
         <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-          <Text style={styles.sectionTitle}>QUICK ACCESS</Text>
+          <Text style={styles.sectionTitle}>{t("quickAccess", lang)}</Text>
           <View style={styles.quickGrid}>
             {QUICK_ACCESS.map((q) => (
-              <Pressable key={q.label} onPress={() => q.go(props)} style={[styles.quickTile, { backgroundColor: q.bg }]}>
+              <Pressable key={q.labelKey} onPress={() => q.go(props)} style={[styles.quickTile, { backgroundColor: q.bg }]}>
                 <View style={styles.quickIconBadge}>
                   <Ionicons name={q.icon} size={22} color={q.iconColor} />
                 </View>
-                <Text style={styles.quickLabel}>{q.label}</Text>
+                <Text style={styles.quickLabel}>{t(q.labelKey, lang)}</Text>
               </Pressable>
             ))}
           </View>
 
-          <Text style={styles.sectionTitle}>TODAY'S SCHEDULE</Text>
+          <Text style={styles.sectionTitle}>{t("todaySchedule", lang)}</Text>
           <View style={{ gap: 12 }}>
             {TODAY_PREVIEW.map((item, i) => (
               <View
@@ -111,7 +111,7 @@ export default function HomeScreen(props: Props) {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.scheduleLabel, item.state === "done" && { textDecorationLine: "line-through", color: colors.textLight }]}>
-                    {item.label}
+                    {t(item.labelKey, lang)}
                   </Text>
                   <Text style={styles.scheduleTime}>{item.time}</Text>
                 </View>
@@ -122,7 +122,7 @@ export default function HomeScreen(props: Props) {
                 )}
                 {item.state === "now" && (
                   <View style={styles.nowBadge}>
-                    <Text style={styles.nowBadgeText}>NOW</Text>
+                    <Text style={styles.nowBadgeText}>{t("nowBadge", lang)}</Text>
                   </View>
                 )}
               </View>

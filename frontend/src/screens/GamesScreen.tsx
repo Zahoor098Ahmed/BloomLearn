@@ -5,6 +5,7 @@ import type { ChildProfile, TabScreen } from "../types";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { recordGamePlayed } from "../modules/storage";
+import { t, gameAnswerLabel, type TKey } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import { colors, radius } from "../theme";
@@ -130,9 +131,20 @@ const MODES: {
 
 const PRAISE = ["Great job!", "Well done!", "Awesome!", "You got it!", "Brilliant!"];
 
+const MODE_TKEY: Record<GameMode, { title: TKey; sub: TKey }> = {
+  animals: { title: "gAnimalMatch", sub: "gAnimalMatchSub" },
+  letters: { title: "gLearnLetters", sub: "gLearnLettersSub" },
+  numbers: { title: "gLearnNumbers", sub: "gLearnNumbersSub" },
+  colors: { title: "gColors", sub: "gColorsSub" },
+  shapes: { title: "gShapes", sub: "gShapesSub" },
+  emotions: { title: "gEmotions", sub: "gEmotionsSub" },
+};
+
 export default function GamesScreen({ child, tab, onTabChange, labels }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
+  const tt = (k: TKey) => t(k, lang);
+  const gTitle = (m: GameMode) => tt(MODE_TKEY[m].title);
   const [mode, setMode] = useState<GameMode>("animals");
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -156,13 +168,13 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
       setStreak(nextStreak);
       setBestStreak((b) => Math.max(b, nextStreak));
       setTries((tr) => tr + 1);
-      speak(PRAISE[Math.floor(Math.random() * PRAISE.length)], lang, settings.soundEnabled);
+      speak(tt("gGreatJob"), lang, settings.soundEnabled);
       recordGamePlayed(child.id);
       setTimeout(() => {
         setFeedback(null);
         if (roundIdx + 1 >= rounds.length) {
           setFinished(true);
-          speak("You finished! Amazing work!", lang, settings.soundEnabled);
+          speak(tt("gYouFinished"), lang, settings.soundEnabled);
         } else {
           setRoundIdx((i) => i + 1);
         }
@@ -171,7 +183,7 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
       setFeedback("wrong");
       setStreak(0);
       setTries((tr) => tr + 1);
-      speak(`Try again. This is ${round.say ?? round.answer}`, lang, settings.soundEnabled);
+      speak(tt("gTryAgain"), lang, settings.soundEnabled);
       setTimeout(() => setFeedback(null), 750);
     }
   }
@@ -194,8 +206,8 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <View style={styles.header}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title}>{meta.title}</Text>
-            <Text style={styles.subtitle}>{meta.subtitle}</Text>
+            <Text style={styles.title}>{gTitle(mode)}</Text>
+            <Text style={styles.subtitle}>{tt(MODE_TKEY[mode].sub)}</Text>
           </View>
           <LangBadge />
         </View>
@@ -204,15 +216,15 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
           <View style={styles.statRow}>
             <View style={styles.statPill}>
               <Text style={styles.statValue}>⭐ {score}</Text>
-              <Text style={styles.statLabel}>Score</Text>
+              <Text style={styles.statLabel}>{tt("gScore")}</Text>
             </View>
             <View style={styles.statPill}>
               <Text style={styles.statValue}>🔥 {streak}</Text>
-              <Text style={styles.statLabel}>Streak</Text>
+              <Text style={styles.statLabel}>{tt("gStreak")}</Text>
             </View>
             <View style={styles.statPill}>
               <Text style={styles.statValue}>🎯 {accuracy}%</Text>
-              <Text style={styles.statLabel}>Accuracy</Text>
+              <Text style={styles.statLabel}>{tt("gAccuracy")}</Text>
             </View>
           </View>
 
@@ -222,7 +234,7 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                 <View style={[styles.progressFill, { width: `${progress * 100}%` }]} />
               </View>
               <Text style={styles.roundCount}>
-                Round {roundIdx + 1} of {rounds.length}
+                {tt("gRound")} {roundIdx + 1} {tt("of")} {rounds.length}
               </Text>
 
               <View
@@ -233,8 +245,8 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                 ]}
               >
                 <Text style={{ fontSize: 72 }}>{round.prompt}</Text>
-                {feedback === "correct" && <Text style={styles.feedbackText}>✓ Correct!</Text>}
-                {feedback === "wrong" && <Text style={styles.feedbackText}>Try again</Text>}
+                {feedback === "correct" && <Text style={styles.feedbackText}>{tt("gCorrect")}</Text>}
+                {feedback === "wrong" && <Text style={styles.feedbackText}>{tt("gTryAgain")}</Text>}
               </View>
 
               <View style={styles.optionsWrap}>
@@ -248,7 +260,7 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                       feedback === "wrong" && opt === round.answer && styles.optionCorrect,
                     ]}
                   >
-                    <Text style={styles.optionText}>{opt}</Text>
+                    <Text style={styles.optionText}>{gameAnswerLabel(opt, lang)}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -258,17 +270,17 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
           {finished && (
             <View style={styles.finishCard}>
               <Text style={{ fontSize: 56 }}>🎉</Text>
-              <Text style={styles.finishTitle}>{meta.title} complete!</Text>
+              <Text style={styles.finishTitle}>{gTitle(mode)} {tt("gComplete")}</Text>
               <Text style={styles.finishStats}>
-                {score} / {tries} correct · best streak {bestStreak} 🔥
+                {score} / {tries} · {tt("gBestStreak")} {bestStreak} 🔥
               </Text>
               <Pressable onPress={() => restart()} style={styles.finishBtn}>
-                <Text style={styles.finishBtnText}>Play again</Text>
+                <Text style={styles.finishBtnText}>{tt("gPlayAgain")}</Text>
               </Pressable>
             </View>
           )}
 
-          <Text style={styles.pickTitle}>Choose a game</Text>
+          <Text style={styles.pickTitle}>{tt("gChooseGame")}</Text>
           <View style={styles.gameGrid}>
             {MODES.map((m) => (
               <Pressable
@@ -277,8 +289,8 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                 style={[styles.gameTile, { backgroundColor: m.color }, m.key === mode && styles.gameTileActive]}
               >
                 <Text style={{ fontSize: 26 }}>{m.icon}</Text>
-                <Text style={styles.gameTileLabel}>{m.title}</Text>
-                <Text style={styles.gameTileSub}>{MODE_ROUNDS[m.key].length} rounds</Text>
+                <Text style={styles.gameTileLabel}>{gTitle(m.key)}</Text>
+                <Text style={styles.gameTileSub}>{MODE_ROUNDS[m.key].length} {tt("gRounds")}</Text>
               </Pressable>
             ))}
           </View>

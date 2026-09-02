@@ -32,7 +32,20 @@ export type TKey =
   | 'camera' | 'gallery' | 'useSymbol' | 'tryAgain' | 'useThisPicture' | 'whichFolder'
   | 'newFolder' | 'createSave' | 'wordAdded' | 'wordAddedHint' | 'addAnother' | 'done'
   | 'skipTypeInstead' | 'step' | 'of' | 'reopenForLanguage'
-  | 'games' | 'progress';
+  | 'games' | 'progress'
+  // --- games screen ---
+  | 'gScore' | 'gStreak' | 'gAccuracy' | 'gRound' | 'gCorrect' | 'gTryAgain'
+  | 'gChooseGame' | 'gRounds' | 'gComplete' | 'gPlayAgain' | 'gBestStreak'
+  | 'gAnimalMatch' | 'gAnimalMatchSub' | 'gLearnLetters' | 'gLearnLettersSub'
+  | 'gLearnNumbers' | 'gLearnNumbersSub' | 'gColors' | 'gColorsSub'
+  | 'gShapes' | 'gShapesSub' | 'gEmotions' | 'gEmotionsSub'
+  | 'gGreatJob' | 'gYouFinished'
+  // --- home screen ---
+  | 'quickAccess' | 'todaySchedule' | 'communicateNow' | 'todaysSchedule'
+  | 'playAGame' | 'parentDashboard' | 'levelDeveloping' | 'nextUp' | 'starsLabel'
+  | 'dayStreak' | 'todayLabel' | 'moreStarsToLevel'
+  | 'qCommunicate' | 'qPictureTalk' | 'qActivities' | 'happeningNow' | 'nextLabel' | 'nowBadge'
+  | 'sBreakfast' | 'sPlayTime' | 'sAacSession' | 'sLunch';
 
 type TMap = Record<TKey, string>;
 type AllTranslations = { 'en-US': TMap } & Partial<Record<LanguageCode, Partial<TMap>>>;
@@ -145,6 +158,21 @@ const T: AllTranslations = {
     reopenForLanguage: 'Please close and reopen the app to finish switching the language and text direction.',
     games: 'Games',
     progress: 'Progress',
+    gScore: 'Score', gStreak: 'Streak', gAccuracy: 'Accuracy', gRound: 'Round', gCorrect: 'Correct!', gTryAgain: 'Try again',
+    gChooseGame: 'Choose a game', gRounds: 'rounds', gComplete: 'complete!', gPlayAgain: 'Play again', gBestStreak: 'best streak',
+    gAnimalMatch: 'Animal Match', gAnimalMatchSub: 'Match the animal to its name',
+    gLearnLetters: 'Learn Letters', gLearnLettersSub: 'Tap the letter you see',
+    gLearnNumbers: 'Learn Numbers', gLearnNumbersSub: 'Tap the number you see',
+    gColors: 'Colors', gColorsSub: 'Name the color you see',
+    gShapes: 'Shapes', gShapesSub: 'Name the shape you see',
+    gEmotions: 'Emotions', gEmotionsSub: 'How is this face feeling?',
+    gGreatJob: 'Great job!', gYouFinished: 'You finished! Amazing work!',
+    quickAccess: 'QUICK ACCESS', todaySchedule: "TODAY'S SCHEDULE", communicateNow: 'Communicate Now', todaysSchedule: "Today's Schedule",
+    playAGame: 'Play a Game', parentDashboard: 'Progress', levelDeveloping: 'Level: Developing', nextUp: 'Next up',
+    starsLabel: 'Stars', dayStreak: 'Day streak', todayLabel: 'Today', moreStarsToLevel: 'more stars to level up',
+    qCommunicate: 'Communicate', qPictureTalk: 'Picture Talk', qActivities: 'Activities',
+    happeningNow: 'Happening now', nextLabel: 'Next', nowBadge: 'NOW',
+    sBreakfast: 'Breakfast', sPlayTime: 'Play Time', sAacSession: 'AAC Session', sLunch: 'Lunch',
   },
   'ar-SA': {
     appName: 'كيدو كير',
@@ -253,6 +281,21 @@ const T: AllTranslations = {
     reopenForLanguage: 'يرجى إغلاق التطبيق وإعادة فتحه لإكمال تغيير اللغة واتجاه النص.',
     games: 'ألعاب',
     progress: 'التقدم',
+    gScore: 'النقاط', gStreak: 'التتابع', gAccuracy: 'الدقة', gRound: 'جولة', gCorrect: 'صحيح!', gTryAgain: 'حاول مجدداً',
+    gChooseGame: 'اختر لعبة', gRounds: 'جولات', gComplete: 'اكتملت!', gPlayAgain: 'العب مجدداً', gBestStreak: 'أفضل تتابع',
+    gAnimalMatch: 'طابق الحيوان', gAnimalMatchSub: 'طابق الحيوان مع اسمه',
+    gLearnLetters: 'تعلم الحروف', gLearnLettersSub: 'اضغط الحرف الذي تراه',
+    gLearnNumbers: 'تعلم الأرقام', gLearnNumbersSub: 'اضغط الرقم الذي تراه',
+    gColors: 'الألوان', gColorsSub: 'سمِّ اللون الذي تراه',
+    gShapes: 'الأشكال', gShapesSub: 'سمِّ الشكل الذي تراه',
+    gEmotions: 'المشاعر', gEmotionsSub: 'بماذا يشعر هذا الوجه؟',
+    gGreatJob: 'أحسنت!', gYouFinished: 'أنهيت! عمل رائع!',
+    quickAccess: 'وصول سريع', todaySchedule: 'جدول اليوم', communicateNow: 'تواصل الآن', todaysSchedule: 'جدول اليوم',
+    playAGame: 'العب لعبة', parentDashboard: 'التقدم', levelDeveloping: 'المستوى: في تطور', nextUp: 'التالي',
+    starsLabel: 'نجوم', dayStreak: 'أيام متتالية', todayLabel: 'اليوم', moreStarsToLevel: 'نجوم للترقية',
+    qCommunicate: 'تواصل', qPictureTalk: 'الحديث بالصور', qActivities: 'أنشطة',
+    happeningNow: 'يحدث الآن', nextLabel: 'التالي', nowBadge: 'الآن',
+    sBreakfast: 'الفطور', sPlayTime: 'وقت اللعب', sAacSession: 'جلسة تواصل', sLunch: 'الغداء',
   },
   'ur-PK': {
     appName: 'کڈو کیئر',
@@ -619,4 +662,23 @@ export const STARTER_WORDS: Record<LanguageCode | 'default', Record<string, stri
 
 export function starterLabel(englishLabel: string, lang: LanguageCode): string {
   return STARTER_WORDS[lang]?.[englishLabel] ?? englishLabel;
+}
+
+/** Display translation for the answer words used in the Games screen. */
+const GAME_ANSWERS: Partial<Record<LanguageCode, Record<string, string>>> = {
+  'ar-SA': {
+    Frog: 'ضفدع', Dog: 'كلب', Bird: 'طائر', Cat: 'قطة', Rabbit: 'أرنب', Cow: 'بقرة', Pig: 'خنزير', Horse: 'حصان',
+    Red: 'أحمر', Orange: 'برتقالي', Yellow: 'أصفر', Green: 'أخضر', Blue: 'أزرق', Purple: 'بنفسجي', Brown: 'بني', Black: 'أسود',
+    Circle: 'دائرة', Triangle: 'مثلث', Square: 'مربع', Star: 'نجمة', Diamond: 'معيّن', Heart: 'قلب',
+    Happy: 'سعيد', Sad: 'حزين', Angry: 'غاضب', Scared: 'خائف', Sleepy: 'نعسان', Surprised: 'متفاجئ', Sick: 'مريض', Loved: 'محبوب',
+  },
+  'ur-PK': {
+    Frog: 'مینڈک', Dog: 'کتا', Bird: 'پرندہ', Cat: 'بلی', Rabbit: 'خرگوش', Cow: 'گائے', Pig: 'سور', Horse: 'گھوڑا',
+    Red: 'سرخ', Orange: 'نارنجی', Yellow: 'پیلا', Green: 'سبز', Blue: 'نیلا', Purple: 'جامنی', Brown: 'بھورا', Black: 'کالا',
+    Circle: 'دائرہ', Triangle: 'مثلث', Square: 'مربع', Star: 'ستارہ', Diamond: 'ہیرا', Heart: 'دل',
+    Happy: 'خوش', Sad: 'اداس', Angry: 'ناراض', Scared: 'خوفزدہ', Sleepy: 'نیند', Surprised: 'حیران', Sick: 'بیمار', Loved: 'محبوب',
+  },
+};
+export function gameAnswerLabel(englishAnswer: string, lang: LanguageCode): string {
+  return GAME_ANSWERS[lang]?.[englishAnswer] ?? englishAnswer;
 }
