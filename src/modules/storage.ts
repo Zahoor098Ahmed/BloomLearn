@@ -12,6 +12,10 @@ const DEFAULT_SETTINGS: AppSettings = {
   soundEnabled: true,
   reduceMotion: false,
   languageSelected: false,
+  hapticsEnabled: true,
+  speechRate: 0.9,
+  boardColumns: 3,
+  kioskMode: false,
 };
 
 export const defaultTags: ContentTag[] = ["colors", "numbers", "shapes", "animals", "music", "stories", "art", "nature"];

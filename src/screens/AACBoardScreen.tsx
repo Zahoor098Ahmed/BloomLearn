@@ -1,10 +1,13 @@
-import { useMemo, useState } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import { View, Text, Pressable, StyleSheet, ScrollView, Image } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import type { ChildProfile, TabScreen } from "../types";
+import { Ionicons } from "@expo/vector-icons";
+import type { ChildProfile, CustomCategory, CustomWord, TabScreen } from "../types";
 import { useSettings } from "../context/SettingsContext";
-import { speak } from "../modules/tts";
+import { ensureCategoriesLoaded, topLevelCategories, childCategories, getCategory } from "../modules/customCategories";
+import { playWord, playSentence, type SpokenWord } from "../modules/audio";
 import { recordWordUsage } from "../modules/storage";
+import { tapFeedback, selectFeedback } from "../modules/haptics";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import { colors, radius } from "../theme";
@@ -16,114 +19,175 @@ interface Props {
   labels: Record<TabScreen, string>;
 }
 
-type Category = "pronouns" | "verbs" | "nouns" | "describe";
-type FilterKey = "all" | Category;
-
-interface Word {
-  word: string;
+interface Chip extends SpokenWord {
+  id: string;
   emoji: string;
-  cat: Category;
+  imageUri?: string;
 }
-
-const CAT_COLOR: Record<Category, { bg: string; dot: string }> = {
-  pronouns: { bg: colors.yellow, dot: colors.yellowDeep },
-  verbs: { bg: colors.green, dot: colors.greenDeep },
-  nouns: { bg: colors.blue, dot: colors.blueDeep },
-  describe: { bg: colors.purple, dot: colors.purpleDeep },
-};
-
-const WORDS: Word[] = [
-  { word: "I", emoji: "☝️", cat: "pronouns" },
-  { word: "You", emoji: "👆", cat: "pronouns" },
-  { word: "He", emoji: "🧑", cat: "pronouns" },
-  { word: "We", emoji: "👥", cat: "pronouns" },
-  { word: "Want", emoji: "🙏", cat: "verbs" },
-  { word: "Like", emoji: "❤️", cat: "verbs" },
-  { word: "Eat", emoji: "🍽️", cat: "verbs" },
-  { word: "Play", emoji: "🎯", cat: "verbs" },
-  { word: "Go", emoji: "🚶", cat: "verbs" },
-  { word: "Drink", emoji: "🥤", cat: "nouns" },
-  { word: "Water", emoji: "💧", cat: "nouns" },
-  { word: "Food", emoji: "🍎", cat: "nouns" },
-  { word: "Happy", emoji: "😊", cat: "describe" },
-  { word: "Big", emoji: "🐘", cat: "describe" },
-  { word: "Small", emoji: "🐭", cat: "describe" },
-];
-
-const FILTERS: { key: FilterKey; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "pronouns", label: "Pronouns" },
-  { key: "verbs", label: "Verbs" },
-  { key: "nouns", label: "Nouns" },
-  { key: "describe", label: "Describe" },
-];
 
 export default function AACBoardScreen({ child, tab, onTabChange, labels }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
-  const [filter, setFilter] = useState<FilterKey>("all");
-  const [sentence, setSentence] = useState<string[]>([]);
+  const cols = Math.min(5, Math.max(2, settings.boardColumns || 3));
 
-  const visible = useMemo(() => (filter === "all" ? WORDS : WORDS.filter((w) => w.cat === filter)), [filter]);
+  const [ready, setReady] = useState(false);
+  const [path, setPath] = useState<string[]>([]); // category id stack
+  const [sentence, setSentence] = useState<Chip[]>([]);
+  const [tick, setTick] = useState(0); // re-read after edits elsewhere
 
-  function tap(word: string) {
-    speak(word, lang, settings.soundEnabled);
-    setSentence((prev) => [...prev, word]);
-    recordWordUsage(child.id, word);
+  useEffect(() => {
+    ensureCategoriesLoaded().then(() => setReady(true));
+  }, []);
+
+  const currentId = path[path.length - 1] ?? null;
+  const folders: CustomCategory[] = useMemo(
+    () => (currentId ? childCategories(currentId) : topLevelCategories()),
+    [currentId, ready, tick],
+  );
+  const current = currentId ? getCategory(currentId) : null;
+  const words: CustomWord[] = useMemo(
+    () => (current ? [...current.words].sort((a, b) => a.order - b.order) : []),
+    [current, ready, tick],
+  );
+
+  const crumbs = useMemo(() => {
+    const out: { id: string | null; name: string }[] = [{ id: null, name: "Home" }];
+    let acc: string[] = [];
+    for (const id of path) {
+      acc = [...acc, id];
+      out.push({ id, name: getCategory(id)?.name ?? "…" });
+    }
+    return out;
+  }, [path, tick]);
+
+  function speakWords(): SpokenWord[] {
+    return sentence.map((c) => ({ label: c.label, audioUri: c.audioUri, useTextToSpeech: c.useTextToSpeech }));
+  }
+
+  function tapWord(w: CustomWord) {
+    tapFeedback();
+    recordWordUsage(child.id, w.label);
+    void playWord({ label: w.phrase || w.label, audioUri: w.audioUri, useTextToSpeech: w.useTextToSpeech }, lang, settings.speechRate);
+    setSentence((prev) => [
+      ...prev,
+      { id: `${w.id}-${prev.length}`, label: w.phrase || w.label, emoji: w.emoji, imageUri: w.imageUri, audioUri: w.audioUri, useTextToSpeech: w.useTextToSpeech },
+    ]);
+  }
+
+  function openFolder(id: string) {
+    selectFeedback();
+    setPath((p) => [...p, id]);
+  }
+
+  function goCrumb(idx: number) {
+    setPath((p) => p.slice(0, idx)); // idx 0 = Home
   }
 
   function speakSentence() {
     if (sentence.length === 0) return;
-    speak(sentence.join(", "), lang, settings.soundEnabled);
+    tapFeedback();
+    void playSentence(speakWords(), lang, settings.speechRate);
   }
+
+  const tileSize = { flexBasis: `${100 / cols}%` as const };
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-        <View style={styles.header}>
-          <Text style={styles.title}>What do you want to say?</Text>
+        {/* message / sentence bar */}
+        <View style={styles.msgBar}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.msgScroll}>
+            {sentence.length === 0 ? (
+              <Text style={styles.msgPlaceholder}>Tap words to build a sentence</Text>
+            ) : (
+              sentence.map((c) => (
+                <View key={c.id} style={styles.msgChip}>
+                  {c.imageUri ? (
+                    <Image source={{ uri: c.imageUri }} style={styles.msgChipImg} />
+                  ) : (
+                    <Text style={styles.msgChipEmoji}>{c.emoji}</Text>
+                  )}
+                  <Text style={styles.msgChipText} numberOfLines={1}>
+                    {c.label}
+                  </Text>
+                </View>
+              ))
+            )}
+          </ScrollView>
+          <View style={styles.msgActions}>
+            <Pressable
+              onPress={() => setSentence((p) => p.slice(0, -1))}
+              disabled={sentence.length === 0}
+              style={[styles.msgBtn, sentence.length === 0 && styles.msgBtnOff]}
+              accessibilityLabel="Remove last word"
+            >
+              <Ionicons name="backspace-outline" size={20} color={colors.textMid} />
+            </Pressable>
+            <Pressable
+              onPress={() => setSentence([])}
+              disabled={sentence.length === 0}
+              style={[styles.msgBtn, sentence.length === 0 && styles.msgBtnOff]}
+              accessibilityLabel="Clear sentence"
+            >
+              <Ionicons name="close" size={20} color={colors.textMid} />
+            </Pressable>
+            <Pressable
+              onPress={speakSentence}
+              disabled={sentence.length === 0}
+              style={[styles.speakBtn, sentence.length === 0 && styles.msgBtnOff]}
+              accessibilityLabel="Speak sentence"
+            >
+              <Ionicons name="volume-high" size={22} color="white" />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* breadcrumb */}
+        <View style={styles.crumbRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ alignItems: "center", gap: 4 }}>
+            {crumbs.map((cr, i) => (
+              <View key={i} style={{ flexDirection: "row", alignItems: "center" }}>
+                {i > 0 && <Ionicons name="chevron-forward" size={13} color={colors.textLight} />}
+                <Pressable onPress={() => goCrumb(i)} disabled={i === crumbs.length - 1} style={styles.crumbBtn}>
+                  <Text style={[styles.crumbText, i === crumbs.length - 1 && styles.crumbActive]}>{cr.name}</Text>
+                </Pressable>
+              </View>
+            ))}
+          </ScrollView>
           <LangBadge />
         </View>
 
-        <View style={styles.inputBar}>
-          <Text style={sentence.length === 0 ? styles.placeholder : styles.sentenceText}>
-            {sentence.length === 0 ? "Tap words to build your sentence" : sentence.join(" ")}
-          </Text>
-        </View>
-
-        <View style={styles.actions}>
-          <Pressable onPress={speakSentence} disabled={sentence.length === 0} style={[styles.speakBtn, sentence.length === 0 && { opacity: 0.5 }]}>
-            <Text style={styles.speakBtnText}>🔊 Speak</Text>
-          </Pressable>
-          <Pressable onPress={() => setSentence([])} disabled={sentence.length === 0} style={[styles.clearBtn, sentence.length === 0 && { opacity: 0.5 }]}>
-            <Text style={styles.clearBtnText}>Clear</Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.filters}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}>
-            {FILTERS.map((f) => {
-              const active = filter === f.key;
-              return (
-                <Pressable key={f.key} onPress={() => setFilter(f.key)} style={[styles.pill, active && styles.pillActive]}>
-                  <Text style={[styles.pillText, active && { color: "white" }]}>{f.label}</Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-        </View>
-
+        {/* grid */}
         <ScrollView contentContainerStyle={styles.grid}>
-          {visible.map((item) => {
-            const c = CAT_COLOR[item.cat];
-            return (
-              <Pressable key={item.word} onPress={() => tap(item.word)} style={[styles.tile, { backgroundColor: c.bg }]}>
-                <Text style={{ fontSize: 30 }}>{item.emoji}</Text>
-                <Text style={styles.tileLabel}>{item.word}</Text>
-                <View style={[styles.dot, { backgroundColor: c.dot }]} />
-              </Pressable>
-            );
-          })}
+          {!ready ? null : (
+            <>
+              {folders.map((f) => (
+                <View key={f.id} style={[styles.cellWrap, tileSize]}>
+                  <Pressable onPress={() => openFolder(f.id)} style={[styles.folderTile, { backgroundColor: (f.color ?? colors.forest) + "1a", borderColor: (f.color ?? colors.forest) + "55" }]}>
+                    <Text style={styles.folderIcon}>{f.icon ?? "📁"}</Text>
+                    <Text style={styles.tileLabel} numberOfLines={2}>{f.name}</Text>
+                    <View style={styles.folderBadge}><Ionicons name="folder-open" size={11} color={f.color ?? colors.forest} /></View>
+                  </Pressable>
+                </View>
+              ))}
+              {words.map((w) => (
+                <View key={w.id} style={[styles.cellWrap, tileSize]}>
+                  <Pressable onPress={() => tapWord(w)} style={styles.wordTile}>
+                    {w.imageUri ? (
+                      <Image source={{ uri: w.imageUri }} style={styles.wordImg} resizeMode="cover" />
+                    ) : (
+                      <Text style={styles.wordEmoji}>{w.emoji}</Text>
+                    )}
+                    <Text style={styles.tileLabel} numberOfLines={2}>{w.label}</Text>
+                  </Pressable>
+                </View>
+              ))}
+              {folders.length === 0 && words.length === 0 && (
+                <Text style={styles.emptyBoard}>This folder is empty. A parent can add words in the Board editor.</Text>
+              )}
+            </>
+          )}
+          <View style={{ height: 12 }} />
         </ScrollView>
       </SafeAreaView>
       <TabBar active={tab} onChange={onTabChange} labels={labels} />
@@ -132,22 +196,67 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
 }
 
 const styles = StyleSheet.create({
-  header: { paddingHorizontal: 20, paddingTop: 12, flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  title: { fontSize: 19, fontWeight: "800", color: colors.textDark, flex: 1, marginRight: 12 },
-  inputBar: { marginHorizontal: 20, marginTop: 14, backgroundColor: colors.card, borderRadius: radius, borderWidth: 1, borderColor: colors.border, padding: 16, minHeight: 54 },
-  placeholder: { color: colors.textLight, fontSize: 14, fontStyle: "italic" },
-  sentenceText: { color: colors.textDark, fontSize: 15, fontWeight: "600" },
-  actions: { flexDirection: "row", gap: 10, paddingHorizontal: 20, marginTop: 12 },
-  speakBtn: { flex: 1, backgroundColor: colors.forest, borderRadius: radius, paddingVertical: 14, alignItems: "center" },
-  speakBtnText: { color: "white", fontWeight: "700" },
-  clearBtn: { flex: 1, backgroundColor: colors.cardMuted, borderRadius: radius, paddingVertical: 14, alignItems: "center" },
-  clearBtnText: { color: colors.textMid, fontWeight: "700" },
-  filters: { marginTop: 16 },
-  pill: { paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: colors.cardMuted },
-  pillActive: { backgroundColor: colors.forest },
-  pillText: { fontSize: 13, fontWeight: "700", color: colors.textMid },
-  grid: { padding: 20, flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  tile: { width: "30%", borderRadius: radius, paddingVertical: 18, alignItems: "center", gap: 8 },
-  tileLabel: { fontSize: 13, fontWeight: "700", color: colors.textDark },
-  dot: { width: 8, height: 8, borderRadius: 4 },
+  msgBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: colors.card,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  msgScroll: { alignItems: "center", gap: 8, paddingRight: 8, minHeight: 44 },
+  msgPlaceholder: { color: colors.textLight, fontSize: 13, fontStyle: "italic", paddingVertical: 12 },
+  msgChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colors.forestLight,
+    borderRadius: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    maxWidth: 130,
+  },
+  msgChipImg: { width: 22, height: 22, borderRadius: 5 },
+  msgChipEmoji: { fontSize: 18 },
+  msgChipText: { fontSize: 13, fontWeight: "700", color: colors.forestDark },
+  msgActions: { flexDirection: "row", alignItems: "center", gap: 6 },
+  msgBtn: { width: 38, height: 38, borderRadius: 10, backgroundColor: colors.cardMuted, alignItems: "center", justifyContent: "center" },
+  msgBtnOff: { opacity: 0.4 },
+  speakBtn: { width: 46, height: 38, borderRadius: 10, backgroundColor: colors.forest, alignItems: "center", justifyContent: "center" },
+  crumbRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 8 },
+  crumbBtn: { paddingHorizontal: 4, paddingVertical: 2 },
+  crumbText: { fontSize: 13, color: colors.blueDeep, fontWeight: "600" },
+  crumbActive: { color: colors.textMid },
+  grid: { flexDirection: "row", flexWrap: "wrap", padding: 10 },
+  cellWrap: { padding: 5 },
+  folderTile: {
+    borderRadius: radius,
+    borderWidth: 1.5,
+    paddingVertical: 18,
+    paddingHorizontal: 8,
+    alignItems: "center",
+    gap: 6,
+    minHeight: 108,
+    justifyContent: "center",
+  },
+  folderIcon: { fontSize: 30 },
+  folderBadge: { position: "absolute", top: 8, right: 8 },
+  wordTile: {
+    backgroundColor: colors.card,
+    borderRadius: radius,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
+    alignItems: "center",
+    gap: 6,
+    minHeight: 108,
+    justifyContent: "center",
+  },
+  wordEmoji: { fontSize: 34 },
+  wordImg: { width: 52, height: 52, borderRadius: 8, backgroundColor: colors.cardMuted },
+  tileLabel: { fontSize: 13, fontWeight: "700", color: colors.textDark, textAlign: "center" },
+  emptyBoard: { color: colors.textLight, fontSize: 13, textAlign: "center", padding: 30, width: "100%" },
 });

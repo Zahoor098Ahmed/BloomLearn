@@ -1,21 +1,113 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import type { CustomCategory, CustomWord } from "../types";
+import type { CustomCategory, CustomWord, TileSize } from "../types";
 
 const KEY = "kiddocare_custom_categories";
-const BACKUP_VERSION = 1;
+const BACKUP_VERSION = 2;
+
+const FOLDER_COLORS = ["#2f6d62", "#4a7fe6", "#c98a3d", "#8a6bc9", "#5c9a58", "#c96b6b"];
 
 let cache: CustomCategory[] = [];
 let loaded = false;
+
+/** Bring older records up to the current shape without recreating anything. */
+function migrate(list: CustomCategory[]): CustomCategory[] {
+  return list.map((c, i) => ({
+    ...c,
+    color: c.color ?? FOLDER_COLORS[i % FOLDER_COLORS.length],
+    icon: c.icon ?? "📁",
+    parentCategoryId: c.parentCategoryId ?? null,
+    order: typeof c.order === "number" ? c.order : i,
+    source: c.source ?? "manual",
+    words: (c.words ?? []).map((w, wi) => ({
+      ...w,
+      size: w.size ?? "md",
+      useTextToSpeech: w.useTextToSpeech ?? !w.audioUri,
+      order: typeof w.order === "number" ? w.order : wi,
+    })),
+  }));
+}
 
 export async function ensureCategoriesLoaded(): Promise<void> {
   if (loaded) return;
   try {
     const raw = await AsyncStorage.getItem(KEY);
-    cache = raw ? (JSON.parse(raw) as CustomCategory[]) : [];
+    cache = migrate(raw ? (JSON.parse(raw) as CustomCategory[]) : []);
   } catch {
     cache = [];
   }
   loaded = true;
+  if (cache.length === 0) seedStarterBoard();
+}
+
+// --- starter board -------------------------------------------------------
+
+const STARTER: { name: string; icon: string; words: [string, string][] }[] = [
+  {
+    name: "Core",
+    icon: "💬",
+    words: [
+      ["I", "☝️"], ["you", "👉"], ["want", "🙏"], ["more", "➕"], ["stop", "✋"],
+      ["go", "🚶"], ["like", "❤️"], ["help", "🆘"], ["yes", "✅"], ["no", "❌"],
+    ],
+  },
+  {
+    name: "Food",
+    icon: "🍎",
+    words: [
+      ["water", "💧"], ["milk", "🥛"], ["juice", "🧃"], ["apple", "🍎"], ["banana", "🍌"],
+      ["bread", "🍞"], ["cookie", "🍪"], ["rice", "🍚"], ["chicken", "🍗"], ["snack", "🥨"],
+    ],
+  },
+  {
+    name: "Feelings",
+    icon: "🙂",
+    words: [
+      ["happy", "😀"], ["sad", "😢"], ["angry", "😠"], ["scared", "😨"], ["tired", "😴"],
+      ["hurt", "🤕"], ["sick", "🤢"], ["excited", "🤩"], ["calm", "😌"], ["love", "🥰"],
+    ],
+  },
+  {
+    name: "People",
+    icon: "👪",
+    words: [
+      ["mom", "👩"], ["dad", "👨"], ["me", "🧒"], ["teacher", "🧑‍🏫"], ["friend", "🧑‍🤝‍🧑"],
+      ["baby", "👶"], ["doctor", "🧑‍⚕️"], ["grandma", "👵"], ["grandpa", "👴"], ["sister", "👧"],
+    ],
+  },
+  {
+    name: "Actions",
+    icon: "🏃",
+    words: [
+      ["eat", "🍽️"], ["drink", "🥤"], ["play", "🧩"], ["sleep", "🛏️"], ["read", "📖"],
+      ["walk", "🚶"], ["run", "🏃"], ["sit", "🪑"], ["wash", "🧼"], ["open", "🚪"],
+    ],
+  },
+];
+
+function seedStarterBoard() {
+  const now = Date.now();
+  cache = STARTER.map((s, i) => ({
+    id: uid("cat"),
+    name: s.name,
+    createdAt: now,
+    updatedAt: now,
+    source: "seed",
+    grouping: "none",
+    color: FOLDER_COLORS[i % FOLDER_COLORS.length],
+    icon: s.icon,
+    parentCategoryId: null,
+    order: i,
+    words: s.words.map(([label, emoji], wi) => ({
+      id: uid("w"),
+      label,
+      phrase: label,
+      emoji,
+      useTextToSpeech: true,
+      size: "md" as TileSize,
+      order: wi,
+    })),
+  }));
+  persist();
 }
 
 function persist(): void {
@@ -50,6 +142,7 @@ export function createCategory(input: {
 }): CustomCategory {
   const now = Date.now();
   const sorted = [...input.words].sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+  const topCount = cache.filter((c) => !c.parentCategoryId).length;
   const cat: CustomCategory = {
     id: uid("cat"),
     name: input.name.trim() || "Untitled",
@@ -57,12 +150,18 @@ export function createCategory(input: {
     updatedAt: now,
     source: input.source,
     grouping: sorted.length > 12 ? "alpha-range" : "none",
+    color: FOLDER_COLORS[topCount % FOLDER_COLORS.length],
+    icon: "📁",
+    parentCategoryId: null,
+    order: topCount,
     words: sorted.map((w, i) => ({
       id: uid("w"),
       label: w.label.trim(),
       phrase: w.phrase.trim() || w.label.trim(),
       emoji: w.emoji || "🔹",
       imageUri: w.imageUri,
+      useTextToSpeech: true,
+      size: "md" as TileSize,
       order: i,
     })),
   };
@@ -101,7 +200,7 @@ export function setGrouping(id: string, grouping: CustomCategory["grouping"]) {
 export function updateWord(
   catId: string,
   wordId: string,
-  patch: Partial<Pick<CustomWord, "label" | "phrase" | "emoji" | "imageUri">>,
+  patch: Partial<Pick<CustomWord, "label" | "phrase" | "emoji" | "imageUri" | "audioUri" | "useTextToSpeech" | "size">>,
 ) {
   return mutate(catId, (c) => {
     const w = c.words.find((x) => x.id === wordId);
@@ -115,16 +214,97 @@ export function removeWord(catId: string, wordId: string) {
   });
 }
 
-export function addWord(catId: string, word: { label: string; phrase: string; emoji: string }) {
+export function addWord(
+  catId: string,
+  word: { label: string; phrase?: string; emoji?: string; imageUri?: string; audioUri?: string; useTextToSpeech?: boolean; size?: TileSize },
+) {
   return mutate(catId, (c) => {
     c.words.push({
       id: uid("w"),
       label: word.label.trim(),
-      phrase: word.phrase.trim() || word.label.trim(),
+      phrase: (word.phrase ?? word.label).trim() || word.label.trim(),
       emoji: word.emoji || "🔹",
+      imageUri: word.imageUri,
+      audioUri: word.audioUri,
+      useTextToSpeech: word.useTextToSpeech ?? !word.audioUri,
+      size: word.size ?? "md",
       order: c.words.length,
     });
   });
+}
+
+// --- board helpers (folders) -------------------------------------------
+
+function byOrder(a: CustomCategory, b: CustomCategory) {
+  return (a.order ?? 0) - (b.order ?? 0);
+}
+
+export function topLevelCategories(): CustomCategory[] {
+  return cache.filter((c) => !c.parentCategoryId).sort(byOrder);
+}
+
+export function childCategories(parentId: string): CustomCategory[] {
+  return cache.filter((c) => c.parentCategoryId === parentId).sort(byOrder);
+}
+
+export function createBlankCategory(input: {
+  name: string;
+  color?: string;
+  icon?: string;
+  parentCategoryId?: string | null;
+}): CustomCategory {
+  const now = Date.now();
+  const siblings = cache.filter((c) => (c.parentCategoryId ?? null) === (input.parentCategoryId ?? null));
+  const cat: CustomCategory = {
+    id: uid("cat"),
+    name: input.name.trim() || "New Category",
+    createdAt: now,
+    updatedAt: now,
+    source: "manual",
+    grouping: "none",
+    color: input.color ?? FOLDER_COLORS[siblings.length % FOLDER_COLORS.length],
+    icon: input.icon ?? "📁",
+    parentCategoryId: input.parentCategoryId ?? null,
+    order: siblings.length,
+    words: [],
+  };
+  cache = [...cache, cat];
+  persist();
+  return cat;
+}
+
+export function updateCategoryMeta(id: string, patch: Partial<Pick<CustomCategory, "name" | "color" | "icon">>) {
+  return mutate(id, (c) => Object.assign(c, patch));
+}
+
+/** Delete a category and any sub-folders under it. */
+export function deleteCategoryDeep(id: string) {
+  const ids = new Set<string>([id]);
+  let grew = true;
+  while (grew) {
+    grew = false;
+    for (const c of cache) {
+      if (c.parentCategoryId && ids.has(c.parentCategoryId) && !ids.has(c.id)) {
+        ids.add(c.id);
+        grew = true;
+      }
+    }
+  }
+  cache = cache.filter((c) => !ids.has(c.id));
+  persist();
+}
+
+export function reorderCategory(id: string, dir: "up" | "down") {
+  const cat = cache.find((c) => c.id === id);
+  if (!cat) return;
+  const sibs = cache.filter((c) => (c.parentCategoryId ?? null) === (cat.parentCategoryId ?? null)).sort(byOrder);
+  const idx = sibs.findIndex((c) => c.id === id);
+  const swap = dir === "up" ? idx - 1 : idx + 1;
+  if (swap < 0 || swap >= sibs.length) return;
+  [sibs[idx], sibs[swap]] = [sibs[swap], sibs[idx]];
+  sibs.forEach((c, i) => (c.order = i));
+  cache = [...cache];
+  persist();
 }
 
 /** One-click A–Z sort for any category (existing or new). */

@@ -1,10 +1,13 @@
-import { useState } from "react";
-import { View, ActivityIndicator } from "react-native";
+import { useEffect, useState } from "react";
+import { View, ActivityIndicator, BackHandler } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
+import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { SettingsProvider, useSettings } from "./src/context/SettingsContext";
+import { setHapticsEnabled } from "./src/modules/haptics";
 import type { AppScreen, ChildProfile, TabScreen } from "./src/types";
 import { colors } from "./src/theme";
+import PinGate from "./src/components/PinGate";
 
 import LandingScreen from "./src/screens/LandingScreen";
 import FaceScanScreen from "./src/screens/FaceScanScreen";
@@ -39,10 +42,32 @@ function isTabScreen(s: AppScreen): s is TabScreen {
   return (TAB_SCREENS as string[]).includes(s);
 }
 
+const ADMIN_SCREENS: AppScreen[] = ["accessibility", "my-categories", "category-builder", "doctor-panel", "parent-hub"];
+
 function AppInner() {
-  const { ready } = useSettings();
+  const { ready, settings } = useSettings();
   const [screen, setScreen] = useState<AppScreen>("landing");
   const [currentChild, setCurrentChild] = useState<ChildProfile | null>(null);
+
+  // keep the haptics module in sync with the setting
+  useEffect(() => {
+    setHapticsEnabled(settings.hapticsEnabled);
+  }, [settings.hapticsEnabled]);
+
+  // kiosk mode: block the Android back button and keep the screen awake while
+  // a child is on the board. Exiting kiosk is done from Settings (passcode-gated).
+  useEffect(() => {
+    const childFacing = currentChild != null && !ADMIN_SCREENS.includes(screen) && screen !== "landing" && screen !== "face-scan";
+    const locked = settings.kioskMode && childFacing;
+    if (locked) {
+      activateKeepAwakeAsync().catch(() => {});
+      const sub = BackHandler.addEventListener("hardwareBackPress", () => true);
+      return () => {
+        sub.remove();
+        deactivateKeepAwake().catch(() => {});
+      };
+    }
+  }, [settings.kioskMode, currentChild, screen]);
 
   if (!ready) {
     return (
@@ -125,12 +150,22 @@ function AppInner() {
     );
   }
 
+  const adminBack = () => go(currentChild ? "more" : "parent-setup");
+
   if (screen === "parent-hub") {
-    return <ParentHubScreen onBack={() => go(currentChild ? "more" : "parent-setup")} onAddChild={() => go("enroll-child")} />;
+    return (
+      <PinGate title="Parent Hub" onCancel={adminBack}>
+        <ParentHubScreen onBack={adminBack} onAddChild={() => go("enroll-child")} />
+      </PinGate>
+    );
   }
 
   if (screen === "doctor-panel") {
-    return <DoctorPanelScreen onBack={() => go(currentChild ? "more" : "parent-setup")} />;
+    return (
+      <PinGate title="Doctor Panel" onCancel={adminBack}>
+        <DoctorPanelScreen onBack={adminBack} />
+      </PinGate>
+    );
   }
 
   if (screen === "rewards" && currentChild) {
@@ -142,15 +177,27 @@ function AppInner() {
   }
 
   if (screen === "accessibility") {
-    return <AccessibilityScreen onBack={() => go(currentChild ? "more" : "parent-setup")} />;
+    return (
+      <PinGate title="Settings" onCancel={adminBack}>
+        <AccessibilityScreen onBack={adminBack} />
+      </PinGate>
+    );
   }
 
   if (screen === "my-categories") {
-    return <MyCategoriesScreen onBack={() => go(currentChild ? "more" : "parent-setup")} onCreate={() => go("category-builder")} />;
+    return (
+      <PinGate title="Board editor" onCancel={adminBack}>
+        <MyCategoriesScreen onBack={adminBack} onCreate={() => go("category-builder")} />
+      </PinGate>
+    );
   }
 
   if (screen === "category-builder") {
-    return <CategoryBuilderScreen onBack={() => go("my-categories")} onSaved={() => go("my-categories")} />;
+    return (
+      <PinGate title="Board editor" onCancel={() => go("my-categories")}>
+        <CategoryBuilderScreen onBack={() => go("my-categories")} onSaved={() => go("my-categories")} />
+      </PinGate>
+    );
   }
 
   if (screen === "sentence-picture") {

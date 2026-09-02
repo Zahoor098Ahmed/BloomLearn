@@ -81,6 +81,11 @@ export interface AppSettings {
   soundEnabled: boolean;
   reduceMotion: boolean;
   languageSelected: boolean;
+  /** AAC additions */
+  hapticsEnabled: boolean;
+  speechRate: number;      // 0.5 (slow) .. 1.0 (normal)
+  boardColumns: number;    // 2 .. 5 tiles per row
+  kioskMode: boolean;      // best-effort in-app lock
 }
 
 export type AppScreen =
@@ -121,12 +126,18 @@ export interface ContentItem {
 // screens/modules. Nothing here touches existing data structures.
 // ---------------------------------------------------------------------------
 
+export type TileSize = 'sm' | 'md' | 'lg';
+
 export interface CustomWord {
   id: string;
   label: string;
   phrase: string;
   emoji: string;
   imageUri?: string;
+  /** Recorded voice clip (local file). When present and useTextToSpeech is not true, it is played instead of TTS. */
+  audioUri?: string;
+  useTextToSpeech?: boolean;
+  size?: TileSize;
   order: number;
 }
 
@@ -135,8 +146,14 @@ export interface CustomCategory {
   name: string;
   createdAt: number;
   updatedAt: number;
-  source: 'voice' | 'list' | 'generated';
+  source: 'voice' | 'list' | 'generated' | 'manual' | 'seed';
   grouping: 'none' | 'alpha-range';
+  /** Folder colour + icon shown on the board. */
+  color?: string;
+  icon?: string;
+  /** null / undefined = a top-level folder. Set = a sub-folder of that category. */
+  parentCategoryId?: string | null;
+  order?: number;
   words: CustomWord[];
 }
 
