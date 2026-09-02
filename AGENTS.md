@@ -2,10 +2,14 @@
 
 A React Native app built with Expo, TypeScript, and function components. Converted from an earlier Figma Make React + Vite web scaffold — same screens and logic, rebuilt with React Native primitives (`View`/`Text`/`Pressable`/`StyleSheet`) instead of DOM/Tailwind.
 
+## Repo layout
+
+The app lives in **`frontend/`**. Run every command (`npm`, `npx expo`, `npx eas-cli`, `tsc`) from inside `frontend/`. All paths below are relative to `frontend/`. A `backend/` folder is planned but does not exist yet.
+
 ## Development
 
-- `npm install` then `npm start` (or `npm run android` / `npm run ios` / `npm run web`) to launch the Expo dev server.
-- Requires the Expo Go app (or a simulator) to preview.
+- `cd frontend`, then `npm install` and `npm start` (or `npm run android` / `npm run ios` / `npm run web`) to launch the Expo dev server.
+- Requires the Expo Go app (or a dev build) to preview. Native modules (audio, haptics, secure-store, image-picker) only work in a dev build / the EAS APK, not Expo Go.
 
 ## Project Structure
 

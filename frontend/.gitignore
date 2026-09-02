@@ -1,21 +1,24 @@
-# macOS / editors
-.DS_Store
-*.tsbuildinfo
-
-# dependencies (also covered per-package)
+# dependencies
 node_modules/
 
-# Expo / Metro (any level)
+# Expo / Metro
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 .metro-health-check*
 
-# debug logs
+# Native build output
+/ios
+/android
+
+# debug
 npm-debug.*
 yarn-debug.*
 yarn-error.*
 
 # local env files
 .env*.local
+
+# typescript
+*.tsbuildinfo
