@@ -18,6 +18,7 @@ import {
   type ImageSource,
 } from "../modules/imageSearch";
 import { topLevelCategories, createBlankCategory, addWord } from "../modules/customCategories";
+import { resolveEmoji } from "../modules/wordImage";
 import { colors, radius } from "../theme";
 
 interface Props {
@@ -72,7 +73,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
   function finishImage(uri: string | undefined) {
     setImageUri(uri);
     if (presetCategoryId) {
-      addWord(presetCategoryId, { label: word.trim(), emoji: "🗣️", imageUri: uri, useTextToSpeech: true, size: "md" });
+      addWord(presetCategoryId, { label: word.trim(), emoji: resolveEmoji(word.trim()), imageUri: uri, useTextToSpeech: true, size: "md" });
       speak(word.trim(), settings.language, settings.soundEnabled);
       onSaved();
       setStep("done");
@@ -170,7 +171,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
 
   // --- step 4: category + save ---
   function saveToCategory(catId: string) {
-    addWord(catId, { label: word.trim(), emoji: "🗣️", imageUri, useTextToSpeech: true, size: "md" });
+    addWord(catId, { label: word.trim(), emoji: resolveEmoji(word.trim()), imageUri, useTextToSpeech: true, size: "md" });
     speak(word.trim(), settings.language, settings.soundEnabled);
     onSaved();
     setStep("done");
@@ -313,8 +314,8 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
                         <Text style={styles.fallbackText}>Gallery</Text>
                       </Pressable>
                       <Pressable onPress={() => finishImage(undefined)} style={styles.fallbackBtn}>
-                        <Ionicons name="happy" size={16} color={colors.forestDark} />
-                        <Text style={styles.fallbackText}>No pic</Text>
+                        <Text style={{ fontSize: 15 }}>{resolveEmoji(word.trim())}</Text>
+                        <Text style={styles.fallbackText}>Use symbol</Text>
                       </Pressable>
                     </View>
                   </>
