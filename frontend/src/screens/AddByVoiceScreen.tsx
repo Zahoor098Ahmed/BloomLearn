@@ -24,12 +24,16 @@ interface Props {
   visible: boolean;
   onClose: () => void;
   onSaved: () => void;
+  /** When set, the new word is added straight to this folder (skips the folder picker). */
+  presetCategoryId?: string | null;
+  /** Child-facing wording (launched from the Speak board, not the parent editor). */
+  childMode?: boolean;
 }
 
 type Step = "speak" | "confirm" | "image" | "category" | "done";
 const CAT_ICONS = ["📁", "💬", "🍎", "🙂", "👪", "🏃", "🎨", "🧩", "🚗", "🐾", "🏫", "🛏️"];
 
-export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
+export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCategoryId, childMode }: Props) {
   const { settings } = useSettings();
   const langHint = (settings.language || "en-US").split("-")[0];
 
@@ -64,6 +68,19 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
     setCats(topLevelCategories());
   }
 
+  /** After a picture is chosen: save straight away if a folder is preset, else pick one. */
+  function finishImage(uri: string | undefined) {
+    setImageUri(uri);
+    if (presetCategoryId) {
+      addWord(presetCategoryId, { label: word.trim(), emoji: "🗣️", imageUri: uri, useTextToSpeech: true, size: "md" });
+      speak(word.trim(), settings.language, settings.soundEnabled);
+      onSaved();
+      setStep("done");
+    } else {
+      setStep("category");
+    }
+  }
+
   async function makeAiImage(force = false) {
     setImgError(null);
     setThinking("Creating a picture…");
@@ -78,32 +95,30 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
     setThinking("Saving picture…");
     const saved = await saveGeneratedImage(aiPreview, `voice_${Date.now()}`);
     setThinking(null);
-    if (saved) {
-      setImageUri(saved);
-      setStep("category");
-    } else Alert.alert("Could not save that picture.");
+    if (saved) finishImage(saved);
+    else Alert.alert("Could not save that picture.");
   }
 
   // --- step 1: speak ---
   async function toggleMic() {
     if (recording) {
       setRecording(false);
-      setThinking("Listening…");
       const uri = await stopRecordingTemp();
-      if (!uri) {
-        setThinking(null);
-        return Alert.alert("Nothing recorded", "Try again.");
+      // No speech service yet (demo) — go to the confirm step so the presenter
+      // can dictate/type the word with the keyboard mic.
+      if (!isAiConfigured() || !uri) {
+        setStep("confirm");
+        return;
       }
+      setThinking("Listening…");
       const res = await transcribeAudio(uri, langHint);
       setThinking(null);
       if (res.text) {
         setWord(res.text);
         setStep("confirm");
       } else {
-        Alert.alert("Couldn't hear the word", res.error ?? "Try again, or type it in the next step.", [
-          { text: "Type it", onPress: () => { setWord(""); setStep("confirm"); } },
-          { text: "OK" },
-        ]);
+        setWord("");
+        setStep("confirm");
       }
       return;
     }
@@ -127,10 +142,8 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
     setThinking("Saving picture…");
     const saved = await downloadTileImage(h.full, `voice_${Date.now()}`);
     setThinking(null);
-    if (saved) {
-      setImageUri(saved);
-      setStep("category");
-    } else Alert.alert("Could not download that picture. Try another.");
+    if (saved) finishImage(saved);
+    else Alert.alert("Could not download that picture. Try another.");
   }
 
   async function useCamera() {
@@ -141,7 +154,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
     setThinking("Saving photo…");
     const saved = await saveLocalTileImage(res.assets[0].uri, `voice_${Date.now()}`);
     setThinking(null);
-    if (saved) { setImageUri(saved); setStep("category"); }
+    if (saved) finishImage(saved);
   }
 
   async function useGallery() {
@@ -152,7 +165,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
     setThinking("Saving picture…");
     const saved = await saveLocalTileImage(res.assets[0].uri, `voice_${Date.now()}`);
     setThinking(null);
-    if (saved) { setImageUri(saved); setStep("category"); }
+    if (saved) finishImage(saved);
   }
 
   // --- step 4: category + save ---
@@ -169,7 +182,8 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
     saveToCategory(c.id);
   }
 
-  const stepNum = { speak: 1, confirm: 2, image: 3, category: 4, done: 4 }[step];
+  const totalSteps = presetCategoryId ? 3 : 4;
+  const stepNum = { speak: 1, confirm: 2, image: 3, category: 4, done: totalSteps }[step];
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -180,8 +194,8 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
               <Ionicons name="close" size={20} color="white" />
             </Pressable>
             <View style={{ flex: 1 }}>
-              <Text style={styles.htitle}>Add by Voice</Text>
-              <Text style={styles.hsub}>Step {stepNum} of 4 · {step === "speak" ? "Speak" : step === "confirm" ? "Check the word" : step === "image" ? "Pick a picture" : "Pick a folder"}</Text>
+              <Text style={styles.htitle}>{childMode ? "Make a Word" : "Add by Voice"}</Text>
+              <Text style={styles.hsub}>Step {stepNum} of {totalSteps} · {step === "speak" ? "Speak" : step === "confirm" ? "Check the word" : step === "image" ? "Pick a picture" : "Pick a folder"}</Text>
             </View>
             {step !== "speak" && step !== "done" && (
               <Pressable onPress={() => setStep(step === "confirm" ? "speak" : step === "image" ? "confirm" : "image")} style={styles.hbtn}>
@@ -298,7 +312,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
                         <Ionicons name="images" size={16} color={colors.forestDark} />
                         <Text style={styles.fallbackText}>Gallery</Text>
                       </Pressable>
-                      <Pressable onPress={() => { setImageUri(undefined); setStep("category"); }} style={styles.fallbackBtn}>
+                      <Pressable onPress={() => finishImage(undefined)} style={styles.fallbackBtn}>
                         <Ionicons name="happy" size={16} color={colors.forestDark} />
                         <Text style={styles.fallbackText}>No pic</Text>
                       </Pressable>

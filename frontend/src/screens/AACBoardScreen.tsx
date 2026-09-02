@@ -4,12 +4,19 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { ChildProfile, CustomCategory, CustomWord, TabScreen } from "../types";
 import { useSettings } from "../context/SettingsContext";
-import { ensureCategoriesLoaded, topLevelCategories, childCategories, getCategory } from "../modules/customCategories";
+import {
+  ensureCategoriesLoaded,
+  topLevelCategories,
+  childCategories,
+  getCategory,
+  createBlankCategory,
+} from "../modules/customCategories";
 import { playWord, playSentence, type SpokenWord } from "../modules/audio";
 import { recordWordUsage } from "../modules/storage";
 import { tapFeedback, selectFeedback } from "../modules/haptics";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
+import AddByVoiceScreen from "./AddByVoiceScreen";
 import { colors } from "../theme";
 
 interface Props {
@@ -34,6 +41,8 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
   const [path, setPath] = useState<string[]>([]); // category id stack
   const [sentence, setSentence] = useState<Chip[]>([]);
   const [tick, setTick] = useState(0); // re-read after edits elsewhere
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [voiceTarget, setVoiceTarget] = useState<string | null>(null);
 
   useEffect(() => {
     ensureCategoriesLoaded().then(() => setReady(true));
@@ -62,6 +71,20 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
 
   function speakWords(): SpokenWord[] {
     return sentence.map((c) => ({ label: c.label, audioUri: c.audioUri, useTextToSpeech: c.useTextToSpeech }));
+  }
+
+  /** Child taps "Make a word": add straight into the open folder, or a "My Words" folder. */
+  function startVoiceAdd() {
+    selectFeedback();
+    let target = currentId;
+    if (!target) {
+      const existing = topLevelCategories().find((c) => c.name.toLowerCase() === "my words");
+      const folder = existing ?? createBlankCategory({ name: "My Words", icon: "🗣️" });
+      target = folder.id;
+      setPath([folder.id]);
+    }
+    setVoiceTarget(target);
+    setVoiceOpen(true);
   }
 
   function tapWord(w: CustomWord) {
@@ -154,6 +177,10 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
               </View>
             ))}
           </ScrollView>
+          <Pressable onPress={startVoiceAdd} style={styles.makeWordBtn} accessibilityLabel="Make a new word by speaking">
+            <Ionicons name="mic" size={16} color="white" />
+            <Text style={styles.makeWordText}>Make a word</Text>
+          </Pressable>
           <LangBadge />
         </View>
 
@@ -199,6 +226,14 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
         </ScrollView>
       </SafeAreaView>
       <TabBar active={tab} onChange={onTabChange} labels={labels} />
+
+      <AddByVoiceScreen
+        visible={voiceOpen}
+        presetCategoryId={voiceTarget}
+        childMode
+        onClose={() => setVoiceOpen(false)}
+        onSaved={() => setTick((t) => t + 1)}
+      />
     </View>
   );
 }
@@ -234,6 +269,8 @@ const styles = StyleSheet.create({
   msgBtnOff: { opacity: 0.4 },
   speakBtn: { width: 46, height: 38, borderRadius: 10, backgroundColor: colors.forest, alignItems: "center", justifyContent: "center" },
   crumbRow: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingVertical: 8 },
+  makeWordBtn: { flexDirection: "row", alignItems: "center", gap: 5, backgroundColor: colors.forest, borderRadius: 16, paddingHorizontal: 12, paddingVertical: 7 },
+  makeWordText: { color: "white", fontWeight: "800", fontSize: 12 },
   crumbBtn: { paddingHorizontal: 4, paddingVertical: 2 },
   crumbText: { fontSize: 13, color: colors.blueDeep, fontWeight: "600" },
   crumbActive: { color: colors.textMid },
