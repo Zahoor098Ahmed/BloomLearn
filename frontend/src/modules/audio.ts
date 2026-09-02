@@ -61,6 +61,21 @@ export async function startRecording(): Promise<boolean> {
   }
 }
 
+/** Stop recording and return the temporary file uri as-is (for transcription). */
+export async function stopRecordingTemp(): Promise<string | null> {
+  const rec = recorder;
+  if (!rec) return null;
+  try {
+    await rec.stop();
+    recorder = null;
+    await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
+    return rec.uri ?? null;
+  } catch {
+    recorder = null;
+    return null;
+  }
+}
+
 /** Stop recording and move the clip into permanent storage. Returns its uri. */
 export async function stopRecording(wordId: string): Promise<string | null> {
   const rec = recorder;

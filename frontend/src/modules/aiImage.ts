@@ -17,7 +17,7 @@ const KEY_STORE = "kiddocare_openai_key";
 const IMG_STORE = "kiddocare_ai_image_cache";
 
 /** Optional: point this at your own backend so the key never ships in the app. */
-export const AI_PROXY_URL = "";
+export const AI_PROXY_URL: string = "";
 
 const ENV_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? "";
 
@@ -64,8 +64,52 @@ function activeKey(): string {
   return (inMemoryKey || ENV_KEY || "").trim();
 }
 
+/** The OpenAI key in use (shared by image generation and speech-to-text). */
+export function getOpenAiKey(): string {
+  return activeKey();
+}
+
 export function isAiConfigured(): boolean {
   return !!AI_PROXY_URL || !!activeKey();
+}
+
+export interface TranscriptResult {
+  text?: string;
+  error?: string;
+}
+
+/**
+ * Speech-to-text via OpenAI Whisper. Records are made with expo-audio (already
+ * a working native dep); this is a plain multipart POST — no extra native code.
+ */
+export async function transcribeAudio(uri: string, langHint?: string): Promise<TranscriptResult> {
+  if (!isAiConfigured()) {
+    return { error: "Voice typing needs an OpenAI key. Add one in Settings, or type the word instead." };
+  }
+  try {
+    const form = new FormData();
+    form.append("file", { uri, name: "speech.m4a", type: "audio/m4a" } as unknown as Blob);
+    form.append("model", "whisper-1");
+    if (langHint) form.append("language", langHint);
+    form.append("prompt", "A single short everyday word for a picture card, e.g. juice, apple, happy.");
+
+    const endpoint = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/audio/transcriptions` : "https://api.openai.com/v1/audio/transcriptions";
+    const headers: Record<string, string> = {};
+    if (!AI_PROXY_URL) headers.Authorization = `Bearer ${activeKey()}`;
+
+    const res = await fetch(endpoint, { method: "POST", headers, body: form });
+    if (!res.ok) {
+      if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
+      if (res.status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
+      return { error: `Speech service error (${res.status}).` };
+    }
+    const json = (await res.json()) as { text?: string };
+    const text = (json.text ?? "").trim().replace(/[.。!?]+$/, "");
+    if (!text) return { error: "Didn't catch that — try again or type the word." };
+    return { text };
+  } catch {
+    return { error: "Could not reach the speech service. Check the internet connection." };
+  }
 }
 
 function promptFor(sentence: string): string {

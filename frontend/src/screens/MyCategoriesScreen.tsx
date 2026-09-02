@@ -23,6 +23,7 @@ import {
   type MoveKind,
 } from "../modules/customCategories";
 import WordEditor from "../components/WordEditor";
+import AddByVoiceScreen from "./AddByVoiceScreen";
 import { colors, radius } from "../theme";
 
 const CAT_ICONS = ["📁", "💬", "🍎", "🙂", "👪", "🏃", "🎨", "🧩", "🚗", "🐾", "🏫", "🛏️"];
@@ -44,6 +45,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
   const [metaOpen, setMetaOpen] = useState(false);
   const [metaName, setMetaName] = useState("");
   const [metaIcon, setMetaIcon] = useState("📁");
+  const [voiceOpen, setVoiceOpen] = useState(false);
   const [tick, setTick] = useState(0);
 
   const refresh = () => {
@@ -266,6 +268,11 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
         </View>
 
         <ScrollView contentContainerStyle={styles.body}>
+          <Pressable onPress={() => setVoiceOpen(true)} style={[styles.primaryBtn, { backgroundColor: colors.forest }]}>
+            <Ionicons name="mic" size={16} color="white" />
+            <Text style={styles.primaryBtnText}>Add word by voice</Text>
+          </Pressable>
+
           <View style={styles.ioRow}>
             <Pressable
               onPress={() => {
@@ -273,7 +280,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
                 refresh();
                 setOpenId(c.id);
               }}
-              style={styles.primaryBtn}
+              style={[styles.primaryBtn, { backgroundColor: colors.blueDeep }]}
             >
               <Ionicons name="folder-open" size={16} color="white" />
               <Text style={styles.primaryBtnText}>New folder</Text>
@@ -323,6 +330,8 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
           ))}
         </ScrollView>
       </SafeAreaView>
+
+      <AddByVoiceScreen visible={voiceOpen} onClose={() => setVoiceOpen(false)} onSaved={refresh} />
 
       <Modal visible={importOpen} transparent animationType="fade" onRequestClose={() => setImportOpen(false)}>
         <View style={styles.modalBackdrop}>
