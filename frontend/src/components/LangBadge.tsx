@@ -1,6 +1,7 @@
 import { Pressable, Text, StyleSheet, Alert } from "react-native";
 import { useSettings } from "../context/SettingsContext";
 import { applyLanguageDirection, t } from "../modules/i18n";
+import { retranslateSeedBoard, setSeedLanguage } from "../modules/customCategories";
 import { colors } from "../theme";
 
 interface LangBadgeProps {
@@ -14,6 +15,8 @@ export default function LangBadge({ dark }: LangBadgeProps) {
   function toggle() {
     const nextLang = isEnglish ? "ar-SA" : "en-US";
     update({ language: nextLang });
+    setSeedLanguage(nextLang);
+    retranslateSeedBoard(nextLang);
     const flipped = applyLanguageDirection(nextLang);
     if (flipped) Alert.alert(nextLang === "ar-SA" ? "العربية" : "English", t("reopenForLanguage", nextLang));
   }

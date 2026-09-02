@@ -70,11 +70,11 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
   const milestonesHit = milestones.filter((m) => m.done).length;
 
   const tips: string[] = [];
-  if (wordsThisWeek < 10) tips.push("Try a short AAC session each day to build vocabulary momentum.");
-  if (avgAdherence < 60) tips.push("Routine adherence is low — review the visual schedule together each morning.");
-  if (uniqueWords > 0 && uniqueWords < 8) tips.push("Introduce 2–3 new words this week (feelings or question words work well).");
-  if (usage.gameStreak === 0) tips.push("A quick daily game keeps learning consistent and builds a streak.");
-  if (tips.length === 0) tips.push("Great consistency this week — keep the current routine going.");
+  if (wordsThisWeek < 10) tips.push(tt("pTip1"));
+  if (avgAdherence < 60) tips.push(tt("pTip2"));
+  if (uniqueWords > 0 && uniqueWords < 8) tips.push(tt("pTip3"));
+  if (usage.gameStreak === 0) tips.push(tt("pTip4"));
+  if (tips.length === 0) tips.push(tt("pTip0"));
 
   function toggleFaceConsent(value: boolean) {
     if (!value) {
@@ -210,7 +210,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
               </View>
 
               <View style={styles.card}>
-                <Text style={styles.cardTitle}>Daily AAC usage (words)</Text>
+                <Text style={styles.cardTitle}>{tt("pDailyUsage")}</Text>
                 <View style={styles.chartRow}>
                   {wordsChart.map((v, i) => {
                     const isMax = v === maxDayWords && v > 0;
@@ -264,16 +264,16 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
 
           {subTab === "vocabulary" && (
             <View style={styles.card}>
-              <Text style={styles.cardTitle}>Most used words</Text>
+              <Text style={styles.cardTitle}>{tt("pMostUsed")}</Text>
               {topWords.length === 0 ? (
-                <Text style={styles.emptyText}>No words spoken yet — usage will appear here once {child.name} starts using the Speak board.</Text>
+                <Text style={styles.emptyText}>{tt("pNoWordsYet")}</Text>
               ) : (
                 <View style={{ gap: 16, marginTop: 8 }}>
                   {topWords.map(([word, count]) => (
                     <View key={word} style={{ gap: 6 }}>
                       <View style={styles.wordRow}>
                         <Text style={styles.wordLabel}>{word}</Text>
-                        <Text style={styles.wordCount}>{count} times</Text>
+                        <Text style={styles.wordCount}>{count} {tt("pTimes")}</Text>
                       </View>
                       <View style={styles.wordTrack}>
                         <View style={[styles.wordFill, { width: `${(count / maxWordCount) * 100}%` }]} />
@@ -288,7 +288,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
           {subTab === "schedule" && (
             <>
               <View style={styles.card}>
-                <Text style={styles.cardTitle}>Weekly adherence</Text>
+                <Text style={styles.cardTitle}>{tt("pWeeklyAdherence")}</Text>
                 <View style={styles.chartRow}>
                   {scheduleDays.map((v, i) => (
                     <View key={i} style={styles.chartCol}>
@@ -309,7 +309,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
 
               <Pressable onPress={() => Alert.alert("IEP report exported")} style={styles.exportBtn}>
                 <Ionicons name="document-text" size={16} color="white" />
-                <Text style={styles.exportText}>Export IEP Report</Text>
+                <Text style={styles.exportText}>{tt("pExportIep")}</Text>
               </Pressable>
             </>
           )}
@@ -317,16 +317,16 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
           {subTab === "privacy" && (
             <>
               <View style={styles.privacyInfo}>
-                <Text style={styles.privacyInfoTitle}>Data stored on this device</Text>
-                <Text style={styles.privacyInfoLine}>✓ Math embedding only — no photos</Text>
-                <Text style={styles.privacyInfoLine}>✓ On-device only — never transmitted</Text>
+                <Text style={styles.privacyInfoTitle}>{tt("pDataOnDevice")}</Text>
+                <Text style={styles.privacyInfoLine}>{tt("pMathOnly")}</Text>
+                <Text style={styles.privacyInfoLine}>{tt("pOnDeviceOnly")}</Text>
               </View>
 
               <View style={styles.toggleRow}>
                 <View>
-                  <Text style={styles.toggleLabel}>Face recognition</Text>
+                  <Text style={styles.toggleLabel}>{tt("pFaceRecognition")}</Text>
                   <Text style={[styles.toggleSub, { color: child.faceConsent !== false ? colors.greenDeep : colors.textLight }]}>
-                    {child.faceConsent !== false ? "Consented" : "Not enabled"}
+                    {child.faceConsent !== false ? tt("pConsented") : tt("pNotEnabled")}
                   </Text>
                 </View>
                 <Switch
@@ -339,9 +339,9 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
 
               <View style={styles.toggleRow}>
                 <View>
-                  <Text style={styles.toggleLabel}>General consent</Text>
+                  <Text style={styles.toggleLabel}>{tt("pGeneralConsent")}</Text>
                   <Text style={[styles.toggleSub, { color: child.generalConsent !== false ? colors.greenDeep : colors.textLight }]}>
-                    {child.generalConsent !== false ? "Consented" : "Not given"}
+                    {child.generalConsent !== false ? tt("pConsented") : tt("pNotGiven")}
                   </Text>
                 </View>
                 <Switch
@@ -353,7 +353,7 @@ export default function ParentDashboardScreen({ child, tab, onTabChange, onUpdat
               </View>
 
               <Pressable onPress={deleteFaceData} style={styles.deleteBtn}>
-                <Text style={styles.deleteText}>Delete face data</Text>
+                <Text style={styles.deleteText}>{tt("pDeleteFace")}</Text>
               </Pressable>
             </>
           )}

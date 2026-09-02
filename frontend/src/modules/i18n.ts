@@ -51,7 +51,17 @@ export type TKey =
   | 'pOverview' | 'pVocabulary' | 'pSchedule' | 'pPrivacy'
   | 'pWordsWeek' | 'pAdherence' | 'pGameStreak' | 'pMilestones' | 'pRecommendations'
   | 'pTotalWords' | 'pDiffWords' | 'pMostActive' | 'pWeekSummary'
-  | 'pM1' | 'pM2' | 'pM3' | 'pM4' | 'pM5' | 'pDaysActive' | 'pActive';
+  | 'pM1' | 'pM2' | 'pM3' | 'pM4' | 'pM5' | 'pDaysActive' | 'pActive'
+  | 'pDailyUsage' | 'pMostUsed' | 'pWeeklyAdherence' | 'pExportIep' | 'pDataOnDevice'
+  | 'pMathOnly' | 'pOnDeviceOnly' | 'pFaceRecognition' | 'pGeneralConsent'
+  | 'pConsented' | 'pNotEnabled' | 'pNotGiven' | 'pDeleteFace' | 'pNoWordsYet'
+  | 'pTip1' | 'pTip2' | 'pTip3' | 'pTip4' | 'pTip0' | 'pTimes'
+  // --- settings ---
+  | 'setSpeech' | 'setSpeakingSpeed' | 'setSlow' | 'setNormal' | 'setFast'
+  | 'setBoard' | 'setHaptics' | 'setTilesPerRow' | 'setAccessibility' | 'setKiosk'
+  | 'setLockOpen' | 'setKioskInfo' | 'setParentControls' | 'setChangePasscode'
+  | 'setSetPasscode' | 'setState' | 'setNotSet' | 'setPixabay' | 'setBackup'
+  | 'setExport' | 'setRestore';
 
 type TMap = Record<TKey, string>;
 type AllTranslations = { 'en-US': TMap } & Partial<Record<LanguageCode, Partial<TMap>>>;
@@ -187,6 +197,25 @@ const T: AllTranslations = {
     pTotalWords: 'total words spoken', pDiffWords: 'different words', pMostActive: 'most active day', pWeekSummary: 'Week summary',
     pM1: 'First words spoken', pM2: '10 different words used', pM3: '80%+ routine adherence', pM4: '3-day game streak', pM5: '25 stars earned',
     pDaysActive: 'days active', pActive: 'Active',
+    pDailyUsage: 'Daily AAC usage (words)', pMostUsed: 'Most used words', pWeeklyAdherence: 'Weekly adherence',
+    pExportIep: 'Export IEP Report', pDataOnDevice: 'Data stored on this device',
+    pMathOnly: '✓ Math embedding only — no photos', pOnDeviceOnly: '✓ On-device only — never transmitted',
+    pFaceRecognition: 'Face recognition', pGeneralConsent: 'General consent',
+    pConsented: 'Consented', pNotEnabled: 'Not enabled', pNotGiven: 'Not given', pDeleteFace: 'Delete face data',
+    pNoWordsYet: 'No words spoken yet — usage appears here once the Speak board is used.',
+    pTip1: 'Try a short AAC session each day to build vocabulary momentum.',
+    pTip2: 'Routine adherence is low — review the visual schedule together each morning.',
+    pTip3: 'Introduce 2–3 new words this week (feelings or question words work well).',
+    pTip4: 'A quick daily game keeps learning consistent and builds a streak.',
+    pTip0: 'Great consistency this week — keep the current routine going.',
+    pTimes: 'times',
+    setSpeech: 'Speech', setSpeakingSpeed: 'Speaking speed', setSlow: 'Slow', setNormal: 'Normal', setFast: 'Fast',
+    setBoard: 'Board', setHaptics: 'Haptic feedback', setTilesPerRow: 'Tiles per row',
+    setAccessibility: 'Accessibility', setKiosk: 'Kiosk mode', setLockOpen: 'Lock the app open',
+    setKioskInfo: 'When on, the Android back button is blocked and the screen stays awake. To fully stop a child exiting, also turn on Screen Pinning (Android) or Guided Access (iPhone). Exiting kiosk mode inside the app asks for the passcode.',
+    setParentControls: 'Parent controls', setChangePasscode: 'Change admin passcode', setSetPasscode: 'Set admin passcode',
+    setState: 'Set', setNotSet: 'Not set', setPixabay: 'Pixabay image key (optional)',
+    setBackup: 'Backup', setExport: 'Export', setRestore: 'Restore',
   },
   'ar-SA': {
     appName: 'كيدو كير',
@@ -318,6 +347,25 @@ const T: AllTranslations = {
     pTotalWords: 'إجمالي الكلمات المنطوقة', pDiffWords: 'كلمات مختلفة', pMostActive: 'أكثر يوم نشاطاً', pWeekSummary: 'ملخص الأسبوع',
     pM1: 'أول كلمات منطوقة', pM2: 'استخدام ١٠ كلمات مختلفة', pM3: 'التزام بالجدول ٨٠٪+', pM4: 'تتابع ألعاب ٣ أيام', pM5: 'كسب ٢٥ نجمة',
     pDaysActive: 'أيام نشطة', pActive: 'نشط',
+    pDailyUsage: 'استخدام التواصل اليومي (كلمات)', pMostUsed: 'أكثر الكلمات استخداماً', pWeeklyAdherence: 'الالتزام الأسبوعي',
+    pExportIep: 'تصدير تقرير الخطة', pDataOnDevice: 'البيانات مخزنة على هذا الجهاز',
+    pMathOnly: '✓ بيانات رياضية فقط — بلا صور', pOnDeviceOnly: '✓ على الجهاز فقط — لا تُرسل أبداً',
+    pFaceRecognition: 'التعرف على الوجه', pGeneralConsent: 'الموافقة العامة',
+    pConsented: 'موافَق عليه', pNotEnabled: 'غير مفعّل', pNotGiven: 'غير ممنوح', pDeleteFace: 'حذف بيانات الوجه',
+    pNoWordsYet: 'لا كلمات منطوقة بعد — سيظهر الاستخدام هنا عند استخدام لوحة التحدث.',
+    pTip1: 'جرّب جلسة تواصل قصيرة كل يوم لبناء المفردات.',
+    pTip2: 'الالتزام بالجدول منخفض — راجعوا الجدول المرئي معاً كل صباح.',
+    pTip3: 'أدخل ٢-٣ كلمات جديدة هذا الأسبوع (كلمات المشاعر أو الأسئلة مفيدة).',
+    pTip4: 'لعبة يومية سريعة تبقي التعلم منتظماً وتبني تتابعاً.',
+    pTip0: 'ثبات رائع هذا الأسبوع — واصلوا الروتين الحالي.',
+    pTimes: 'مرات',
+    setSpeech: 'النطق', setSpeakingSpeed: 'سرعة النطق', setSlow: 'بطيء', setNormal: 'عادي', setFast: 'سريع',
+    setBoard: 'اللوحة', setHaptics: 'اهتزاز اللمس', setTilesPerRow: 'بطاقات في الصف',
+    setAccessibility: 'إمكانية الوصول', setKiosk: 'وضع الكشك', setLockOpen: 'قفل التطبيق مفتوحاً',
+    setKioskInfo: 'عند التفعيل، يُحظر زر الرجوع في أندرويد وتبقى الشاشة مضاءة. لمنع خروج الطفل تماماً، فعّل أيضاً تثبيت الشاشة (أندرويد) أو الوصول الموجّه (آيفون). الخروج من وضع الكشك داخل التطبيق يطلب رمز المرور.',
+    setParentControls: 'ضوابط الوالدين', setChangePasscode: 'تغيير رمز المشرف', setSetPasscode: 'تعيين رمز المشرف',
+    setState: 'مُعيّن', setNotSet: 'غير مُعيّن', setPixabay: 'مفتاح صور Pixabay (اختياري)',
+    setBackup: 'النسخ الاحتياطي', setExport: 'تصدير', setRestore: 'استعادة',
   },
   'ur-PK': {
     appName: 'کڈو کیئر',

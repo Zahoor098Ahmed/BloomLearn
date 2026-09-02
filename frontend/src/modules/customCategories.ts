@@ -2,6 +2,15 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { CustomCategory, CustomWord, TileSize, LanguageCode } from "../types";
 import { starterLabel } from "./i18n";
 
+// English anchors for the seed content, so re-translation can map back.
+const SEED_WORD_EN: Record<string, string[]> = {
+  Core: ["I", "you", "want", "more", "stop", "go", "like", "help", "yes", "no"],
+  Food: ["water", "milk", "juice", "apple", "banana", "bread", "cookie", "rice", "chicken", "snack"],
+  Feelings: ["happy", "sad", "angry", "scared", "tired", "hurt", "sick", "excited", "calm", "love"],
+  People: ["mom", "dad", "me", "teacher", "friend", "baby", "doctor", "grandma", "grandpa", "sister"],
+  Actions: ["eat", "drink", "play", "sleep", "read", "walk", "run", "sit", "wash", "open"],
+};
+
 /** Set before the first ensureCategoriesLoaded() so the starter board seeds in the chosen language. */
 let seedLang: LanguageCode = "en-US";
 export function setSeedLanguage(lang: LanguageCode) {
@@ -44,6 +53,7 @@ export async function ensureCategoriesLoaded(): Promise<void> {
   }
   loaded = true;
   if (cache.length === 0) seedStarterBoard();
+  else retranslateSeedBoard(seedLang);
 }
 
 // --- starter board -------------------------------------------------------
@@ -97,6 +107,50 @@ const FOLDER_NAMES: Partial<Record<LanguageCode, Record<string, string>>> = {
 };
 function folderName(en: string) {
   return FOLDER_NAMES[seedLang]?.[en] ?? en;
+}
+
+const FOLDER_EN_BY_LANG: Record<string, string> = (() => {
+  const m: Record<string, string> = {};
+  for (const lang of Object.keys(FOLDER_NAMES) as LanguageCode[]) {
+    for (const [en, local] of Object.entries(FOLDER_NAMES[lang] ?? {})) m[local] = en;
+  }
+  for (const en of Object.keys(SEED_WORD_EN)) m[en] = en;
+  return m;
+})();
+
+/**
+ * Re-translate the built-in starter board (source: "seed") into the given
+ * language. Only touches seed content — caregiver-made folders/words are left
+ * exactly as they are. Call this whenever the language changes.
+ */
+export function retranslateSeedBoard(lang: LanguageCode) {
+  let changed = false;
+  for (const cat of cache) {
+    if (cat.source !== "seed") continue;
+    const enName = FOLDER_EN_BY_LANG[cat.name] ?? cat.name;
+    const newName = FOLDER_NAMES[lang]?.[enName] ?? enName;
+    if (newName !== cat.name) {
+      cat.name = newName;
+      changed = true;
+    }
+    const enWords = SEED_WORD_EN[enName];
+    if (enWords) {
+      cat.words.forEach((w, i) => {
+        const en = enWords[i];
+        if (!en) return;
+        const localized = starterLabel(en, lang);
+        if (w.label !== localized) {
+          w.label = localized;
+          w.phrase = localized;
+          changed = true;
+        }
+      });
+    }
+  }
+  if (changed) {
+    cache = [...cache];
+    persist();
+  }
 }
 
 function seedStarterBoard() {

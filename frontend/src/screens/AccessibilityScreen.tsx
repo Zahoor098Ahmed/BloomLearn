@@ -6,7 +6,7 @@ import { LANGUAGES, t, applyLanguageDirection } from "../modules/i18n";
 import type { LanguageCode } from "../types";
 import { loadPasscode, hasPasscode, setPasscode, clearPasscode } from "../modules/passcode";
 import { loadPixabayKey, hasPixabayKey, setPixabayKey } from "../modules/imageSearch";
-import { buildBackup, restoreBackup } from "../modules/customCategories";
+import { buildBackup, restoreBackup, retranslateSeedBoard, setSeedLanguage } from "../modules/customCategories";
 import { colors, radius } from "../theme";
 
 interface Props {
@@ -15,10 +15,10 @@ interface Props {
 
 type FontSize = "small" | "medium" | "large" | "xlarge";
 const FONT_SIZES: FontSize[] = ["small", "medium", "large", "xlarge"];
-const RATES: { label: string; value: number }[] = [
-  { label: "Slow", value: 0.65 },
-  { label: "Normal", value: 0.9 },
-  { label: "Fast", value: 1.0 },
+const RATES: { key: "setSlow" | "setNormal" | "setFast"; value: number }[] = [
+  { key: "setSlow", value: 0.65 },
+  { key: "setNormal", value: 0.9 },
+  { key: "setFast", value: 1.0 },
 ];
 
 function ToggleRow({ label, emoji, value, onChange }: { label: string; emoji: string; value: boolean; onChange: (v: boolean) => void }) {
@@ -106,30 +106,30 @@ export default function AccessibilityScreen({ onBack }: Props) {
           <Pressable onPress={onBack} style={styles.backBtn}>
             <Text style={styles.backText}>← {t("back", lang)}</Text>
           </Pressable>
-          <Text style={styles.headerTitle}>Settings</Text>
+          <Text style={styles.headerTitle}>{t("settings", lang)}</Text>
         </View>
 
         <ScrollView contentContainerStyle={styles.body}>
           {/* ---- speech ---- */}
-          <Text style={styles.sectionTitle}>Speech</Text>
+          <Text style={styles.sectionTitle}>{t("setSpeech", lang)}</Text>
           <ToggleRow label={t("sound", lang)} emoji="🔊" value={settings.soundEnabled} onChange={(v) => update({ soundEnabled: v })} />
-          <Text style={styles.subLabel}>Speaking speed</Text>
+          <Text style={styles.subLabel}>{t("setSpeakingSpeed", lang)}</Text>
           <View style={styles.segRow}>
             {RATES.map((r) => (
               <Pressable
-                key={r.label}
+                key={r.key}
                 onPress={() => update({ speechRate: r.value })}
                 style={[styles.seg, Math.abs(settings.speechRate - r.value) < 0.03 && styles.segOn]}
               >
-                <Text style={[styles.segText, Math.abs(settings.speechRate - r.value) < 0.03 && { color: "white" }]}>{r.label}</Text>
+                <Text style={[styles.segText, Math.abs(settings.speechRate - r.value) < 0.03 && { color: "white" }]}>{t(r.key, lang)}</Text>
               </Pressable>
             ))}
           </View>
 
           {/* ---- board ---- */}
-          <Text style={styles.sectionTitle}>Board</Text>
-          <ToggleRow label="Haptic feedback" emoji="📳" value={settings.hapticsEnabled} onChange={(v) => update({ hapticsEnabled: v })} />
-          <Text style={styles.subLabel}>Tiles per row</Text>
+          <Text style={styles.sectionTitle}>{t("setBoard", lang)}</Text>
+          <ToggleRow label={t("setHaptics", lang)} emoji="📳" value={settings.hapticsEnabled} onChange={(v) => update({ hapticsEnabled: v })} />
+          <Text style={styles.subLabel}>{t("setTilesPerRow", lang)}</Text>
           <View style={styles.segRow}>
             {[2, 3, 4, 5].map((n) => (
               <Pressable key={n} onPress={() => update({ boardColumns: n })} style={[styles.seg, settings.boardColumns === n && styles.segOn]}>
@@ -139,7 +139,7 @@ export default function AccessibilityScreen({ onBack }: Props) {
           </View>
 
           {/* ---- accessibility ---- */}
-          <Text style={styles.sectionTitle}>Accessibility</Text>
+          <Text style={styles.sectionTitle}>{t("setAccessibility", lang)}</Text>
           <Text style={styles.subLabel}>{t("fontSize", lang)}</Text>
           <View style={styles.segRow}>
             {FONT_SIZES.map((s, i) => (
@@ -152,37 +152,33 @@ export default function AccessibilityScreen({ onBack }: Props) {
           <ToggleRow label={t("reduceMotion", lang)} emoji="🐢" value={settings.reduceMotion} onChange={(v) => update({ reduceMotion: v })} />
 
           {/* ---- kiosk ---- */}
-          <Text style={styles.sectionTitle}>Kiosk mode</Text>
-          <ToggleRow label="Lock the app open" emoji="🔒" value={settings.kioskMode} onChange={(v) => update({ kioskMode: v })} />
+          <Text style={styles.sectionTitle}>{t("setKiosk", lang)}</Text>
+          <ToggleRow label={t("setLockOpen", lang)} emoji="🔒" value={settings.kioskMode} onChange={(v) => update({ kioskMode: v })} />
           <View style={styles.infoBox}>
-            <Text style={styles.infoText}>
-              When on, the Android back button is blocked and the screen stays awake. To fully stop a child exiting, also turn on
-              <Text style={{ fontWeight: "800" }}> Screen Pinning</Text> (Android) or <Text style={{ fontWeight: "800" }}>Guided Access</Text> (iPhone,
-              in iOS Settings → Accessibility). Exiting kiosk mode inside the app asks for the passcode.
-            </Text>
+            <Text style={styles.infoText}>{t("setKioskInfo", lang)}</Text>
           </View>
 
           {/* ---- admin ---- */}
-          <Text style={styles.sectionTitle}>Parent controls</Text>
+          <Text style={styles.sectionTitle}>{t("setParentControls", lang)}</Text>
           <Pressable onPress={() => setPinModal(true)} style={styles.actionRow}>
             <Text style={{ fontSize: 20 }}>🔑</Text>
-            <Text style={styles.actionLabel}>{pinSet ? "Change admin passcode" : "Set admin passcode"}</Text>
-            <Text style={styles.actionState}>{pinSet ? "Set" : "Not set"}</Text>
+            <Text style={styles.actionLabel}>{pinSet ? t("setChangePasscode", lang) : t("setSetPasscode", lang)}</Text>
+            <Text style={styles.actionState}>{pinSet ? t("setState", lang) : t("setNotSet", lang)}</Text>
           </Pressable>
           <Pressable onPress={() => setKeyModal(true)} style={styles.actionRow}>
             <Text style={{ fontSize: 20 }}>🖼️</Text>
-            <Text style={styles.actionLabel}>Pixabay image key (optional)</Text>
-            <Text style={styles.actionState}>{keySet ? "Set" : "Not set"}</Text>
+            <Text style={styles.actionLabel}>{t("setPixabay", lang)}</Text>
+            <Text style={styles.actionState}>{keySet ? t("setState", lang) : t("setNotSet", lang)}</Text>
           </Pressable>
 
           {/* ---- backup ---- */}
-          <Text style={styles.sectionTitle}>Backup</Text>
+          <Text style={styles.sectionTitle}>{t("setBackup", lang)}</Text>
           <View style={styles.segRow}>
             <Pressable onPress={exportBoard} style={[styles.seg, { backgroundColor: colors.forestLight }]}>
-              <Text style={[styles.segText, { color: colors.forestDark }]}>Export</Text>
+              <Text style={[styles.segText, { color: colors.forestDark }]}>{t("setExport", lang)}</Text>
             </Pressable>
             <Pressable onPress={() => setImportModal(true)} style={[styles.seg, { backgroundColor: colors.forestLight }]}>
-              <Text style={[styles.segText, { color: colors.forestDark }]}>Restore</Text>
+              <Text style={[styles.segText, { color: colors.forestDark }]}>{t("setRestore", lang)}</Text>
             </Pressable>
           </View>
 
@@ -195,9 +191,12 @@ export default function AccessibilityScreen({ onBack }: Props) {
                 <Pressable
                   key={l.code}
                   onPress={() => {
-                    update({ language: l.code as LanguageCode });
-                    const flipped = applyLanguageDirection(l.code as LanguageCode);
-                    if (flipped) Alert.alert(l.nativeName, t("reopenForLanguage", l.code as LanguageCode));
+                    const code = l.code as LanguageCode;
+                    update({ language: code });
+                    setSeedLanguage(code);
+                    retranslateSeedBoard(code);
+                    const flipped = applyLanguageDirection(code);
+                    if (flipped) Alert.alert(l.nativeName, t("reopenForLanguage", code));
                   }}
                   style={[styles.langBtn, active ? styles.langBtnActive : styles.langBtnInactive]}
                 >
