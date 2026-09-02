@@ -16,11 +16,9 @@
     },
     "android": {
       "package": "com.timeglobaltech.kiddocare",
-      "versionCode": 5,
-      "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
-      ]
+      "versionCode": 6,
+      "permissions": ["android.permission.CAMERA"],
+      "blockedPermissions": ["android.permission.RECORD_AUDIO"]
     },
     "plugins": [
       [
@@ -31,15 +29,7 @@
           "recordAudioAndroid": false
         }
       ],
-      "expo-font",
-      [
-        "expo-speech-recognition",
-        {
-          "microphonePermission": "KiddoCare uses the microphone so a child can speak a sentence and see a matching picture.",
-          "speechRecognitionPermission": "KiddoCare uses speech recognition to turn a spoken sentence into a picture.",
-          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
-        }
-      ]
+      "expo-font"
     ],
     "extra": {
       "eas": {

@@ -1,11 +1,7 @@
-import { useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Platform } from "react-native";
+import { useMemo, useState } from "react";
+import { View, Text, Pressable, TextInput, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  ExpoSpeechRecognitionModule,
-  useSpeechRecognitionEvent,
-} from "expo-speech-recognition";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import {
@@ -35,48 +31,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
   const [text, setText] = useState("The black cat is under the table");
-  const [listening, setListening] = useState(false);
-  const [voiceError, setVoiceError] = useState<string | null>(null);
-  const finalRef = useRef("");
 
   const scene = useMemo(() => parseSentence(text), [text]);
   const concept = conceptByKey(scene.conceptKey);
-
-  useSpeechRecognitionEvent("result", (e) => {
-    const transcript = e.results?.[0]?.transcript ?? "";
-    if (transcript) setText(transcript);
-    if (e.isFinal) finalRef.current = transcript;
-  });
-  useSpeechRecognitionEvent("end", () => setListening(false));
-  useSpeechRecognitionEvent("error", (e) => {
-    setListening(false);
-    setVoiceError(e.message || "Microphone not available");
-  });
-
-  async function toggleListening() {
-    if (listening) {
-      ExpoSpeechRecognitionModule.stop();
-      setListening(false);
-      return;
-    }
-    setVoiceError(null);
-    try {
-      const perm = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
-      if (!perm.granted) {
-        setVoiceError("Microphone permission is needed for voice input.");
-        return;
-      }
-      finalRef.current = "";
-      ExpoSpeechRecognitionModule.start({
-        lang: lang?.startsWith("ar") ? "ar-SA" : "en-US",
-        interimResults: true,
-        continuous: false,
-      });
-      setListening(true);
-    } catch {
-      setVoiceError("Voice input is not available on this device.");
-    }
-  }
 
   const sceneSpec = {
     subject: scene.subject,
@@ -118,14 +75,6 @@ export default function SentencePictureScreen({ onBack }: Props) {
             </View>
           )}
 
-          <View style={styles.voiceRow}>
-            <Pressable onPress={toggleListening} style={[styles.micBtn, listening && styles.micBtnOn]}>
-              <Ionicons name={listening ? "stop" : "mic"} size={20} color="white" />
-              <Text style={styles.micBtnText}>{listening ? "Listening… tap to stop" : "Speak the sentence"}</Text>
-            </Pressable>
-          </View>
-          {voiceError && <Text style={styles.voiceError}>{voiceError}</Text>}
-
           <TextInput
             value={text}
             onChangeText={setText}
@@ -166,7 +115,6 @@ export default function SentencePictureScreen({ onBack }: Props) {
           <Text style={styles.hint}>
             Understood: colours (black, brown, white, red, blue…), things ({Object.keys(SUBJECTS).slice(0, 6).join(", ")}…),
             positions (under, on, above, beside, behind, in front of, inside), objects ({Object.keys(REFERENCES).slice(0, 6).join(", ")}…).
-            {Platform.OS === "web" ? " Voice input needs a device build." : ""}
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -246,20 +194,6 @@ const styles = StyleSheet.create({
   captionCard: { backgroundColor: colors.forestLight, borderRadius: radius, padding: 14 },
   captionTitle: { fontSize: 14, fontWeight: "800", color: colors.forestDark },
   captionBody: { fontSize: 12.5, color: colors.textDark, marginTop: 4, lineHeight: 18 },
-  voiceRow: { flexDirection: "row" },
-  micBtn: {
-    flex: 1,
-    flexDirection: "row",
-    gap: 10,
-    backgroundColor: colors.forest,
-    borderRadius: radius,
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  micBtnOn: { backgroundColor: colors.pinkDeep },
-  micBtnText: { color: "white", fontWeight: "800", fontSize: 15 },
-  voiceError: { color: colors.pinkDeep, fontSize: 12, marginTop: -6 },
   input: {
     backgroundColor: colors.card,
     borderWidth: 2,
