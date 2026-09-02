@@ -7,11 +7,12 @@ import type { CustomCategory } from "../types";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
-import { transcribeAudio, isAiConfigured } from "../modules/aiImage";
+import { transcribeAudio, isAiConfigured, generateWordImage } from "../modules/aiImage";
 import {
   searchImages,
   downloadTileImage,
   saveLocalTileImage,
+  saveGeneratedImage,
   hasPixabayKey,
   type ImageHit,
   type ImageSource,
@@ -40,6 +41,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
   const [hits, setHits] = useState<ImageHit[]>([]);
   const [imgSource, setImgSource] = useState<ImageSource>("arasaac");
   const [imgError, setImgError] = useState<string | null>(null);
+  const [aiPreview, setAiPreview] = useState<string | null>(null);
   const [cats, setCats] = useState<CustomCategory[]>([]);
   const [newCatOpen, setNewCatOpen] = useState(false);
   const [newCatName, setNewCatName] = useState("");
@@ -58,7 +60,28 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
     setHits([]);
     setImgError(null);
     setImgSource("arasaac");
+    setAiPreview(null);
     setCats(topLevelCategories());
+  }
+
+  async function makeAiImage(force = false) {
+    setImgError(null);
+    setThinking("Creating a picture…");
+    const res = await generateWordImage(word.trim(), force);
+    setThinking(null);
+    if (res.dataUri) setAiPreview(res.dataUri);
+    else setImgError(res.error ?? "Could not create a picture.");
+  }
+
+  async function useAiImage() {
+    if (!aiPreview) return;
+    setThinking("Saving picture…");
+    const saved = await saveGeneratedImage(aiPreview, `voice_${Date.now()}`);
+    setThinking(null);
+    if (saved) {
+      setImageUri(saved);
+      setStep("category");
+    } else Alert.alert("Could not save that picture.");
   }
 
   // --- step 1: speak ---
@@ -228,37 +251,60 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved }: Props) {
                 <Text style={styles.stepHint}>These are searched pictures, not AI-made. Choose the clearest one, or take your own photo.</Text>
 
                 <View style={styles.tabRow}>
-                  <Pressable onPress={() => runSearch("arasaac", word)} style={[styles.tab, imgSource === "arasaac" && styles.tabOn]}>
-                    <Text style={[styles.tabText, imgSource === "arasaac" && { color: "white" }]}>AAC symbols</Text>
+                  <Pressable onPress={() => { setAiPreview(null); runSearch("arasaac", word); }} style={[styles.tab, imgSource === "arasaac" && !aiPreview && styles.tabOn]}>
+                    <Text style={[styles.tabText, imgSource === "arasaac" && !aiPreview && { color: "white" }]}>Symbols</Text>
                   </Pressable>
-                  <Pressable onPress={() => runSearch("pixabay", word)} style={[styles.tab, imgSource === "pixabay" && styles.tabOn]}>
-                    <Text style={[styles.tabText, imgSource === "pixabay" && { color: "white" }]}>Photos{hasPixabayKey() ? "" : " (key)"}</Text>
+                  <Pressable onPress={() => { setAiPreview(null); runSearch("pixabay", word); }} style={[styles.tab, imgSource === "pixabay" && !aiPreview && styles.tabOn]}>
+                    <Text style={[styles.tabText, imgSource === "pixabay" && !aiPreview && { color: "white" }]}>Photos{hasPixabayKey() ? "" : " ·key"}</Text>
+                  </Pressable>
+                  <Pressable onPress={() => { setHits([]); setImgError(null); if (!aiPreview) makeAiImage(false); }} style={[styles.tab, !!aiPreview && styles.tabOn]}>
+                    <Text style={[styles.tabText, !!aiPreview && { color: "white" }]}>✨ AI made</Text>
                   </Pressable>
                 </View>
 
                 {imgError && <Text style={styles.warn}>{imgError}</Text>}
-                <View style={styles.hitGrid}>
-                  {hits.map((h) => (
-                    <Pressable key={h.id} onPress={() => chooseHit(h)} style={styles.hit}>
-                      <Image source={{ uri: h.thumb }} style={styles.hitImg} resizeMode="contain" />
-                    </Pressable>
-                  ))}
-                </View>
 
-                <View style={styles.fallbackRow}>
-                  <Pressable onPress={useCamera} style={styles.fallbackBtn}>
-                    <Ionicons name="camera" size={16} color={colors.forestDark} />
-                    <Text style={styles.fallbackText}>Camera</Text>
-                  </Pressable>
-                  <Pressable onPress={useGallery} style={styles.fallbackBtn}>
-                    <Ionicons name="images" size={16} color={colors.forestDark} />
-                    <Text style={styles.fallbackText}>Gallery</Text>
-                  </Pressable>
-                  <Pressable onPress={() => { setImageUri(undefined); setStep("category"); }} style={styles.fallbackBtn}>
-                    <Ionicons name="happy" size={16} color={colors.forestDark} />
-                    <Text style={styles.fallbackText}>No picture</Text>
-                  </Pressable>
-                </View>
+                {aiPreview ? (
+                  <View style={{ gap: 10, alignItems: "center" }}>
+                    <Image source={{ uri: aiPreview }} style={styles.aiPreviewImg} resizeMode="contain" />
+                    <View style={{ flexDirection: "row", gap: 10 }}>
+                      <Pressable onPress={() => makeAiImage(true)} style={styles.fallbackBtn}>
+                        <Ionicons name="refresh" size={16} color={colors.forestDark} />
+                        <Text style={styles.fallbackText}>Try again</Text>
+                      </Pressable>
+                      <Pressable onPress={useAiImage} style={[styles.nextBtn, { flex: 1, marginTop: 0 }]}>
+                        <Ionicons name="checkmark" size={16} color="white" />
+                        <Text style={styles.nextText}>Use this picture</Text>
+                      </Pressable>
+                    </View>
+                    <Text style={styles.stepHint}>AI-made pictures use OpenAI. Add a key in Settings — the button is ready for it.</Text>
+                  </View>
+                ) : (
+                  <>
+                    <View style={styles.hitGrid}>
+                      {hits.map((h) => (
+                        <Pressable key={h.id} onPress={() => chooseHit(h)} style={styles.hit}>
+                          <Image source={{ uri: h.thumb }} style={styles.hitImg} resizeMode="contain" />
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    <View style={styles.fallbackRow}>
+                      <Pressable onPress={useCamera} style={styles.fallbackBtn}>
+                        <Ionicons name="camera" size={16} color={colors.forestDark} />
+                        <Text style={styles.fallbackText}>Camera</Text>
+                      </Pressable>
+                      <Pressable onPress={useGallery} style={styles.fallbackBtn}>
+                        <Ionicons name="images" size={16} color={colors.forestDark} />
+                        <Text style={styles.fallbackText}>Gallery</Text>
+                      </Pressable>
+                      <Pressable onPress={() => { setImageUri(undefined); setStep("category"); }} style={styles.fallbackBtn}>
+                        <Ionicons name="happy" size={16} color={colors.forestDark} />
+                        <Text style={styles.fallbackText}>No pic</Text>
+                      </Pressable>
+                    </View>
+                  </>
+                )}
               </View>
             )}
 
@@ -380,6 +426,7 @@ const styles = StyleSheet.create({
   hitGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   hit: { width: "48%", aspectRatio: 1.3, backgroundColor: colors.card, borderRadius: 10, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
   hitImg: { width: "100%", height: "100%" },
+  aiPreviewImg: { width: "100%", height: 220, borderRadius: radius, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
   fallbackRow: { flexDirection: "row", gap: 8, marginTop: 4 },
   fallbackBtn: { flex: 1, flexDirection: "row", gap: 5, alignItems: "center", justifyContent: "center", backgroundColor: colors.forestLight, borderRadius: 12, paddingVertical: 11 },
   fallbackText: { color: colors.forestDark, fontWeight: "700", fontSize: 12 },

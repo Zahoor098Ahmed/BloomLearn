@@ -10,7 +10,7 @@ import { recordWordUsage } from "../modules/storage";
 import { tapFeedback, selectFeedback } from "../modules/haptics";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
-import { colors, radius } from "../theme";
+import { colors } from "../theme";
 
 interface Props {
   child: ChildProfile;
@@ -163,22 +163,30 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
             <>
               {folders.map((f) => (
                 <View key={f.id} style={[styles.cellWrap, tileSize]}>
-                  <Pressable onPress={() => openFolder(f.id)} style={[styles.folderTile, { backgroundColor: (f.color ?? colors.forest) + "1a", borderColor: (f.color ?? colors.forest) + "55" }]}>
-                    <Text style={styles.folderIcon}>{f.icon ?? "📁"}</Text>
-                    <Text style={styles.tileLabel} numberOfLines={2}>{f.name}</Text>
-                    <View style={styles.folderBadge}><Ionicons name="folder-open" size={11} color={f.color ?? colors.forest} /></View>
+                  <Pressable onPress={() => openFolder(f.id)} style={[styles.tile, { borderColor: f.color ?? colors.forest }]}>
+                    <View style={[styles.tileLabelBar, { backgroundColor: f.color ?? colors.forest }]}>
+                      <Text style={styles.tileLabelText} numberOfLines={1}>{f.name}</Text>
+                    </View>
+                    <View style={styles.tileBody}>
+                      <Text style={styles.folderIcon}>{f.icon ?? "📁"}</Text>
+                      <View style={styles.folderCorner}><Ionicons name="folder-open" size={12} color={f.color ?? colors.forest} /></View>
+                    </View>
                   </Pressable>
                 </View>
               ))}
               {words.map((w) => (
                 <View key={w.id} style={[styles.cellWrap, tileSize]}>
-                  <Pressable onPress={() => tapWord(w)} style={styles.wordTile}>
-                    {w.imageUri ? (
-                      <Image source={{ uri: w.imageUri }} style={styles.wordImg} resizeMode="cover" />
-                    ) : (
-                      <Text style={styles.wordEmoji}>{w.emoji}</Text>
-                    )}
-                    <Text style={styles.tileLabel} numberOfLines={2}>{w.label}</Text>
+                  <Pressable onPress={() => tapWord(w)} style={[styles.tile, { borderColor: colors.forest }]}>
+                    <View style={[styles.tileLabelBar, { backgroundColor: colors.forest }]}>
+                      <Text style={styles.tileLabelText} numberOfLines={1}>{w.label}</Text>
+                    </View>
+                    <View style={styles.tileBody}>
+                      {w.imageUri ? (
+                        <Image source={{ uri: w.imageUri }} style={styles.wordImg} resizeMode="contain" />
+                      ) : (
+                        <Text style={styles.wordEmoji}>{w.emoji}</Text>
+                      )}
+                    </View>
                   </Pressable>
                 </View>
               ))}
@@ -229,34 +237,21 @@ const styles = StyleSheet.create({
   crumbBtn: { paddingHorizontal: 4, paddingVertical: 2 },
   crumbText: { fontSize: 13, color: colors.blueDeep, fontWeight: "600" },
   crumbActive: { color: colors.textMid },
-  grid: { flexDirection: "row", flexWrap: "wrap", padding: 10 },
-  cellWrap: { padding: 5 },
-  folderTile: {
-    borderRadius: radius,
-    borderWidth: 1.5,
-    paddingVertical: 18,
-    paddingHorizontal: 8,
-    alignItems: "center",
-    gap: 6,
-    minHeight: 108,
-    justifyContent: "center",
+  grid: { flexDirection: "row", flexWrap: "wrap", padding: 8 },
+  cellWrap: { padding: 4 },
+  tile: {
+    borderRadius: 10,
+    borderWidth: 3,
+    overflow: "hidden",
+    backgroundColor: "#ffffff",
+    minHeight: 116,
   },
-  folderIcon: { fontSize: 30 },
-  folderBadge: { position: "absolute", top: 8, right: 8 },
-  wordTile: {
-    backgroundColor: colors.card,
-    borderRadius: radius,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: 14,
-    paddingHorizontal: 6,
-    alignItems: "center",
-    gap: 6,
-    minHeight: 108,
-    justifyContent: "center",
-  },
-  wordEmoji: { fontSize: 34 },
-  wordImg: { width: 52, height: 52, borderRadius: 8, backgroundColor: colors.cardMuted },
-  tileLabel: { fontSize: 13, fontWeight: "700", color: colors.textDark, textAlign: "center" },
+  tileLabelBar: { paddingVertical: 5, paddingHorizontal: 4, alignItems: "center" },
+  tileLabelText: { color: "white", fontWeight: "800", fontSize: 12.5 },
+  tileBody: { flex: 1, alignItems: "center", justifyContent: "center", padding: 6, backgroundColor: "#ffffff" },
+  folderIcon: { fontSize: 34 },
+  folderCorner: { position: "absolute", bottom: 4, right: 4 },
+  wordEmoji: { fontSize: 40 },
+  wordImg: { width: "100%", height: 66 },
   emptyBoard: { color: colors.textLight, fontSize: 13, textAlign: "center", padding: 30, width: "100%" },
 });

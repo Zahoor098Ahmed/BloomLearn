@@ -185,3 +185,49 @@ export async function cachedImageFor(sentence: string): Promise<string | undefin
   await ensureCache();
   return cache[hash(promptFor(sentence.trim()))];
 }
+
+/**
+ * AI-generate a single-word picture card (used by "Add by Voice" as an
+ * alternative to searched stock images). Same OpenAI seam and cache.
+ */
+export async function generateWordImage(word: string, force = false): Promise<AiImageResult> {
+  const clean = word.trim();
+  if (!clean) return { error: "Say or type a word first." };
+
+  await ensureCache();
+  const prompt =
+    `A single clear picture of "${clean}" for a communication card. ${SENSORY_STYLE_GUIDE}`;
+  const key = hash(`word:${prompt}`);
+  if (!force && cache[key]) return { dataUri: cache[key], cached: true };
+
+  if (!isAiConfigured()) return { error: "AI pictures need an OpenAI key. Add one in Settings, or use a searched picture." };
+
+  try {
+    const endpoint = AI_PROXY_URL || "https://api.openai.com/v1/images/generations";
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (!AI_PROXY_URL) headers.Authorization = `Bearer ${activeKey()}`;
+
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ model: "gpt-image-1", prompt, size: "1024x1024", n: 1 }),
+    });
+    if (!res.ok) {
+      if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
+      if (res.status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
+      return { error: `Image service error (${res.status}).` };
+    }
+    const json = (await res.json()) as { data?: { b64_json?: string; url?: string }[] };
+    const item = json.data?.[0];
+    const dataUri = item?.b64_json ? `data:image/png;base64,${item.b64_json}` : item?.url;
+    if (!dataUri) return { error: "The image service returned no picture." };
+
+    cache[key] = dataUri;
+    const keys = Object.keys(cache);
+    if (keys.length > 12) delete cache[keys[0]];
+    AsyncStorage.setItem(IMG_STORE, JSON.stringify(cache)).catch(() => {});
+    return { dataUri };
+  } catch {
+    return { error: "Could not reach the image service. Check the internet connection." };
+  }
+}

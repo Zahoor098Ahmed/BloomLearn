@@ -102,6 +102,25 @@ export async function downloadTileImage(url: string, wordId: string): Promise<st
   }
 }
 
+/** Persist an AI-generated image (data: URI or remote URL) into tile storage. */
+export async function saveGeneratedImage(source: string, wordId: string): Promise<string | null> {
+  try {
+    const info = await FileSystem.getInfoAsync(IMG_DIR);
+    if (!info.exists) await FileSystem.makeDirectoryAsync(IMG_DIR, { intermediates: true });
+    const dest = `${IMG_DIR}${wordId}.png`;
+    await FileSystem.deleteAsync(dest, { idempotent: true });
+    if (source.startsWith("data:")) {
+      const base64 = source.split(",")[1] ?? "";
+      await FileSystem.writeAsStringAsync(dest, base64, { encoding: FileSystem.EncodingType.Base64 });
+    } else {
+      await FileSystem.downloadAsync(source, dest);
+    }
+    return dest;
+  } catch {
+    return null;
+  }
+}
+
 /** Copy a local picked/photographed image into permanent tile storage. */
 export async function saveLocalTileImage(srcUri: string, wordId: string): Promise<string | null> {
   try {
