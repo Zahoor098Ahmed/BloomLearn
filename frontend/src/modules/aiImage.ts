@@ -16,10 +16,27 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 const KEY_STORE = "kiddocare_openai_key";
 const IMG_STORE = "kiddocare_ai_image_cache";
 
-/** Optional: point this at your own backend so the key never ships in the app. */
-export const AI_PROXY_URL: string = "";
+/**
+ * Optional backend proxy (see /backend). Set AI_PROXY_URL to the base URL of
+ * that server (no trailing path) and the app will call
+ *   <AI_PROXY_URL>/images/generations
+ *   <AI_PROXY_URL>/audio/transcriptions
+ * with `Authorization: Bearer <AI_PROXY_TOKEN>` and NO OpenAI key of its own.
+ */
+export const AI_PROXY_URL: string = process.env.EXPO_PUBLIC_AI_PROXY_URL ?? "";
+export const AI_PROXY_TOKEN: string = process.env.EXPO_PUBLIC_AI_PROXY_TOKEN ?? "";
 
 const ENV_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? "";
+
+/** Resolve an endpoint + auth headers for a given OpenAI path. */
+function endpointFor(path: string): { url: string; headers: Record<string, string> } {
+  if (AI_PROXY_URL) {
+    const headers: Record<string, string> = {};
+    if (AI_PROXY_TOKEN) headers.Authorization = `Bearer ${AI_PROXY_TOKEN}`;
+    return { url: `${AI_PROXY_URL.replace(/\/$/, "")}${path}`, headers };
+  }
+  return { url: `https://api.openai.com/v1${path}`, headers: { Authorization: `Bearer ${activeKey()}` } };
+}
 
 export const SENSORY_STYLE_GUIDE =
   "Flat matte children's book illustration. Single clear centred subject. " +
@@ -93,11 +110,8 @@ export async function transcribeAudio(uri: string, langHint?: string): Promise<T
     if (langHint) form.append("language", langHint);
     form.append("prompt", "A single short everyday word for a picture card, e.g. juice, apple, happy.");
 
-    const endpoint = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/audio/transcriptions` : "https://api.openai.com/v1/audio/transcriptions";
-    const headers: Record<string, string> = {};
-    if (!AI_PROXY_URL) headers.Authorization = `Bearer ${activeKey()}`;
-
-    const res = await fetch(endpoint, { method: "POST", headers, body: form });
+    const { url, headers } = endpointFor("/audio/transcriptions");
+    const res = await fetch(url, { method: "POST", headers, body: form });
     if (!res.ok) {
       if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
       if (res.status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
@@ -140,19 +154,11 @@ export async function generateSentenceImage(sentence: string, force = false): Pr
   if (!isAiConfigured()) return { error: "AI is not connected yet. Add an OpenAI key to turn on real pictures." };
 
   try {
-    const endpoint = AI_PROXY_URL || "https://api.openai.com/v1/images/generations";
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (!AI_PROXY_URL) headers.Authorization = `Bearer ${activeKey()}`;
-
-    const res = await fetch(endpoint, {
+    const { url, headers } = endpointFor("/images/generations");
+    const res = await fetch(url, {
       method: "POST",
-      headers,
-      body: JSON.stringify({
-        model: "gpt-image-1",
-        prompt: promptFor(clean),
-        size: "1024x1024",
-        n: 1,
-      }),
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "gpt-image-1", prompt: promptFor(clean), size: "1024x1024", n: 1 }),
     });
 
     if (!res.ok) {
@@ -203,14 +209,11 @@ export async function generateWordImage(word: string, force = false): Promise<Ai
   if (!isAiConfigured()) return { error: "AI pictures need an OpenAI key. Add one in Settings, or use a searched picture." };
 
   try {
-    const endpoint = AI_PROXY_URL || "https://api.openai.com/v1/images/generations";
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (!AI_PROXY_URL) headers.Authorization = `Bearer ${activeKey()}`;
-
-    const res = await fetch(endpoint, {
+    const { url, headers } = endpointFor("/images/generations");
+    const res = await fetch(url, {
       method: "POST",
-      headers,
-      body: JSON.stringify({ model: "gpt-image-1", prompt, size: "1024x1024", n: 1 }),
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "gpt-image-1", prompt, style: "word", size: "1024x1024", n: 1 }),
     });
     if (!res.ok) {
       if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };

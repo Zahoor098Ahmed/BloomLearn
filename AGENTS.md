@@ -4,7 +4,9 @@ A React Native app built with Expo, TypeScript, and function components. Convert
 
 ## Repo layout
 
-The app lives in **`frontend/`**. Run every command (`npm`, `npx expo`, `npx eas-cli`, `tsc`) from inside `frontend/`. All paths below are relative to `frontend/`. A `backend/` folder is planned but does not exist yet.
+The app lives in **`frontend/`**. Run every command (`npm`, `npx expo`, `npx eas-cli`, `tsc`) from inside `frontend/`. All paths below are relative to `frontend/`.
+
+**`backend/`** is a small Express (JavaScript, ESM) API that proxies OpenAI (image generation + Whisper speech-to-text) and image search so keys never ship in the app. `cd backend && npm install && npm run dev`. The app uses it only when `AI_PROXY_URL` is set in `frontend/src/modules/aiImage.ts` — otherwise it calls OpenAI directly with an in-app key, and the demo runs fully offline with neither.
 
 ## Development
 
