@@ -47,6 +47,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const concept = conceptByKey(graph.conceptKey);
   const textRef = useRef(text);
   textRef.current = text;
+  const aiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     loadStoredKey().then(() => setOpenaiReady(!!getOpenAiKey()));
@@ -79,12 +80,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
       if (hit) {
         setImg({ uri: hit.uri, source: hit.fromLibrary ? "library" : "library-new" });
         libraryCount().then(setLibN);
-        return;
       }
-      // Nothing in the library and a colour was asked for ("blue dog") — the
-      // instant emoji scene can't colour the subject, so make the AI picture
-      // straight away and save it into the library.
-      if (graph.subject?.color) makeAiPicture();
+      // No library hit -> the instant scene stays on screen; the child/teacher
+      // taps "Make full picture with AI" for a drawn version.
     }, 450);
     return () => {
       active = false;
@@ -118,6 +116,12 @@ export default function SentencePictureScreen({ onBack }: Props) {
     const entry = await saveImage(text, generated, { source: "ai", tags: graph.subject ? [graph.subject.type] : [] });
     // keep the spinner until the <Image> actually loads (Pollinations can be slow)
     setImg({ uri: entry?.uri ?? generated, source: "ai-saved" });
+    if (aiTimer.current) clearTimeout(aiTimer.current);
+    aiTimer.current = setTimeout(() => {
+      setAiLoading(false);
+      setImg(null);
+      setAiError("The picture engine is taking too long. Showing the instant scene — tap AI to try again.");
+    }, 20000);
     libraryCount().then(setLibN);
   }
 
@@ -210,10 +214,15 @@ export default function SentencePictureScreen({ onBack }: Props) {
                 source={{ uri: img.uri }}
                 style={styles.stageImg}
                 resizeMode="contain"
-                onLoadEnd={() => setAiLoading(false)}
-                onError={() => {
+                onLoadEnd={() => {
+                  if (aiTimer.current) clearTimeout(aiTimer.current);
                   setAiLoading(false);
-                  setAiError("The picture engine did not respond. Tap refresh to try again.");
+                }}
+                onError={() => {
+                  if (aiTimer.current) clearTimeout(aiTimer.current);
+                  setAiLoading(false);
+                  setImg(null);
+                  setAiError("The picture engine did not respond. Tap AI to try again.");
                 }}
               />
             ) : concept ? (
