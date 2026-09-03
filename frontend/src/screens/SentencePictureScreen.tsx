@@ -6,8 +6,10 @@ import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
 import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
-import { resolveSceneImage, saveSceneImage } from "../modules/aiScene";
+import { sceneImageUrl } from "../modules/aiScene";
+import { lookupImage, saveImage, libraryCount } from "../modules/imageLibrary";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
+import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import SceneComposer from "../components/SceneComposer";
 import { colors, radius } from "../theme";
 
@@ -23,15 +25,14 @@ const EXAMPLES = [
   "The girl is sitting on the chair",
 ];
 
-type Source = "instant" | "ai";
+type ImgSource = "library" | "library-new" | "ai-saved";
 
 export default function SentencePictureScreen({ onBack }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
   const [text, setText] = useState("A small black cat is behind the big tree");
 
-  const [source, setSource] = useState<Source>("instant");
-  const [aiUri, setAiUri] = useState<string | null>(null);
+  const [img, setImg] = useState<{ uri: string; source: ImgSource } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [openaiReady, setOpenaiReady] = useState(false);
@@ -39,7 +40,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const [keyInput, setKeyInput] = useState("");
   const [recording, setRecording] = useState(false);
   const [sttBusy, setSttBusy] = useState(false);
-  const [savedOffline, setSavedOffline] = useState(false);
+  const [libN, setLibN] = useState(0);
 
   const graph = useMemo(() => parseSceneGraph(text), [text]);
   const concept = conceptByKey(graph.conceptKey);
@@ -48,59 +49,57 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
   useEffect(() => {
     loadStoredKey().then(() => setOpenaiReady(!!getOpenAiKey()));
+    libraryCount().then(setLibN);
   }, []);
 
-  // As the sentence changes, drop back to the instant scene; load a cached AI
-  // picture if we have saved one for this exact sentence.
+  // On sentence change: ask the library first. If it has (or can seed) a
+  // matching picture, show it; otherwise fall back to the instant scene.
   useEffect(() => {
     let active = true;
-    setSource("instant");
     setAiError(null);
-    setSavedOffline(false);
-    resolveSceneImage(text).then((r) => {
-      if (active && r.cached) {
-        setAiUri(r.url);
-        setSavedOffline(true);
-      } else if (active) {
-        setAiUri(null);
+    setImg(null);
+    const q = text;
+    const t = setTimeout(async () => {
+      if (concept) return;
+      const hit = await lookupImage(q, graph);
+      if (active && textRef.current === q && hit) {
+        setImg({ uri: hit.uri, source: hit.fromLibrary ? "library" : "library-new" });
+        libraryCount().then(setLibN);
       }
-    });
+    }, 450);
     return () => {
       active = false;
+      clearTimeout(t);
     };
-  }, [text]);
+  }, [text, concept, graph]);
 
   async function makeAiPicture() {
     setAiLoading(true);
     setAiError(null);
-    // Prefer the OpenAI key when connected (sharper); otherwise use the free
-    // Pollinations engine — no key, no sign-up.
+
+    let generated: string | undefined;
     if (openaiReady) {
       const res = await generateSentenceImage(text, false);
-      setAiLoading(false);
-      if (res.dataUri) {
-        setAiUri(res.dataUri);
-        setSource("ai");
-      } else {
-        setAiError(res.error ?? "Could not make the picture.");
+      if (res.error) {
+        setAiLoading(false);
+        setAiError(res.error);
+        return;
       }
+      generated = res.dataUri;
+    } else {
+      generated = sceneImageUrl(text); // free Pollinations URL
+    }
+    if (!generated) {
+      setAiLoading(false);
+      setAiError("Could not make the picture.");
       return;
     }
-    const r = await resolveSceneImage(text);
-    setAiUri(r.url);
-    setSource("ai");
-    // Image component reports load; give it a beat, then clear the spinner.
-    setTimeout(() => setAiLoading(false), 400);
-  }
 
-  async function saveForOffline() {
-    const uri = await saveSceneImage(text);
-    if (uri) {
-      setAiUri(uri);
-      setSavedOffline(true);
-    } else {
-      Alert.alert("Could not save", "Check the internet connection and try again.");
-    }
+    // Save the AI picture into the library so it is served from there next time.
+    const entry = await saveImage(text, generated, { source: "ai", tags: graph.subject ? [graph.subject.type] : [] });
+    setAiLoading(false);
+    setImg({ uri: entry?.uri ?? generated, source: "ai-saved" });
+    libraryCount().then(setLibN);
   }
 
   function keyboardMicHint() {
@@ -110,18 +109,39 @@ export default function SentencePictureScreen({ onBack }: Props) {
   async function toggleMic() {
     if (recording) {
       setRecording(false);
+      if (voiceAvailable()) {
+        await stopListening();
+        return;
+      }
       const uri = await stopRecordingTemp();
       if (!uri) return keyboardMicHint();
       setSttBusy(true);
       const res = await transcribeAudio(uri, (lang || "en-US").split("-")[0]);
       setSttBusy(false);
       if (res.text) setText(res.text);
-      else if (res.unavailable) keyboardMicHint(); // 503 / not set up — not an error
+      else if (res.unavailable) keyboardMicHint();
       else Alert.alert("Didn't catch that", res.error ?? "Try again or type it.");
       return;
     }
+
+    // Free live voice — updates the sentence (and picture) word by word.
+    if (voiceAvailable()) {
+      const started = await startListening({
+        lang: lang || "en-US",
+        onPartial: (t) => t && setText(t),
+        onFinal: (t) => t && setText(t),
+        onEnd: () => setRecording(false),
+        onError: () => setRecording(false),
+      });
+      if (started) {
+        setRecording(true);
+        return;
+      }
+    }
+
+    // Fallback: record then transcribe with Whisper (needs a key) or keyboard.
     const ok = await startRecording();
-    if (!ok) return Alert.alert("Microphone permission is needed to speak.");
+    if (!ok) return keyboardMicHint();
     setRecording(true);
   }
 
@@ -132,8 +152,15 @@ export default function SentencePictureScreen({ onBack }: Props) {
     setKeyInput("");
   }
 
-  const showingAi = source === "ai" && !!aiUri;
   const pct = Math.round(graph.confidence * 100);
+  const badgeLabel =
+    img?.source === "library"
+      ? "Library"
+      : img?.source === "library-new"
+        ? "Library · new"
+        : img?.source === "ai-saved"
+          ? "Library · AI"
+          : "Instant";
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -153,8 +180,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           <View style={styles.stageWrap}>
-            {showingAi ? (
-              <Image source={{ uri: aiUri! }} style={styles.stageImg} resizeMode="contain" onLoadEnd={() => setAiLoading(false)} />
+            {img ? (
+              <Image source={{ uri: img.uri }} style={styles.stageImg} resizeMode="contain" onLoadEnd={() => setAiLoading(false)} />
             ) : concept ? (
               <View style={styles.stageWhite}><ConceptView concept={concept} /></View>
             ) : (
@@ -166,11 +193,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
                 <Text style={styles.stageOverlayText}>Making the picture…</Text>
               </View>
             )}
-            <View style={[styles.sourceBadge, showingAi ? styles.sourceAi : styles.sourceInstant]}>
-              <Ionicons name={showingAi ? "sparkles" : "flash"} size={11} color="white" />
-              <Text style={styles.sourceBadgeText}>
-                {showingAi ? (savedOffline ? "AI · saved" : "AI") : "Instant"}
-              </Text>
+            <View style={[styles.sourceBadge, img ? styles.sourceAi : styles.sourceInstant]}>
+              <Ionicons name={img ? "images" : "flash"} size={11} color="white" />
+              <Text style={styles.sourceBadgeText}>{badgeLabel}</Text>
             </View>
           </View>
 
@@ -178,17 +203,12 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
           {!concept && (
             <View style={styles.aiRow}>
-              {showingAi ? (
+              {img ? (
                 <>
-                  <Pressable onPress={() => setSource("instant")} style={[styles.aiBtn, { backgroundColor: colors.cardMuted }]}>
+                  <Pressable onPress={() => setImg(null)} style={[styles.aiBtn, { backgroundColor: colors.cardMuted }]}>
                     <Ionicons name="flash" size={15} color={colors.textMid} />
                     <Text style={[styles.aiBtnText, { color: colors.textMid }]}>Instant scene</Text>
                   </Pressable>
-                  {!savedOffline && (
-                    <Pressable onPress={saveForOffline} style={styles.aiRegenBtn}>
-                      <Ionicons name="download-outline" size={16} color={colors.forestDark} />
-                    </Pressable>
-                  )}
                   <Pressable onPress={makeAiPicture} disabled={aiLoading} style={styles.aiRegenBtn}>
                     <Ionicons name="refresh" size={16} color={colors.forestDark} />
                   </Pressable>
@@ -220,7 +240,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
             </Text>
           )}
 
-          {concept && !showingAi && (
+          {concept && !img && (
             <View style={styles.captionCard}>
               <Text style={styles.captionTitle}>{concept.title}</Text>
               <Text style={styles.captionBody}>{concept.caption}</Text>

@@ -7,7 +7,9 @@ import type { CustomCategory } from "../types";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
+import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import { transcribeAudio, isAiConfigured, generateWordImage } from "../modules/aiImage";
+import { saveImage } from "../modules/imageLibrary";
 import {
   searchImages,
   downloadTileImage,
@@ -89,8 +91,10 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
     setThinking("Creating a picture…");
     const res = await generateWordImage(word.trim(), force);
     setThinking(null);
-    if (res.dataUri) setAiPreview(res.dataUri);
-    else setImgError(res.error ?? "Could not create a picture.");
+    if (res.dataUri) {
+      setAiPreview(res.dataUri);
+      saveImage(word.trim(), res.dataUri, { source: "ai", tags: [] }).catch(() => {});
+    } else setImgError(res.error ?? "Could not create a picture.");
   }
 
   async function useAiImage() {
@@ -106,9 +110,12 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
   async function toggleMic() {
     if (recording) {
       setRecording(false);
+      if (voiceAvailable()) {
+        await stopListening();
+        setStep("confirm");
+        return;
+      }
       const uri = await stopRecordingTemp();
-      // No speech service yet (demo) — go to the confirm step so the presenter
-      // can dictate/type the word with the keyboard mic.
       if (!isAiConfigured() || !uri) {
         setStep("confirm");
         return;
@@ -116,15 +123,27 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
       setThinking("Listening…");
       const res = await transcribeAudio(uri, langHint);
       setThinking(null);
-      if (res.text) {
-        setWord(res.text);
-        setStep("confirm");
-      } else {
-        setWord("");
-        setStep("confirm");
-      }
+      setWord(res.text ?? "");
+      setStep("confirm");
       return;
     }
+
+    // Free live speech recognition (web / native build). Falls back to record.
+    if (voiceAvailable()) {
+      const started = await startListening({
+        lang: settings.language || "en-US",
+        onPartial: (t) => t && setWord(t),
+        onFinal: (t) => t && setWord(t),
+        onEnd: () => setRecording(false),
+        onError: () => setRecording(false),
+      });
+      if (started) {
+        setWord("");
+        setRecording(true);
+        return;
+      }
+    }
+
     const ok = await startRecording();
     if (!ok) return Alert.alert("Microphone permission is needed to speak a word.");
     setRecording(true);

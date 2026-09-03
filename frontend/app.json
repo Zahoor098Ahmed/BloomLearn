@@ -12,13 +12,14 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "KiddoCare uses the camera so a parent can add a photo for a communication tile.",
-        "NSMicrophoneUsageDescription": "KiddoCare uses the microphone so a parent can record a voice for a communication word.",
+        "NSMicrophoneUsageDescription": "KiddoCare uses the microphone so a child can speak a word or sentence.",
+        "NSSpeechRecognitionUsageDescription": "KiddoCare turns a spoken word or sentence into text and a matching picture, on the device.",
         "NSPhotoLibraryUsageDescription": "KiddoCare lets a parent pick a photo from the gallery for a communication tile."
       }
     },
     "android": {
       "package": "com.timeglobaltech.kiddocare",
-      "versionCode": 18,
+      "versionCode": 19,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
