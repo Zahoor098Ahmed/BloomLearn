@@ -173,3 +173,26 @@ export interface SentenceScene {
   reference: string | null;
   conceptKey: string | null;
 }
+
+/** Rich scene graph for the Hybrid Smart Sentence-to-Scene engine. */
+export type SceneSize = 'tiny' | 'small' | 'normal' | 'big' | 'huge';
+
+export interface SceneEntity {
+  type: string;        // e.g. "cat"
+  glyph: string;       // emoji stand-in
+  color: string | null;
+  colorHex: string | null;
+  size: SceneSize;
+  count: number;       // 1..5 rendered
+  action: string | null;
+}
+
+export interface SceneGraph {
+  raw: string;
+  subject: SceneEntity | null;
+  relation: string | null;   // canonical: under | on | above | behind | in front of | beside | inside | null
+  reference: SceneEntity | null;
+  conceptKey: string | null;
+  /** 0..1 — how well the on-device engine understood the sentence. */
+  confidence: number;
+}

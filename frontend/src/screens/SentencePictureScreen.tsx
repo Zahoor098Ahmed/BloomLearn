@@ -1,21 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Modal, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
-import {
-  parseSentence,
-  colorHex,
-  canonicalPreposition,
-  conceptByKey,
-  SUBJECTS,
-  REFERENCES,
-  CONCEPTS,
-} from "../modules/sentenceScene";
-import { loadStoredKey, setStoredKey, isAiConfigured, generateSentenceImage, cachedImageFor, transcribeAudio } from "../modules/aiImage";
+import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
+import { loadStoredKey, setStoredKey, isAiConfigured, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
+import { resolveSceneImage, saveSceneImage } from "../modules/aiScene";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
-import SceneDrawing from "../components/SceneDrawing";
+import SceneComposer from "../components/SceneComposer";
 import { colors, radius } from "../theme";
 
 interface Props {
@@ -24,51 +17,90 @@ interface Props {
 
 const EXAMPLES = [
   "The black cat is under the table",
-  "The brown dog is beside the box",
-  "The blue ball is on the chair",
-  "The white rabbit is behind the tree",
+  "A small brown dog is behind the big tree",
+  "Three red apples are in the basket",
+  "The blue bird is above the house",
+  "The girl is sitting on the chair",
 ];
+
+type Source = "instant" | "ai";
 
 export default function SentencePictureScreen({ onBack }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
-  const [text, setText] = useState("The black cat is under the table");
+  const [text, setText] = useState("A small black cat is behind the big tree");
 
+  const [source, setSource] = useState<Source>("instant");
   const [aiUri, setAiUri] = useState<string | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [aiReady, setAiReady] = useState(false);
+  const [openaiReady, setOpenaiReady] = useState(false);
   const [keyModal, setKeyModal] = useState(false);
   const [keyInput, setKeyInput] = useState("");
   const [recording, setRecording] = useState(false);
   const [sttBusy, setSttBusy] = useState(false);
+  const [savedOffline, setSavedOffline] = useState(false);
 
-  const scene = useMemo(() => parseSentence(text), [text]);
-  const concept = conceptByKey(scene.conceptKey);
+  const graph = useMemo(() => parseSceneGraph(text), [text]);
+  const concept = conceptByKey(graph.conceptKey);
+  const textRef = useRef(text);
+  textRef.current = text;
 
   useEffect(() => {
-    loadStoredKey().then(() => setAiReady(isAiConfigured()));
+    loadStoredKey().then(() => setOpenaiReady(isAiConfigured()));
   }, []);
 
-  // Show a cached AI picture instantly when the sentence already has one.
+  // As the sentence changes, drop back to the instant scene; load a cached AI
+  // picture if we have saved one for this exact sentence.
   useEffect(() => {
     let active = true;
+    setSource("instant");
     setAiError(null);
-    cachedImageFor(text).then((uri) => {
-      if (active) setAiUri(uri ?? null);
+    setSavedOffline(false);
+    resolveSceneImage(text).then((r) => {
+      if (active && r.cached) {
+        setAiUri(r.url);
+        setSavedOffline(true);
+      } else if (active) {
+        setAiUri(null);
+      }
     });
     return () => {
       active = false;
     };
   }, [text]);
 
-  async function makeAiPicture(force = false) {
+  async function makeAiPicture() {
     setAiLoading(true);
     setAiError(null);
-    const res = await generateSentenceImage(text, force);
-    setAiLoading(false);
-    if (res.dataUri) setAiUri(res.dataUri);
-    else setAiError(res.error ?? "Could not make the picture.");
+    // Prefer the OpenAI key when connected (sharper); otherwise use the free
+    // Pollinations engine — no key, no sign-up.
+    if (openaiReady) {
+      const res = await generateSentenceImage(text, false);
+      setAiLoading(false);
+      if (res.dataUri) {
+        setAiUri(res.dataUri);
+        setSource("ai");
+      } else {
+        setAiError(res.error ?? "Could not make the picture.");
+      }
+      return;
+    }
+    const r = await resolveSceneImage(text);
+    setAiUri(r.url);
+    setSource("ai");
+    // Image component reports load; give it a beat, then clear the spinner.
+    setTimeout(() => setAiLoading(false), 400);
+  }
+
+  async function saveForOffline() {
+    const uri = await saveSceneImage(text);
+    if (uri) {
+      setAiUri(uri);
+      setSavedOffline(true);
+    } else {
+      Alert.alert("Could not save", "Check the internet connection and try again.");
+    }
   }
 
   async function toggleMic() {
@@ -76,19 +108,14 @@ export default function SentencePictureScreen({ onBack }: Props) {
       setRecording(false);
       const uri = await stopRecordingTemp();
       if (!isAiConfigured() || !uri) {
-        // demo: no speech service — let the presenter use the keyboard mic
-        Alert.alert("Speak with the keyboard", "Tap the text box and use the microphone on your keyboard. Real voice typing turns on with an OpenAI key.");
+        Alert.alert("Speak with the keyboard", "Tap the text box and use the microphone on your keyboard — the picture updates as you talk.");
         return;
       }
       setSttBusy(true);
       const res = await transcribeAudio(uri, (lang || "en-US").split("-")[0]);
       setSttBusy(false);
-      if (res.text) {
-        setAiUri(null);
-        setText(res.text);
-      } else {
-        Alert.alert("Didn't catch that", res.error ?? "Try again or type it.");
-      }
+      if (res.text) setText(res.text);
+      else Alert.alert("Didn't catch that", res.error ?? "Try again or type it.");
       return;
     }
     const ok = await startRecording();
@@ -98,18 +125,13 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
   async function saveKey() {
     await setStoredKey(keyInput);
-    setAiReady(isAiConfigured());
+    setOpenaiReady(isAiConfigured());
     setKeyModal(false);
     setKeyInput("");
   }
 
-  const sceneSpec = {
-    subject: scene.subject,
-    subjectColor: colorHex(scene.color),
-    preposition: canonicalPreposition(scene.preposition),
-    reference: scene.reference,
-  };
-  const prep = canonicalPreposition(scene.preposition);
+  const showingAi = source === "ai" && !!aiUri;
+  const pct = Math.round(graph.confidence * 100);
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
@@ -120,56 +142,83 @@ export default function SentencePictureScreen({ onBack }: Props) {
           </Pressable>
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Picture Talk</Text>
-            <Text style={styles.headerSub}>Say or type a sentence — the picture matches</Text>
+            <Text style={styles.headerSub}>Say or type a sentence — the picture builds as you talk</Text>
           </View>
           <Pressable onPress={() => setKeyModal(true)} style={styles.backBtn}>
-            <Ionicons name={aiReady ? "sparkles" : "sparkles-outline"} size={18} color="white" />
+            <Ionicons name={openaiReady ? "sparkles" : "sparkles-outline"} size={18} color="white" />
           </Pressable>
         </View>
 
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <View style={styles.stage}>
-            {aiLoading ? (
-              <View style={styles.stageCenter}>
-                <ActivityIndicator size="large" color={colors.forest} />
-                <Text style={styles.stageMsg}>Drawing the picture…</Text>
-              </View>
-            ) : aiUri ? (
-              <Image source={{ uri: aiUri }} style={styles.stageImg} resizeMode="contain" />
+          <View style={styles.stageWrap}>
+            {showingAi ? (
+              <Image source={{ uri: aiUri! }} style={styles.stageImg} resizeMode="contain" onLoadEnd={() => setAiLoading(false)} />
             ) : concept ? (
-              <ConceptView concept={concept} />
+              <View style={styles.stageWhite}><ConceptView concept={concept} /></View>
             ) : (
-              <SceneDrawing spec={sceneSpec} />
+              <SceneComposer graph={graph} />
             )}
+            {aiLoading && (
+              <View style={styles.stageOverlay}>
+                <ActivityIndicator color="white" />
+                <Text style={styles.stageOverlayText}>Making the picture…</Text>
+              </View>
+            )}
+            <View style={[styles.sourceBadge, showingAi ? styles.sourceAi : styles.sourceInstant]}>
+              <Ionicons name={showingAi ? "sparkles" : "flash"} size={11} color="white" />
+              <Text style={styles.sourceBadgeText}>
+                {showingAi ? (savedOffline ? "AI · saved" : "AI") : "Instant"}
+              </Text>
+            </View>
           </View>
 
           {aiError && <Text style={styles.aiError}>{aiError}</Text>}
 
-          <View style={styles.aiRow}>
-            <Pressable onPress={() => makeAiPicture(false)} disabled={aiLoading} style={[styles.aiBtn, aiLoading && { opacity: 0.5 }]}>
-              <Ionicons name="sparkles" size={16} color="white" />
-              <Text style={styles.aiBtnText}>{aiUri ? "Real picture ✓" : "Make real picture"}</Text>
-            </Pressable>
-            {aiUri && (
-              <Pressable onPress={() => makeAiPicture(true)} disabled={aiLoading} style={styles.aiRegenBtn}>
-                <Ionicons name="refresh" size={16} color={colors.forestDark} />
-              </Pressable>
-            )}
-            {aiUri && (
-              <Pressable onPress={() => setAiUri(null)} style={styles.aiRegenBtn}>
-                <Ionicons name="brush" size={16} color={colors.forestDark} />
-              </Pressable>
-            )}
-          </View>
+          {!concept && (
+            <View style={styles.aiRow}>
+              {showingAi ? (
+                <>
+                  <Pressable onPress={() => setSource("instant")} style={[styles.aiBtn, { backgroundColor: colors.cardMuted }]}>
+                    <Ionicons name="flash" size={15} color={colors.textMid} />
+                    <Text style={[styles.aiBtnText, { color: colors.textMid }]}>Instant scene</Text>
+                  </Pressable>
+                  {!savedOffline && (
+                    <Pressable onPress={saveForOffline} style={styles.aiRegenBtn}>
+                      <Ionicons name="download-outline" size={16} color={colors.forestDark} />
+                    </Pressable>
+                  )}
+                  <Pressable onPress={makeAiPicture} disabled={aiLoading} style={styles.aiRegenBtn}>
+                    <Ionicons name="refresh" size={16} color={colors.forestDark} />
+                  </Pressable>
+                </>
+              ) : (
+                <Pressable onPress={makeAiPicture} disabled={aiLoading} style={[styles.aiBtn, aiLoading && { opacity: 0.5 }]}>
+                  <Ionicons name="sparkles" size={16} color="white" />
+                  <Text style={styles.aiBtnText}>Make full picture with AI</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
 
-          <View style={styles.chips}>
-            <Chip on={!!scene.color} text={scene.color ?? "colour"} />
-            <Chip on={!!scene.subject} text={scene.subject ?? "thing"} />
-            <Chip on={!!scene.preposition} text={prep ?? "where"} />
-            <Chip on={!!scene.reference} text={scene.reference ?? "object"} />
-          </View>
+          {/* what the engine understood */}
+          {!concept && (
+            <View style={styles.chips}>
+              {graph.subject?.size && graph.subject.size !== "normal" && <Chip on text={graph.subject.size} />}
+              {graph.subject && graph.subject.count > 1 && <Chip on text={`${graph.subject.count}`} />}
+              <Chip on={!!graph.subject?.color} text={graph.subject?.color ?? "colour"} />
+              <Chip on={!!graph.subject} text={graph.subject?.type ?? "thing"} />
+              {graph.subject?.action && <Chip on text={graph.subject.action} />}
+              <Chip on={!!graph.relation} text={graph.relation ?? "where"} />
+              <Chip on={!!graph.reference} text={graph.reference?.type ?? "object"} />
+            </View>
+          )}
+          {!concept && graph.subject && (
+            <Text style={styles.understood}>
+              {pct >= 60 ? "Understood well" : "Partly understood"} · {pct}% — tap "AI" for anything the instant scene can't draw.
+            </Text>
+          )}
 
-          {concept && !aiUri && (
+          {concept && !showingAi && (
             <View style={styles.captionCard}>
               <Text style={styles.captionTitle}>{concept.title}</Text>
               <Text style={styles.captionBody}>{concept.caption}</Text>
@@ -179,20 +228,16 @@ export default function SentencePictureScreen({ onBack }: Props) {
           <TextInput
             value={text}
             onChangeText={setText}
-            placeholder="Type a sentence, or tap the mic on your keyboard to speak…"
+            placeholder="Type a sentence, or tap the mic on your keyboard…"
             placeholderTextColor={colors.textLight}
             style={styles.input}
             multiline
           />
           <Pressable onPress={toggleMic} disabled={sttBusy} style={[styles.micRow, recording && styles.micRowOn]}>
-            {sttBusy ? (
-              <ActivityIndicator color="white" />
-            ) : (
-              <Ionicons name={recording ? "stop" : "mic"} size={20} color="white" />
-            )}
-            <Text style={styles.micRowText}>{recording ? "Listening… tap to stop" : sttBusy ? "Turning speech into a picture…" : "Speak a sentence"}</Text>
+            {sttBusy ? <ActivityIndicator color="white" /> : <Ionicons name={recording ? "stop" : "mic"} size={20} color="white" />}
+            <Text style={styles.micRowText}>{recording ? "Listening… tap to stop" : sttBusy ? "Turning speech into text…" : "Speak a sentence"}</Text>
           </Pressable>
-          <Text style={styles.micHint}>Or tap the text box and use your keyboard's microphone — the picture updates as you talk.</Text>
+          <Text style={styles.micHint}>Or tap the text box and use your keyboard's microphone — the picture updates word by word.</Text>
 
           <View style={styles.actionRow}>
             <Pressable onPress={() => speak(text, lang, settings.soundEnabled)} style={styles.speakBtn}>
@@ -223,10 +268,10 @@ export default function SentencePictureScreen({ onBack }: Props) {
           </View>
 
           <Text style={styles.hint}>
-            The drawing works offline. "Make real picture" uses AI for a full illustration
-            {aiReady ? " (connected)." : " — tap ✨ to connect an OpenAI key."} Understood words: colours, things
-            ({Object.keys(SUBJECTS).slice(0, 5).join(", ")}…), positions (under, on, above, beside, behind…), objects
-            ({Object.keys(REFERENCES).slice(0, 5).join(", ")}…).
+            The instant scene works offline and is always the base. "AI" uses a free image engine (no key needed); a sharper
+            engine turns on if you connect an OpenAI key with ✨. Understood: colours, sizes (small / big), counts, things
+            ({Object.keys(SUBJECTS).slice(0, 5).join(", ")}…), actions (running, sitting…), positions (under, on, above, behind,
+            in front of, beside, inside), objects ({Object.keys(REFERENCES).slice(0, 5).join(", ")}…).
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -234,10 +279,10 @@ export default function SentencePictureScreen({ onBack }: Props) {
       <Modal visible={keyModal} transparent animationType="fade" onRequestClose={() => setKeyModal(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Connect AI pictures</Text>
+            <Text style={styles.modalTitle}>Sharper AI pictures (optional)</Text>
             <Text style={styles.modalBody}>
-              Paste an OpenAI API key to turn on full AI illustrations. It is stored only on this device. Set a spending
-              limit on the key. Leave blank and save to disconnect.
+              The free AI engine already works with no key. Paste an OpenAI API key here for higher-quality illustrations. It is
+              stored only on this device. Leave blank and save to disconnect.
             </Text>
             <TextInput
               value={keyInput}
@@ -326,10 +371,51 @@ const styles = StyleSheet.create({
   headerTitle: { color: "white", fontSize: 20, fontWeight: "800" },
   headerSub: { color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 2 },
   body: { padding: 20, gap: 14, paddingBottom: 40 },
-  stage: { height: 240, backgroundColor: "#ffffff", borderRadius: radius, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
-  stageImg: { width: "100%", height: "100%" },
-  stageCenter: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
-  stageMsg: { color: colors.textMid, fontSize: 13, fontWeight: "600" },
+  stageWrap: { position: "relative" },
+  stageWhite: {
+    width: "100%",
+    aspectRatio: 320 / 236,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
+  stageImg: {
+    width: "100%",
+    aspectRatio: 320 / 236,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  stageOverlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    bottom: 0,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    borderRadius: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+  stageOverlayText: { color: "white", fontWeight: "600", fontSize: 12.5 },
+  sourceBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+  },
+  sourceInstant: { backgroundColor: colors.blueDeep },
+  sourceAi: { backgroundColor: colors.purpleDeep },
+  sourceBadgeText: { color: "white", fontSize: 10, fontWeight: "800", letterSpacing: 0.3 },
   aiError: { color: colors.pinkDeep, fontSize: 12, marginTop: -6 },
   aiRow: { flexDirection: "row", gap: 10 },
   aiBtn: {
@@ -343,18 +429,13 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   aiBtnText: { color: "white", fontWeight: "800", fontSize: 14 },
-  aiRegenBtn: {
-    width: 48,
-    backgroundColor: colors.forestLight,
-    borderRadius: radius,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  aiRegenBtn: { width: 48, backgroundColor: colors.forestLight, borderRadius: radius, alignItems: "center", justifyContent: "center" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
   chipOn: { backgroundColor: colors.forest },
   chipOff: { backgroundColor: colors.cardMuted },
   chipText: { fontSize: 12, fontWeight: "700" },
+  understood: { fontSize: 11.5, color: colors.textMid, marginTop: -4 },
   captionCard: { backgroundColor: colors.forestLight, borderRadius: radius, padding: 14 },
   captionTitle: { fontSize: 14, fontWeight: "800", color: colors.forestDark },
   captionBody: { fontSize: 12.5, color: colors.textDark, marginTop: 4, lineHeight: 18 },
