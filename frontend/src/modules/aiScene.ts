@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AI_PROXY_URL } from "./aiImage";
+import type { SceneGraph } from "../types";
 
 /**
  * Free AI-image fallback for the Hybrid Smart Sentence-to-Scene engine.
@@ -11,8 +12,25 @@ import { AI_PROXY_URL } from "./aiImage";
  */
 
 const STYLE =
-  "flat matte children's book illustration, single clear centred subject, plain white background, " +
-  "soft calm colours, bold simple outlines, no text, no watermark, consistent educational style";
+  "flat matte children's book illustration, one clear centred subject, pure plain white background only, " +
+  "bold simple outlines, no text, no watermark, consistent educational style";
+
+/**
+ * Turn the parsed scene graph into a precise prompt so the COLOUR lands on the
+ * subject, not the background. "blue dog" -> a dog whose fur is blue, on white.
+ */
+function promptFromGraph(g: SceneGraph): string {
+  const s = g.subject;
+  if (!s) return cleanSentence(g.raw);
+  const parts: string[] = [];
+  const count = s.count > 1 ? `${s.count} ` : "a ";
+  const size = s.size && s.size !== "normal" ? `${s.size} ` : "";
+  parts.push(`${count}${size}${s.type}`);
+  if (s.color) parts.push(`the ${s.type} is entirely ${s.color} coloured, ${s.color} ${s.type}`);
+  if (s.action) parts.push(s.action);
+  if (g.relation && g.reference) parts.push(`${g.relation} a ${g.reference.type}`);
+  return parts.join(", ");
+}
 
 const CACHE_KEY = "kiddocare_scene_ai_cache";
 let cache: Record<string, string> = {};
@@ -43,10 +61,11 @@ function cleanSentence(raw: string): string {
  * Build the image URL for a sentence. Returns instantly — no request is made
  * here; the URL is loaded by <Image> and cached by the OS.
  */
-export function sceneImageUrl(sentence: string): string {
+export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
   const clean = cleanSentence(sentence);
   const seed = hash(clean) % 1_000_000;
-  const prompt = encodeURIComponent(`${clean}. ${STYLE}`);
+  const subject = graph ? promptFromGraph(graph) : clean;
+  const prompt = encodeURIComponent(`${subject}. ${STYLE}`);
   // Optional self-hosted proxy can front Pollinations for rate-limit control.
   const base = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/scene` : "https://image.pollinations.ai/prompt";
   return `${base}/${prompt}?width=768&height=768&nologo=true&seed=${seed}&model=flux`;

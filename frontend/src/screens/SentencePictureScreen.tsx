@@ -62,10 +62,16 @@ export default function SentencePictureScreen({ onBack }: Props) {
     const t = setTimeout(async () => {
       if (concept) return;
       const hit = await lookupImage(q, graph);
-      if (active && textRef.current === q && hit) {
+      if (!active || textRef.current !== q) return;
+      if (hit) {
         setImg({ uri: hit.uri, source: hit.fromLibrary ? "library" : "library-new" });
         libraryCount().then(setLibN);
+        return;
       }
+      // Nothing in the library and a colour was asked for ("blue dog") — the
+      // instant emoji scene can't colour the subject, so make the AI picture
+      // straight away and save it into the library.
+      if (graph.subject?.color) makeAiPicture();
     }, 450);
     return () => {
       active = false;
@@ -87,7 +93,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
       }
       generated = res.dataUri;
     } else {
-      generated = sceneImageUrl(text); // free Pollinations URL
+      generated = sceneImageUrl(text, graph); // free Pollinations URL
     }
     if (!generated) {
       setAiLoading(false);

@@ -123,9 +123,13 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
     if (index[k]) return { uri: index[k].uri, source: index[k].source, fromLibrary: true };
   }
 
+  // ARASAAC pictograms are fixed-colour line art, so "blue dog" would come back
+  // as a plain dog. When a colour is asked for, don't seed from ARASAAC — return
+  // null so the caller uses AI (which draws a real blue dog) and saves it.
+  if (graph?.subject?.color) return null;
+
   // 2. seed from ARASAAC — try the specific term, then just the subject
   const searchTerms = [
-    graph?.subject?.color && graph.subject ? `${graph.subject.color} ${graph.subject.type}` : null,
     graph?.subject?.type ?? null,
     keys[0] ?? null,
   ].filter((t): t is string => !!t);
