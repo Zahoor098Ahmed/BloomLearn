@@ -19,7 +19,6 @@ import type { SceneGraph } from "../types";
  */
 
 const INDEX_KEY = "kiddocare_library_index";
-const DICT_KEY = "kiddocare_arasaac_dict";
 const DIR = `${FileSystem.documentDirectory}library/`;
 
 export type LibrarySource = "arasaac" | "ai" | "photo" | "manual";
@@ -96,49 +95,22 @@ function candidateKeys(phrase: string, graph?: SceneGraph): string[] {
 // then cached in the library. This is the "5,000+ picture library" without
 // bundling megabytes of images into the app.
 
-let dict: Record<string, number> = {};
-let dictLoaded = false;
+import DICT from "./arasaacDict.json";
 
-async function ensureDict() {
-  if (dictLoaded) return;
-  try {
-    const raw = await AsyncStorage.getItem(DICT_KEY);
-    if (raw) dict = JSON.parse(raw);
-  } catch {
-    /* ignore */
-  }
-  dictLoaded = true;
-}
+// ~14,800 everyday English words -> ARASAAC pictogram id, bundled with the app
+// (280 KB of text, no images). Every word here resolves to a white-background
+// picture with zero network round-trips for the lookup; the PNG is fetched and
+// cached in the library only the first time it is shown.
+const dict: Record<string, number> = DICT as Record<string, number>;
+const DICT_SIZE = Object.keys(dict).length;
 
-/** Fetch and store the ARASAAC keyword dictionary. Safe to call on every start. */
+/** Kept for API compatibility; the dictionary is bundled, nothing to build. */
 export async function buildDictionary(): Promise<number> {
-  await ensureDict();
-  if (Object.keys(dict).length > 3000) return Object.keys(dict).length;
-  try {
-    const res = await fetch("https://api.arasaac.org/api/pictograms/all/en");
-    if (!res.ok) return Object.keys(dict).length;
-    const all = (await res.json()) as { _id: number; keywords?: { keyword?: string }[] }[];
-    const next: Record<string, number> = {};
-    for (const it of all) {
-      for (const k of it.keywords ?? []) {
-        const w = (k.keyword ?? "").toLowerCase().trim();
-        if (!w || w.length > 32 || /[^a-z .-]/.test(w)) continue;
-        if (!(w in next)) next[w] = it._id;
-      }
-    }
-    if (Object.keys(next).length > 500) {
-      dict = next;
-      AsyncStorage.setItem(DICT_KEY, JSON.stringify(dict)).catch(() => {});
-    }
-  } catch {
-    /* offline — live search still works */
-  }
-  return Object.keys(dict).length;
+  return DICT_SIZE;
 }
 
 export async function dictionaryWords(): Promise<number> {
-  await ensureDict();
-  return Object.keys(dict).length;
+  return DICT_SIZE;
 }
 
 function dictUrl(term: string): string | null {
@@ -197,8 +169,7 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
   // null so the caller uses AI (which draws a real blue dog) and saves it.
   if (graph?.subject?.color) return null;
 
-  // 2. resolve from the ARASAAC dictionary (instant, ~13,000 daily words)
-  await ensureDict();
+  // 2. resolve from the bundled ARASAAC dictionary (instant, ~14,800 words)
   const terms = [...keys, graph?.subject?.type ?? "", keys[0] ?? ""].filter(Boolean);
   for (const term of terms) {
     const url = dictUrl(term);
@@ -275,7 +246,6 @@ export async function prewarmLibrary(max = 400): Promise<void> {
   prewarming = true;
   await ensureLoaded();
   try {
-    await buildDictionary();
     const { SEED_LIST } = await import("./librarySeed");
     let done = 0;
     for (const word of SEED_LIST) {
