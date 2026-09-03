@@ -50,8 +50,14 @@ export default function SentencePictureScreen({ onBack }: Props) {
   useEffect(() => {
     loadStoredKey().then(() => setOpenaiReady(!!getOpenAiKey()));
     libraryCount().then(setLibN);
-    // Fill the library from the curated word list in the background.
-    prewarmLibrary().then(() => libraryCount().then(setLibN));
+    // Fill the library from the curated word list in the background, refreshing
+    // the count as it grows.
+    const poll = setInterval(() => libraryCount().then(setLibN), 3000);
+    prewarmLibrary().then(() => {
+      clearInterval(poll);
+      libraryCount().then(setLibN);
+    });
+    return () => clearInterval(poll);
   }, []);
 
   // On sentence change: ask the library first. If it has (or can seed) a
@@ -179,7 +185,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
           </Pressable>
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Picture Talk</Text>
-            <Text style={styles.headerSub}>Say or type a sentence — the picture builds as you talk</Text>
+            <Text style={styles.headerSub}>
+              {libN > 0 ? `Picture library: ${libN} saved` : "Say or type a sentence — the picture builds as you talk"}
+            </Text>
           </View>
           <Pressable onPress={() => setKeyModal(true)} style={styles.backBtn}>
             <Ionicons name={openaiReady ? "sparkles" : "sparkles-outline"} size={18} color="white" />
