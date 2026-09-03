@@ -113,10 +113,70 @@ export async function dictionaryWords(): Promise<number> {
   return DICT_SIZE;
 }
 
+// Child speech rarely matches a dictionary word exactly. This maps the common
+// informal / baby words to the word ARASAAC actually indexes.
+const SYNONYMS: Record<string, string> = {
+  puppy: "dog", doggy: "dog", doggie: "dog", pup: "dog",
+  kitty: "cat", kitten: "cat", kittie: "cat", pussycat: "cat",
+  bunny: "rabbit", horsey: "horse", pony: "horse", piggy: "pig", ducky: "duck",
+  birdie: "bird", cow: "cow", moo: "cow", teddy: "teddy bear",
+  mom: "mother", mum: "mother", mommy: "mother", mama: "mother",
+  dad: "father", daddy: "father", papa: "father",
+  grandma: "grandmother", granny: "grandmother", nana: "grandmother",
+  grandpa: "grandfather", nan: "grandmother",
+  kid: "child", kids: "children", baba: "baby",
+  tummy: "stomach", belly: "stomach", potty: "toilet", loo: "toilet",
+  telly: "television", tv: "television", fridge: "refrigerator",
+  choccy: "chocolate", sweets: "candy", sweetie: "candy", lolly: "lollipop",
+  brekkie: "breakfast", veggies: "vegetables", spuds: "potato",
+  auto: "car", motorcar: "car", lorry: "truck", plane: "airplane",
+  aeroplane: "airplane", chopper: "helicopter", bike: "bicycle", cycle: "bicycle",
+  choo: "train",
+  jumper: "sweater", pants: "trousers", nappy: "diaper",
+  specs: "glasses", brolly: "umbrella",
+  poorly: "sick", ill: "sick", owie: "hurt", ouch: "hurt",
+  scared: "afraid", cross: "angry", mad: "angry",
+  nap: "sleep", snooze: "sleep",
+  telephone: "phone", mobile: "phone", laptop: "computer", pc: "computer",
+  footy: "football",
+  doggo: "dog", birdy: "bird", fishy: "fish", froggy: "frog",
+};
+
+/** Try a word, its singular, and common verb forms. */
+function morphs(w: string): string[] {
+  const out = [w];
+  if (w.endsWith("ies") && w.length > 4) out.push(w.slice(0, -3) + "y");
+  if (w.endsWith("es") && w.length > 3) out.push(w.slice(0, -2));
+  if (w.endsWith("s") && !w.endsWith("ss") && w.length > 3) out.push(w.slice(0, -1));
+  if (w.endsWith("ing") && w.length > 5) {
+    out.push(w.slice(0, -3), w.slice(0, -3) + "e");
+    if (w[w.length - 4] === w[w.length - 5]) out.push(w.slice(0, -4)); // running -> run
+  }
+  if (w.endsWith("ed") && w.length > 4) out.push(w.slice(0, -2), w.slice(0, -1));
+  return [...new Set(out)];
+}
+
+/** Resolve one term to a pictogram id via the dictionary (exact, synonym, morph). */
+function dictId(term: string): number | null {
+  const t = norm(term);
+  if (!t) return null;
+  const tries = [t, SYNONYMS[t] ?? "", ...morphs(t)].filter(Boolean);
+  for (const w of tries) {
+    if (dict[w]) return dict[w];
+    if (SYNONYMS[w] && dict[SYNONYMS[w]]) return dict[SYNONYMS[w]];
+  }
+  return null;
+}
+
+const STOP = new Set(["the", "a", "an", "is", "are", "was", "were", "to", "of", "and", "in", "on", "at", "with", "his", "her", "its", "this", "that", "some", "there", "then", "big", "small", "little"]);
+
+function idUrl(id: number): string {
+  return `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
+}
+
 function dictUrl(term: string): string | null {
-  if (!term) return null;
-  const id = dict[norm(term)] ?? dict[term.toLowerCase().trim()];
-  return id ? `https://static.arasaac.org/pictograms/${id}/${id}_500.png` : null;
+  const id = dictId(term);
+  return id ? idUrl(id) : null;
 }
 
 // --- ARASAAC live search (fallback for words not in the dictionary) --
@@ -169,8 +229,13 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
   // null so the caller uses AI (which draws a real blue dog) and saves it.
   if (graph?.subject?.color) return null;
 
-  // 2. resolve from the bundled ARASAAC dictionary (instant, ~14,800 words)
-  const terms = [...keys, graph?.subject?.type ?? "", keys[0] ?? ""].filter(Boolean);
+  // 2. resolve from the bundled ARASAAC dictionary (instant, ~14,800 words).
+  //    Try the whole phrase and the parsed subject first (most specific), then
+  //    scan each meaningful word of the sentence ("the boy eats an apple" ->
+  //    boy / eat / apple), so almost any everyday sentence lands a picture.
+  const phraseNorm = norm(phrase);
+  const tokens = phraseNorm.split(" ").filter((w) => w.length > 1 && !STOP.has(w));
+  const terms = [...keys, graph?.subject?.type ?? "", ...tokens].filter(Boolean);
   for (const term of terms) {
     const url = dictUrl(term);
     if (url) {
