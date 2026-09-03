@@ -7,7 +7,7 @@ import { speak } from "../modules/tts";
 import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
 import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
 import { sceneImageUrl } from "../modules/aiScene";
-import { lookupImage, saveImage, libraryCount } from "../modules/imageLibrary";
+import { lookupImage, saveImage, libraryCount, prewarmLibrary } from "../modules/imageLibrary";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import SceneComposer from "../components/SceneComposer";
@@ -50,6 +50,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
   useEffect(() => {
     loadStoredKey().then(() => setOpenaiReady(!!getOpenAiKey()));
     libraryCount().then(setLibN);
+    // Fill the library from the curated word list in the background.
+    prewarmLibrary().then(() => libraryCount().then(setLibN));
   }, []);
 
   // On sentence change: ask the library first. If it has (or can seed) a

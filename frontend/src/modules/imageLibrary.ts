@@ -88,12 +88,20 @@ function candidateKeys(phrase: string, graph?: SceneGraph): string[] {
 
 // --- ARASAAC (the seed library) --------------------------------------
 
+interface ArasaacItem { _id: number; keywords?: { keyword?: string }[] }
+
 async function arasaacFirst(term: string): Promise<string | null> {
   try {
     const res = await fetch(`https://api.arasaac.org/api/pictograms/en/search/${encodeURIComponent(term)}`);
     if (!res.ok) return null;
-    const json = (await res.json()) as { _id: number }[];
-    const id = Array.isArray(json) && json[0]?._id;
+    const json = (await res.json()) as ArasaacItem[];
+    if (!Array.isArray(json) || !json.length) return null;
+    const want = term.toLowerCase().trim();
+    // Prefer a pictogram whose keyword is exactly the word ("table" must not
+    // return "chair"), then a keyword that starts with it, else the first hit.
+    const exact = json.find((it) => it.keywords?.some((k) => (k.keyword ?? "").toLowerCase().trim() === want));
+    const starts = json.find((it) => it.keywords?.some((k) => (k.keyword ?? "").toLowerCase().trim().startsWith(want)));
+    const id = (exact ?? starts ?? json[0])._id;
     return id ? `https://static.arasaac.org/pictograms/${id}/${id}_500.png` : null;
   } catch {
     return null;
@@ -179,12 +187,44 @@ export async function saveImage(
 
     // keep the library from growing without bound
     const keys = Object.keys(index);
-    if (keys.length > 400) delete index[keys[0]];
+    if (keys.length > 6000) delete index[keys[0]];
 
     persist();
     return entry;
   } catch {
     return null;
+  }
+}
+
+/**
+ * Fill the library from the curated seed list (see librarySeed.ts). Runs in the
+ * background, throttled, and picks up where it left off — safe to call on every
+ * app start. Each word is fetched once from ARASAAC and saved with a white
+ * background, so later it comes straight from the local library.
+ */
+let prewarming = false;
+export async function prewarmLibrary(max = 400): Promise<void> {
+  if (prewarming) return;
+  prewarming = true;
+  await ensureLoaded();
+  try {
+    const { SEED_LIST } = await import("./librarySeed");
+    let done = 0;
+    for (const word of SEED_LIST) {
+      if (done >= max) break;
+      const k = norm(word);
+      if (!k || index[k]) continue;
+      const remote = await arasaacFirst(word);
+      if (remote) {
+        await saveImage(word, remote, { source: "arasaac", tags: [k] });
+        done++;
+        await new Promise((r) => setTimeout(r, 120)); // be gentle on the free API
+      }
+    }
+  } catch {
+    /* ignore — the library still seeds live on lookup */
+  } finally {
+    prewarming = false;
   }
 }
 
