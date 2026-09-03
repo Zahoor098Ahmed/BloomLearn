@@ -6,7 +6,7 @@ import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
 import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
-import { sceneImageUrl, composeSceneUrl } from "../modules/aiScene";
+import { sceneImageUrl, composeSceneUrl, aiSceneEnabled } from "../modules/aiScene";
 import { lookupImage, saveImage, libraryCount, prewarmLibrary, dictionaryWords } from "../modules/imageLibrary";
 import {
   type SceneSession,
@@ -83,21 +83,36 @@ export default function SentencePictureScreen({ onBack }: Props) {
     if (!buildMode) return;
     const q = text.trim();
     if (!q || q === mergedRef.current) return;
-    const t = setTimeout(() => {
+    const t = setTimeout(async () => {
       mergedRef.current = q;
       const next = isReset(q) ? newSession() : applyUtterance(session, q);
       setSession(next);
       if (aiTimer.current) clearTimeout(aiTimer.current);
       setAiError(null);
-      setAiLoading(true);
-      const url = composeSceneUrl(sessionPrompt(next), next.seed);
-      setImg({ uri: url, source: "ai-saved" });
-      saveImage(sessionPrompt(next), url, { source: "ai", tags: next.subjects }).catch(() => {});
-      setTimeout(() => setAiLoading(false), 5000); // reveal even if onLoadEnd is quiet
-      aiTimer.current = setTimeout(() => {
-        setAiLoading(false);
-        setAiError("The picture engine is slow right now — try saying it again.");
-      }, 20000);
+
+      // Reliable base: a library picture of the main subject (always works).
+      const subj = next.subjects[0] ?? q;
+      const hit = subj ? await lookupImage(subj) : null;
+      if (mergedRef.current !== q) return;
+      if (hit) setImg({ uri: hit.uri, source: "library" });
+
+      // Live drawing on top — only if a Pollinations token is configured, since
+      // the anonymous tier is rate-limited and would just fail.
+      if (aiSceneEnabled) {
+        setAiLoading(true);
+        const url = composeSceneUrl(sessionPrompt(next), next.seed);
+        setImg({ uri: url, source: "ai-saved" });
+        saveImage(sessionPrompt(next), url, { source: "ai", tags: next.subjects }).catch(() => {});
+        setTimeout(() => setAiLoading(false), 5000);
+        aiTimer.current = setTimeout(() => {
+          setAiLoading(false);
+          if (hit) setImg({ uri: hit.uri, source: "library" });
+          else setAiError("Couldn't draw that one — try saying it again.");
+        }, 15000);
+      } else if (!hit) {
+        setImg(null);
+        setAiError('No picture for "' + subj + '" yet. Add a free Pollinations token for live AI drawings.');
+      }
     }, 700);
     return () => clearTimeout(t);
   }, [text, buildMode, session]);
@@ -140,8 +155,14 @@ export default function SentencePictureScreen({ onBack }: Props) {
         return;
       }
       generated = res.dataUri;
+    } else if (aiSceneEnabled) {
+      generated = sceneImageUrl(text, graph); // Pollinations with token
     } else {
-      generated = sceneImageUrl(text, graph); // free Pollinations URL
+      setAiLoading(false);
+      setAiError(
+        "Live AI drawing needs a free Pollinations token (auth.pollinations.ai) in .env, or an OpenAI key. The instant scene and 14,800-word library still work.",
+      );
+      return;
     }
     if (!generated) {
       setAiLoading(false);

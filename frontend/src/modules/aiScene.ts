@@ -1,10 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { SceneGraph } from "../types";
 
-// Scene images always go straight to Pollinations (free, no key, no CORS
-// issues for <Image>). The backend proxy is not used here — a LAN proxy URL
-// simply fails on the web build and on phones off that network.
+// Scene images go straight to Pollinations. The anonymous tier is now heavily
+// rate-limited (HTTP 429), so set EXPO_PUBLIC_POLLINATIONS_TOKEN in .env with a
+// free token from https://auth.pollinations.ai for reliable generation. Without
+// a token the caller falls back to a library picture.
 const POLLINATIONS = "https://image.pollinations.ai/prompt";
+const PTOKEN = process.env.EXPO_PUBLIC_POLLINATIONS_TOKEN ?? "";
+
+export const aiSceneEnabled = !!PTOKEN;
+
+function tail(seed: number): string {
+  const t = PTOKEN ? `&token=${encodeURIComponent(PTOKEN)}&referrer=${encodeURIComponent(PTOKEN)}` : "";
+  return `?width=768&height=768&nologo=true&seed=${seed % 1_000_000}&model=flux${t}`;
+}
 
 /**
  * Free AI-image fallback for the Hybrid Smart Sentence-to-Scene engine.
@@ -70,7 +79,7 @@ export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
   const seed = hash(clean) % 1_000_000;
   const subject = graph ? promptFromGraph(graph) : clean;
   const prompt = encodeURIComponent(`${subject}. ${STYLE}`);
-  return `${POLLINATIONS}/${prompt}?width=768&height=768&nologo=true&seed=${seed}&model=flux`;
+  return `${POLLINATIONS}/${prompt}${tail(seed)}`;
 }
 
 /**
@@ -80,7 +89,7 @@ export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
  */
 export function composeSceneUrl(prompt: string, seed: number): string {
   const p = encodeURIComponent(`${prompt.trim()}. ${STYLE}`);
-  return `${POLLINATIONS}/${p}?width=768&height=768&nologo=true&seed=${seed % 1_000_000}&model=flux`;
+  return `${POLLINATIONS}/${p}${tail(seed)}`;
 }
 
 export interface SavedScene {
