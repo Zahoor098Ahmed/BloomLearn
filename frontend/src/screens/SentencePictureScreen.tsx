@@ -7,7 +7,7 @@ import { speak } from "../modules/tts";
 import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
 import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
 import { sceneImageUrl } from "../modules/aiScene";
-import { lookupImage, saveImage, libraryCount, prewarmLibrary } from "../modules/imageLibrary";
+import { lookupImage, saveImage, libraryCount, prewarmLibrary, dictionaryWords } from "../modules/imageLibrary";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import SceneComposer from "../components/SceneComposer";
@@ -41,6 +41,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const [recording, setRecording] = useState(false);
   const [sttBusy, setSttBusy] = useState(false);
   const [libN, setLibN] = useState(0);
+  const [wordsN, setWordsN] = useState(0);
 
   const graph = useMemo(() => parseSceneGraph(text), [text]);
   const concept = conceptByKey(graph.conceptKey);
@@ -52,10 +53,14 @@ export default function SentencePictureScreen({ onBack }: Props) {
     libraryCount().then(setLibN);
     // Fill the library from the curated word list in the background, refreshing
     // the count as it grows.
-    const poll = setInterval(() => libraryCount().then(setLibN), 3000);
+    const poll = setInterval(() => {
+      libraryCount().then(setLibN);
+      dictionaryWords().then(setWordsN);
+    }, 3000);
     prewarmLibrary().then(() => {
       clearInterval(poll);
       libraryCount().then(setLibN);
+      dictionaryWords().then(setWordsN);
     });
     return () => clearInterval(poll);
   }, []);
@@ -111,7 +116,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
     // Save the AI picture into the library so it is served from there next time.
     const entry = await saveImage(text, generated, { source: "ai", tags: graph.subject ? [graph.subject.type] : [] });
-    setAiLoading(false);
+    // keep the spinner until the <Image> actually loads (Pollinations can be slow)
     setImg({ uri: entry?.uri ?? generated, source: "ai-saved" });
     libraryCount().then(setLibN);
   }
@@ -186,7 +191,11 @@ export default function SentencePictureScreen({ onBack }: Props) {
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Picture Talk</Text>
             <Text style={styles.headerSub}>
-              {libN > 0 ? `Picture library: ${libN} saved` : "Say or type a sentence — the picture builds as you talk"}
+              {wordsN > 0
+                ? `Picture library: ${wordsN.toLocaleString()} words · ${libN} saved offline`
+                : libN > 0
+                  ? `Picture library: ${libN} saved`
+                  : "Say or type a sentence — the picture builds as you talk"}
             </Text>
           </View>
           <Pressable onPress={() => setKeyModal(true)} style={styles.backBtn}>
@@ -197,7 +206,16 @@ export default function SentencePictureScreen({ onBack }: Props) {
         <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
           <View style={styles.stageWrap}>
             {img ? (
-              <Image source={{ uri: img.uri }} style={styles.stageImg} resizeMode="contain" onLoadEnd={() => setAiLoading(false)} />
+              <Image
+                source={{ uri: img.uri }}
+                style={styles.stageImg}
+                resizeMode="contain"
+                onLoadEnd={() => setAiLoading(false)}
+                onError={() => {
+                  setAiLoading(false);
+                  setAiError("The picture engine did not respond. Tap refresh to try again.");
+                }}
+              />
             ) : concept ? (
               <View style={styles.stageWhite}><ConceptView concept={concept} /></View>
             ) : (

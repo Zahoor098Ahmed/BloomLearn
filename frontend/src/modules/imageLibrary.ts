@@ -19,6 +19,7 @@ import type { SceneGraph } from "../types";
  */
 
 const INDEX_KEY = "kiddocare_library_index";
+const DICT_KEY = "kiddocare_arasaac_dict";
 const DIR = `${FileSystem.documentDirectory}library/`;
 
 export type LibrarySource = "arasaac" | "ai" | "photo" | "manual";
@@ -86,7 +87,67 @@ function candidateKeys(phrase: string, graph?: SceneGraph): string[] {
   return [...new Set(keys.filter(Boolean))];
 }
 
-// --- ARASAAC (the seed library) --------------------------------------
+// --- ARASAAC dictionary (word -> pictogram id) -----------------------
+//
+// One fetch of the full ARASAAC English keyword list gives us ~13,000 daily
+// words mapped to a picture id. It is small (just words + numbers), stored on
+// the device, and lets any everyday word resolve to a white-background picture
+// instantly — the image itself is downloaded only the first time it is shown,
+// then cached in the library. This is the "5,000+ picture library" without
+// bundling megabytes of images into the app.
+
+let dict: Record<string, number> = {};
+let dictLoaded = false;
+
+async function ensureDict() {
+  if (dictLoaded) return;
+  try {
+    const raw = await AsyncStorage.getItem(DICT_KEY);
+    if (raw) dict = JSON.parse(raw);
+  } catch {
+    /* ignore */
+  }
+  dictLoaded = true;
+}
+
+/** Fetch and store the ARASAAC keyword dictionary. Safe to call on every start. */
+export async function buildDictionary(): Promise<number> {
+  await ensureDict();
+  if (Object.keys(dict).length > 3000) return Object.keys(dict).length;
+  try {
+    const res = await fetch("https://api.arasaac.org/api/pictograms/all/en");
+    if (!res.ok) return Object.keys(dict).length;
+    const all = (await res.json()) as { _id: number; keywords?: { keyword?: string }[] }[];
+    const next: Record<string, number> = {};
+    for (const it of all) {
+      for (const k of it.keywords ?? []) {
+        const w = (k.keyword ?? "").toLowerCase().trim();
+        if (!w || w.length > 32 || /[^a-z .-]/.test(w)) continue;
+        if (!(w in next)) next[w] = it._id;
+      }
+    }
+    if (Object.keys(next).length > 500) {
+      dict = next;
+      AsyncStorage.setItem(DICT_KEY, JSON.stringify(dict)).catch(() => {});
+    }
+  } catch {
+    /* offline — live search still works */
+  }
+  return Object.keys(dict).length;
+}
+
+export async function dictionaryWords(): Promise<number> {
+  await ensureDict();
+  return Object.keys(dict).length;
+}
+
+function dictUrl(term: string): string | null {
+  if (!term) return null;
+  const id = dict[norm(term)] ?? dict[term.toLowerCase().trim()];
+  return id ? `https://static.arasaac.org/pictograms/${id}/${id}_500.png` : null;
+}
+
+// --- ARASAAC live search (fallback for words not in the dictionary) --
 
 interface ArasaacItem { _id: number; keywords?: { keyword?: string }[] }
 
@@ -136,17 +197,23 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
   // null so the caller uses AI (which draws a real blue dog) and saves it.
   if (graph?.subject?.color) return null;
 
-  // 2. seed from ARASAAC — try the specific term, then just the subject
-  const searchTerms = [
-    graph?.subject?.type ?? null,
-    keys[0] ?? null,
-  ].filter((t): t is string => !!t);
+  // 2. resolve from the ARASAAC dictionary (instant, ~13,000 daily words)
+  await ensureDict();
+  const terms = [...keys, graph?.subject?.type ?? "", keys[0] ?? ""].filter(Boolean);
+  for (const term of terms) {
+    const url = dictUrl(term);
+    if (url) {
+      const saved = await saveImage(keys[0] || term, url, { source: "arasaac", tags: keys });
+      return { uri: saved?.uri ?? url, source: "arasaac", fromLibrary: false };
+    }
+  }
 
-  for (const term of searchTerms) {
+  // 3. last resort: live ARASAAC search for the subject
+  for (const term of [graph?.subject?.type, keys[0]].filter((t): t is string => !!t)) {
     const remote = await arasaacFirst(term);
     if (remote) {
       const saved = await saveImage(keys[0] || term, remote, { source: "arasaac", tags: keys });
-      if (saved) return { uri: saved.uri, source: "arasaac", fromLibrary: false };
+      return { uri: saved?.uri ?? remote, source: "arasaac", fromLibrary: false };
     }
   }
 
@@ -208,17 +275,18 @@ export async function prewarmLibrary(max = 400): Promise<void> {
   prewarming = true;
   await ensureLoaded();
   try {
+    await buildDictionary();
     const { SEED_LIST } = await import("./librarySeed");
     let done = 0;
     for (const word of SEED_LIST) {
       if (done >= max) break;
       const k = norm(word);
       if (!k || index[k]) continue;
-      const remote = await arasaacFirst(word);
-      if (remote) {
-        await saveImage(word, remote, { source: "arasaac", tags: [k] });
+      const url = dictUrl(word) ?? (await arasaacFirst(word));
+      if (url) {
+        await saveImage(word, url, { source: "arasaac", tags: [k] });
         done++;
-        await new Promise((r) => setTimeout(r, 120)); // be gentle on the free API
+        await new Promise((r) => setTimeout(r, 60)); // be gentle on the free API
       }
     }
   } catch {
