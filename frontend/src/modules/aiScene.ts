@@ -1,6 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { AI_PROXY_URL } from "./aiImage";
 import type { SceneGraph } from "../types";
+
+// Scene images always go straight to Pollinations (free, no key, no CORS
+// issues for <Image>). The backend proxy is not used here — a LAN proxy URL
+// simply fails on the web build and on phones off that network.
+const POLLINATIONS = "https://image.pollinations.ai/prompt";
 
 /**
  * Free AI-image fallback for the Hybrid Smart Sentence-to-Scene engine.
@@ -66,9 +70,7 @@ export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
   const seed = hash(clean) % 1_000_000;
   const subject = graph ? promptFromGraph(graph) : clean;
   const prompt = encodeURIComponent(`${subject}. ${STYLE}`);
-  // Optional self-hosted proxy can front Pollinations for rate-limit control.
-  const base = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/scene` : "https://image.pollinations.ai/prompt";
-  return `${base}/${prompt}?width=768&height=768&nologo=true&seed=${seed}&model=flux`;
+  return `${POLLINATIONS}/${prompt}?width=768&height=768&nologo=true&seed=${seed}&model=flux`;
 }
 
 /**
@@ -78,8 +80,7 @@ export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
  */
 export function composeSceneUrl(prompt: string, seed: number): string {
   const p = encodeURIComponent(`${prompt.trim()}. ${STYLE}`);
-  const base = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/scene` : "https://image.pollinations.ai/prompt";
-  return `${base}/${p}?width=768&height=768&nologo=true&seed=${seed % 1_000_000}&model=flux`;
+  return `${POLLINATIONS}/${p}?width=768&height=768&nologo=true&seed=${seed % 1_000_000}&model=flux`;
 }
 
 export interface SavedScene {

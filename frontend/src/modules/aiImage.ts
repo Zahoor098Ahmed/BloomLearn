@@ -218,8 +218,7 @@ export async function generateWordImage(word: string, force = false): Promise<Ai
   if (!activeKey()) {
     const seed = hashNum(`word:${clean}`) % 1000000;
     const p = encodeURIComponent(`${clean}, single object. ${SENSORY_STYLE_GUIDE}`);
-    const base = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/scene` : "https://image.pollinations.ai/prompt";
-    return { dataUri: `${base}/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
+    return { dataUri: `https://image.pollinations.ai/prompt/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
   }
 
   try {
@@ -236,8 +235,7 @@ export async function generateWordImage(word: string, force = false): Promise<Ai
         // backend has no key — fall through to the free engine
         const seed = hashNum(`word:${clean}`) % 1000000;
         const p = encodeURIComponent(`${clean}, single object. ${SENSORY_STYLE_GUIDE}`);
-        const base = `${AI_PROXY_URL.replace(/\/$/, "")}/scene`;
-        return { dataUri: `${base}/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
+        return { dataUri: `https://image.pollinations.ai/prompt/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
       }
       return { error: `Image service error (${res.status}).` };
     }

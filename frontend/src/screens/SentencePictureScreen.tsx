@@ -93,6 +93,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
       const url = composeSceneUrl(sessionPrompt(next), next.seed);
       setImg({ uri: url, source: "ai-saved" });
       saveImage(sessionPrompt(next), url, { source: "ai", tags: next.subjects }).catch(() => {});
+      setTimeout(() => setAiLoading(false), 5000); // reveal even if onLoadEnd is quiet
       aiTimer.current = setTimeout(() => {
         setAiLoading(false);
         setAiError("The picture engine is slow right now — try saying it again.");
@@ -153,6 +154,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
     // keep the spinner until the <Image> actually loads (Pollinations can be slow)
     setImg({ uri: entry?.uri ?? generated, source: "ai-saved" });
     if (aiTimer.current) clearTimeout(aiTimer.current);
+    setTimeout(() => setAiLoading(false), 5000); // reveal even if onLoadEnd is quiet
     aiTimer.current = setTimeout(() => {
       setAiLoading(false);
       setImg(null);
