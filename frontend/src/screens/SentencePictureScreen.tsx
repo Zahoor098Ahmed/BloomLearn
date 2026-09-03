@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
-import { loadStoredKey, setStoredKey, isAiConfigured, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
+import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
 import { resolveSceneImage, saveSceneImage } from "../modules/aiScene";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import SceneComposer from "../components/SceneComposer";
@@ -47,7 +47,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
   textRef.current = text;
 
   useEffect(() => {
-    loadStoredKey().then(() => setOpenaiReady(isAiConfigured()));
+    loadStoredKey().then(() => setOpenaiReady(!!getOpenAiKey()));
   }, []);
 
   // As the sentence changes, drop back to the instant scene; load a cached AI
@@ -103,18 +103,20 @@ export default function SentencePictureScreen({ onBack }: Props) {
     }
   }
 
+  function keyboardMicHint() {
+    Alert.alert("Speak with the keyboard", "Tap the text box and use the microphone on your keyboard — the picture updates as you talk.");
+  }
+
   async function toggleMic() {
     if (recording) {
       setRecording(false);
       const uri = await stopRecordingTemp();
-      if (!isAiConfigured() || !uri) {
-        Alert.alert("Speak with the keyboard", "Tap the text box and use the microphone on your keyboard — the picture updates as you talk.");
-        return;
-      }
+      if (!uri) return keyboardMicHint();
       setSttBusy(true);
       const res = await transcribeAudio(uri, (lang || "en-US").split("-")[0]);
       setSttBusy(false);
       if (res.text) setText(res.text);
+      else if (res.unavailable) keyboardMicHint(); // 503 / not set up — not an error
       else Alert.alert("Didn't catch that", res.error ?? "Try again or type it.");
       return;
     }
@@ -125,7 +127,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
   async function saveKey() {
     await setStoredKey(keyInput);
-    setOpenaiReady(isAiConfigured());
+    setOpenaiReady(!!getOpenAiKey());
     setKeyModal(false);
     setKeyInput("");
   }

@@ -93,6 +93,8 @@ export function isAiConfigured(): boolean {
 export interface TranscriptResult {
   text?: string;
   error?: string;
+  /** true when speech-to-text simply isn't set up — the caller should fall back to the keyboard, not show an error. */
+  unavailable?: boolean;
 }
 
 /**
@@ -101,7 +103,7 @@ export interface TranscriptResult {
  */
 export async function transcribeAudio(uri: string, langHint?: string): Promise<TranscriptResult> {
   if (!isAiConfigured()) {
-    return { error: "Voice typing needs an OpenAI key. Add one in Settings, or type the word instead." };
+    return { unavailable: true, error: "Voice typing isn't set up. Use the keyboard microphone for now." };
   }
   try {
     const form = new FormData();
@@ -113,6 +115,8 @@ export async function transcribeAudio(uri: string, langHint?: string): Promise<T
     const { url, headers } = endpointFor("/audio/transcriptions");
     const res = await fetch(url, { method: "POST", headers, body: form });
     if (!res.ok) {
+      // 503 = the backend has no OpenAI key -> not an error the user can fix; fall back to keyboard.
+      if (res.status === 503) return { unavailable: true, error: "Voice typing isn't set up on the server. Use the keyboard microphone for now." };
       if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
       if (res.status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
       return { error: `Speech service error (${res.status}).` };
@@ -130,10 +134,13 @@ function promptFor(sentence: string): string {
   return `${sentence.trim()}. ${SENSORY_STYLE_GUIDE}`;
 }
 
-function hash(s: string): string {
+function hashNum(s: string): number {
   let h = 0;
   for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return String(h >>> 0);
+  return h >>> 0;
+}
+function hash(s: string): string {
+  return String(hashNum(s));
 }
 
 export interface AiImageResult {
@@ -206,7 +213,14 @@ export async function generateWordImage(word: string, force = false): Promise<Ai
   const key = hash(`word:${prompt}`);
   if (!force && cache[key]) return { dataUri: cache[key], cached: true };
 
-  if (!isAiConfigured()) return { error: "AI pictures need an OpenAI key. Add one in Settings, or use a searched picture." };
+  // No OpenAI key: use the free scene engine (Pollinations, via the backend
+  // /scene route when connected, or directly). Stable seed = same word, same image.
+  if (!activeKey()) {
+    const seed = hashNum(`word:${clean}`) % 1000000;
+    const p = encodeURIComponent(`${clean}, single object. ${SENSORY_STYLE_GUIDE}`);
+    const base = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/scene` : "https://image.pollinations.ai/prompt";
+    return { dataUri: `${base}/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
+  }
 
   try {
     const { url, headers } = endpointFor("/images/generations");
@@ -218,6 +232,13 @@ export async function generateWordImage(word: string, force = false): Promise<Ai
     if (!res.ok) {
       if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
       if (res.status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
+      if (res.status === 503) {
+        // backend has no key — fall through to the free engine
+        const seed = hashNum(`word:${clean}`) % 1000000;
+        const p = encodeURIComponent(`${clean}, single object. ${SENSORY_STYLE_GUIDE}`);
+        const base = `${AI_PROXY_URL.replace(/\/$/, "")}/scene`;
+        return { dataUri: `${base}/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
+      }
       return { error: `Image service error (${res.status}).` };
     }
     const json = (await res.json()) as { data?: { b64_json?: string; url?: string }[] };
