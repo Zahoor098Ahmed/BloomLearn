@@ -14,14 +14,16 @@ import * as FileSystem from "expo-file-system/legacy";
 
 const PIXABAY_KEY_STORE = "kiddocare_pixabay_key";
 const IMG_DIR = `${FileSystem.documentDirectory}tiles/`;
+const ENV_PIXABAY_KEY = process.env.EXPO_PUBLIC_PIXABAY_KEY ?? "";
 
-let pixabayKey: string | null = null;
+// A key set in Settings wins; otherwise fall back to the .env value.
+let pixabayKey: string | null = ENV_PIXABAY_KEY || null;
 
 export async function loadPixabayKey() {
   try {
-    pixabayKey = await AsyncStorage.getItem(PIXABAY_KEY_STORE);
+    pixabayKey = (await AsyncStorage.getItem(PIXABAY_KEY_STORE)) || ENV_PIXABAY_KEY || null;
   } catch {
-    pixabayKey = null;
+    pixabayKey = ENV_PIXABAY_KEY || null;
   }
 }
 export async function setPixabayKey(key: string) {
@@ -34,7 +36,7 @@ export async function setPixabayKey(key: string) {
   }
 }
 export function hasPixabayKey() {
-  return !!pixabayKey;
+  return !!pixabayKey || !!process.env.EXPO_PUBLIC_AI_PROXY_URL;
 }
 
 export type ImageSource = "arasaac" | "pixabay";
@@ -75,10 +77,33 @@ async function searchPixabay(term: string): Promise<ImageHit[]> {
   }));
 }
 
+const PROXY_URL = process.env.EXPO_PUBLIC_AI_PROXY_URL ?? "";
+const PROXY_TOKEN = process.env.EXPO_PUBLIC_AI_PROXY_TOKEN ?? "";
+
+/** When the backend is connected, let it do the search (keeps the Pixabay key server-side). */
+async function searchViaProxy(term: string, source: ImageSource): Promise<ImageHit[] | null> {
+  if (!PROXY_URL) return null;
+  try {
+    const res = await fetch(
+      `${PROXY_URL.replace(/\/$/, "")}/images/search?q=${encodeURIComponent(term)}&source=${source}`,
+      PROXY_TOKEN ? { headers: { Authorization: `Bearer ${PROXY_TOKEN}` } } : undefined,
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as { hits?: ImageHit[] };
+    return json.hits ?? [];
+  } catch {
+    return null;
+  }
+}
+
 export async function searchImages(term: string, source: ImageSource): Promise<{ hits: ImageHit[]; error?: string }> {
   if (!term.trim()) return { hits: [] };
   try {
-    if (source === "pixabay" && !pixabayKey) return { hits: [], error: "Add a free Pixabay API key in Settings first." };
+    const viaProxy = await searchViaProxy(term, source);
+    if (viaProxy) {
+      return viaProxy.length ? { hits: viaProxy } : { hits: [], error: "No pictures found. Try a simpler word." };
+    }
+    if (source === "pixabay" && !pixabayKey) return { hits: [], error: "Add a Pixabay key in Settings or .env, or connect the backend." };
     const hits = source === "arasaac" ? await searchArasaac(term) : await searchPixabay(term);
     if (hits.length === 0) return { hits: [], error: "No pictures found. Try a simpler word." };
     return { hits };

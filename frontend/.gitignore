@@ -17,7 +17,8 @@ npm-debug.*
 yarn-debug.*
 yarn-error.*
 
-# local env files
+# local env files (keep .env.example tracked)
+.env
 .env*.local
 
 # typescript

@@ -37,9 +37,18 @@ npm install
 npm run dev               # http://localhost:8787
 ```
 
-Then point the app at it: in `frontend/src/modules/aiImage.ts` set
-`AI_PROXY_URL` to the backend's base URL and `AI_PROXY_TOKEN` to the same
-`APP_TOKEN`. See `backend/README.md` for the full endpoint list.
+### Connecting the two — `.env` only
+
+The app talks to the backend when **`frontend/.env`** has:
+
+```ini
+EXPO_PUBLIC_AI_PROXY_URL=http://<lan-ip>:8787   # or the deployed URL
+EXPO_PUBLIC_AI_PROXY_TOKEN=<same as APP_TOKEN in backend/.env>
+```
+
+Keys live only in `backend/.env` (`OPENAI_API_KEY`, `PIXABAY_KEY`). Both
+`.env` files are git-ignored; `.env.example` in each folder is the template.
+See `backend/README.md` for the endpoint mapping and a local-test recipe.
 
 ## Working on the frontend
 

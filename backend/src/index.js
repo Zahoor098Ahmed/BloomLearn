@@ -6,6 +6,7 @@ import { requireAppToken } from "./middleware/auth.js";
 import { healthRouter } from "./routes/health.js";
 import { imagesRouter } from "./routes/images.js";
 import { audioRouter } from "./routes/audio.js";
+import { sceneRouter } from "./routes/scene.js";
 
 assertConfig();
 
@@ -20,6 +21,7 @@ app.use(healthRouter);
 app.use(requireAppToken);
 app.use(imagesRouter);
 app.use(audioRouter);
+app.use(sceneRouter);
 
 app.use((_req, res) => res.status(404).json({ error: "Not found." }));
 
@@ -35,4 +37,5 @@ app.listen(config.port, () => {
   console.log(`  image  : POST /images/generations   { prompt, style? }`);
   console.log(`  search : GET  /images/search?q=&source=arasaac|pixabay`);
   console.log(`  speech : POST /audio/transcriptions  (multipart: file)`);
+  console.log(`  scene  : GET  /scene/:prompt?seed=&width=&height=  (free image engine)`);
 });

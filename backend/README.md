@@ -44,17 +44,42 @@ curl http://localhost:8787/health
 
 All except `/health` require `Authorization: Bearer <APP_TOKEN>` when `APP_TOKEN` is set.
 
-## Point the app at it
+## Connect the app to it — via `.env`
 
-In `frontend/src/modules/aiImage.ts` set:
+Nothing in the app code needs editing. Set two values in **`frontend/.env`**
+(copy from `frontend/.env.example`):
 
-```js
-export const AI_PROXY_URL = "https://your-backend.example.com"; // base URL, no trailing path
-export const AI_PROXY_TOKEN = "the same APP_TOKEN value";
+```ini
+EXPO_PUBLIC_AI_PROXY_URL=http://192.168.1.20:8787   # your computer's LAN IP for a phone, or the deployed URL
+EXPO_PUBLIC_AI_PROXY_TOKEN=                          # must equal APP_TOKEN in backend/.env
 ```
 
-With `AI_PROXY_URL` set, the app calls `<base>/images/generations` and
-`<base>/audio/transcriptions` on this server and sends no OpenAI key of its own.
+Then restart the Expo dev server (or rebuild the APK). With the proxy URL set the app routes:
+
+| App feature | Endpoint it calls |
+|---|---|
+| Picture search (ARASAAC / Pixabay) | `GET  <url>/images/search` |
+| Add-by-Voice "AI made" · Picture Talk AI | `POST <url>/images/generations` |
+| Picture Talk free AI fallback | `GET  <url>/scene/:prompt` |
+| Voice-to-text (record → transcribe) | `POST <url>/audio/transcriptions` |
+
+…and sends no OpenAI/Pixabay key of its own — they stay in `backend/.env`.
+
+Leave `EXPO_PUBLIC_AI_PROXY_URL` blank and the app runs fully offline (instant
+SVG scenes, symbol search, device TTS) or with a direct in-app OpenAI key.
+
+### Quick local test (phone on same Wi-Fi)
+
+```bash
+# terminal 1
+cd backend && cp .env.example .env && npm install && npm run dev
+
+# find your LAN IP:  ipconfig | findstr IPv4   (Windows)
+# put http://<that-ip>:8787 in frontend/.env as EXPO_PUBLIC_AI_PROXY_URL
+
+# terminal 2
+cd frontend && npm start
+```
 
 ## Deploy
 
