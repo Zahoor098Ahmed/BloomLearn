@@ -196,10 +196,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
             <Text style={styles.headerTitle}>Picture Talk</Text>
             <Text style={styles.headerSub}>
               {wordsN > 0
-                ? `Picture library: ${wordsN.toLocaleString()} words · ${libN} saved offline`
-                : libN > 0
-                  ? `Picture library: ${libN} saved`
-                  : "Say or type a sentence — the picture builds as you talk"}
+                ? `Picture library: ${wordsN.toLocaleString()} words${libN > 0 ? ` · ${libN} saved` : ""}`
+                : "Say or type a sentence — the picture builds as you talk"}
             </Text>
           </View>
           <Pressable onPress={() => setKeyModal(true)} style={styles.backBtn}>
