@@ -71,6 +71,17 @@ export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
   return `${base}/${prompt}?width=768&height=768&nologo=true&seed=${seed}&model=flux`;
 }
 
+/**
+ * Build an image URL from an already-composed prompt and an explicit seed.
+ * Used by the conversational scene builder, where the seed stays fixed for the
+ * whole session so it is the same character while the pose / parts change.
+ */
+export function composeSceneUrl(prompt: string, seed: number): string {
+  const p = encodeURIComponent(`${prompt.trim()}. ${STYLE}`);
+  const base = AI_PROXY_URL ? `${AI_PROXY_URL.replace(/\/$/, "")}/scene` : "https://image.pollinations.ai/prompt";
+  return `${base}/${p}?width=768&height=768&nologo=true&seed=${seed % 1_000_000}&model=flux`;
+}
+
 export interface SavedScene {
   url: string;
   cached: boolean;

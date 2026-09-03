@@ -6,8 +6,16 @@ import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
 import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
 import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
-import { sceneImageUrl } from "../modules/aiScene";
+import { sceneImageUrl, composeSceneUrl } from "../modules/aiScene";
 import { lookupImage, saveImage, libraryCount, prewarmLibrary, dictionaryWords } from "../modules/imageLibrary";
+import {
+  type SceneSession,
+  newSession,
+  applyUtterance,
+  isReset,
+  sessionPrompt,
+  sessionChips,
+} from "../modules/sceneSession";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import SceneComposer from "../components/SceneComposer";
@@ -42,6 +50,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const [sttBusy, setSttBusy] = useState(false);
   const [libN, setLibN] = useState(0);
   const [wordsN, setWordsN] = useState(0);
+  const [buildMode, setBuildMode] = useState(false);
+  const [session, setSession] = useState<SceneSession>(() => newSession());
+  const mergedRef = useRef<string>("");
 
   const graph = useMemo(() => parseSceneGraph(text), [text]);
   const concept = conceptByKey(graph.conceptKey);
@@ -66,9 +77,34 @@ export default function SentencePictureScreen({ onBack }: Props) {
     return () => clearInterval(poll);
   }, []);
 
+  // Conversational builder: each new phrase is merged into the running scene
+  // and the picture is redrawn — same character, changed details.
+  useEffect(() => {
+    if (!buildMode) return;
+    const q = text.trim();
+    if (!q || q === mergedRef.current) return;
+    const t = setTimeout(() => {
+      mergedRef.current = q;
+      const next = isReset(q) ? newSession() : applyUtterance(session, q);
+      setSession(next);
+      if (aiTimer.current) clearTimeout(aiTimer.current);
+      setAiError(null);
+      setAiLoading(true);
+      const url = composeSceneUrl(sessionPrompt(next), next.seed);
+      setImg({ uri: url, source: "ai-saved" });
+      saveImage(sessionPrompt(next), url, { source: "ai", tags: next.subjects }).catch(() => {});
+      aiTimer.current = setTimeout(() => {
+        setAiLoading(false);
+        setAiError("The picture engine is slow right now — try saying it again.");
+      }, 20000);
+    }, 700);
+    return () => clearTimeout(t);
+  }, [text, buildMode, session]);
+
   // On sentence change: ask the library first. If it has (or can seed) a
   // matching picture, show it; otherwise fall back to the instant scene.
   useEffect(() => {
+    if (buildMode) return;
     let active = true;
     setAiError(null);
     setImg(null);
@@ -242,7 +278,49 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
           {aiError && <Text style={styles.aiError}>{aiError}</Text>}
 
-          {!concept && (
+          <View style={styles.buildRow}>
+            <Pressable
+              onPress={() => {
+                const on = !buildMode;
+                setBuildMode(on);
+                mergedRef.current = "";
+                setAiError(null);
+                if (on) {
+                  setSession(newSession());
+                  setImg(null);
+                  setText("");
+                }
+              }}
+              style={[styles.buildToggle, buildMode && styles.buildToggleOn]}
+            >
+              <Ionicons name="color-wand" size={15} color={buildMode ? "white" : colors.forestDark} />
+              <Text style={[styles.buildToggleText, buildMode && { color: "white" }]}>
+                {buildMode ? "Keep-talking mode ON" : "Keep-talking mode"}
+              </Text>
+            </Pressable>
+            {buildMode && (
+              <Pressable
+                onPress={() => {
+                  setSession(newSession());
+                  setImg(null);
+                  mergedRef.current = "";
+                  setText("");
+                }}
+                style={styles.buildReset}
+              >
+                <Ionicons name="refresh" size={15} color={colors.forestDark} />
+                <Text style={styles.buildToggleText}>Start over</Text>
+              </Pressable>
+            )}
+          </View>
+          {buildMode && (
+            <Text style={styles.micHint}>
+              Say it in small pieces: "blue cat" · "open eyes" · "close eyes" · "make it red" · "kidney" · "add heart" — the
+              picture keeps updating.
+            </Text>
+          )}
+
+          {!concept && !buildMode && (
             <View style={styles.aiRow}>
               {img ? (
                 <>
@@ -264,7 +342,13 @@ export default function SentencePictureScreen({ onBack }: Props) {
           )}
 
           {/* what the engine understood */}
-          {!concept && (
+          {buildMode ? (
+            <View style={styles.chips}>
+              {sessionChips(session).map((c, i) => (
+                <Chip key={`${c}-${i}`} on text={c} />
+              ))}
+            </View>
+          ) : !concept ? (
             <View style={styles.chips}>
               {graph.subject?.size && graph.subject.size !== "normal" && <Chip on text={graph.subject.size} />}
               {graph.subject && graph.subject.count > 1 && <Chip on text={`${graph.subject.count}`} />}
@@ -274,8 +358,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
               <Chip on={!!graph.relation} text={graph.relation ?? "where"} />
               <Chip on={!!graph.reference} text={graph.reference?.type ?? "object"} />
             </View>
-          )}
-          {!concept && graph.subject && (
+          ) : null}
+          {!concept && !buildMode && graph.subject && (
             <Text style={styles.understood}>
               {pct >= 60 ? "Understood well" : "Partly understood"} · {pct}% — tap "AI" for anything the instant scene can't draw.
             </Text>
@@ -481,6 +565,29 @@ const styles = StyleSheet.create({
   sourceBadgeText: { color: "white", fontSize: 10, fontWeight: "800", letterSpacing: 0.3 },
   aiError: { color: colors.pinkDeep, fontSize: 12, marginTop: -6 },
   aiRow: { flexDirection: "row", gap: 10 },
+  buildRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
+  buildToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    borderWidth: 1.5,
+    borderColor: colors.forest,
+    backgroundColor: colors.card,
+  },
+  buildToggleOn: { backgroundColor: colors.forest, borderColor: colors.forest },
+  buildToggleText: { fontSize: 12.5, fontWeight: "700", color: colors.forestDark },
+  buildReset: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    backgroundColor: colors.cardMuted,
+  },
   aiBtn: {
     flex: 1,
     flexDirection: "row",
