@@ -53,6 +53,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const [wordsN, setWordsN] = useState(0);
   const [buildMode, setBuildMode] = useState(false);
   const [session, setSession] = useState<SceneSession>(() => newSession());
+  const [itemUris, setItemUris] = useState<Record<string, string>>({});
+  const itemUrisRef = useRef<Record<string, string>>({});
+  itemUrisRef.current = itemUris;
   const mergedRef = useRef<string>("");
 
   const graph = useMemo(() => parseSceneGraph(text), [text]);
@@ -88,7 +91,19 @@ export default function SentencePictureScreen({ onBack }: Props) {
       mergedRef.current = q;
       setAiError(null);
       setImg(null);
-      setSession((s) => (isReset(q) ? newSession() : applyUtterance(s, q)));
+      setSession((s) => {
+        const next = isReset(q) ? newSession() : applyUtterance(s, q);
+        if (isReset(q)) setItemUris({});
+        // fetch a real library picture for each object in the scene
+        for (const it of next.items) {
+          if (!itemUrisRef.current[it.type]) {
+            lookupImage(it.type).then((h) => {
+              if (h) setItemUris((m) => ({ ...m, [it.type]: h.uri }));
+            });
+          }
+        }
+        return next;
+      });
     }, 600);
     return () => clearTimeout(t);
   }, [text, buildMode]);
@@ -123,6 +138,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
     const q = text;
     const t = setTimeout(async () => {
       if (concept) return;
+      // Two objects in a relation ("cat on the table") -> let SceneComposer draw
+      // both with the right depth. A single library picture can only show one.
+      if (graph.subject && graph.reference) return;
       const hit = await lookupImage(q, graph);
       if (!active || textRef.current !== q) return;
       if (hit) {
@@ -279,7 +297,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
                 }}
               />
             ) : buildMode ? (
-              <SceneStage session={session} />
+              <SceneStage session={session} uris={itemUris} />
             ) : concept ? (
               <View style={styles.stageWhite}><ConceptView concept={concept} /></View>
             ) : (
@@ -308,6 +326,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
                 setAiError(null);
                 if (on) {
                   setSession(newSession());
+                  setItemUris({});
                   setImg(null);
                   setText("");
                 }
@@ -323,6 +342,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
               <Pressable
                 onPress={() => {
                   setSession(newSession());
+                  setItemUris({});
                   setImg(null);
                   mergedRef.current = "";
                   setText("");

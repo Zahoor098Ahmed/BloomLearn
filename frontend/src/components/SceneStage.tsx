@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import type { SceneSession, SceneItem } from "../modules/sceneSession";
 import { ACTIONS } from "../modules/sentenceScene";
 import { colors } from "../theme";
@@ -23,10 +23,11 @@ function eyesGlyph(eyes: SceneItem["eyes"]): string | null {
   return null;
 }
 
-function Item({ item }: { item: SceneItem }) {
+function Item({ item, uri }: { item: SceneItem; uri?: string }) {
   const size = BASE * SIZE_SCALE[item.size];
   const n = Math.max(1, Math.min(5, item.count));
   const eLabel = eyesGlyph(item.eyes);
+  const pic = size * 1.9;
   return (
     <View
       style={{
@@ -51,7 +52,11 @@ function Item({ item }: { item: SceneItem }) {
                 ]}
               />
             )}
-            <Text style={{ fontSize: size * (n > 2 ? 0.8 : 1) }}>{item.glyph}</Text>
+            {uri ? (
+              <Image source={{ uri }} style={{ width: pic, height: pic }} resizeMode="contain" />
+            ) : (
+              <Text style={{ fontSize: size * (n > 2 ? 0.8 : 1) }}>{item.glyph}</Text>
+            )}
             {i === 0 && item.action && ACTIONS[item.action] && (
               <Text style={{ fontSize: size * 0.32, marginTop: -size * 0.08 }}>{ACTIONS[item.action]}</Text>
             )}
@@ -67,7 +72,7 @@ function Item({ item }: { item: SceneItem }) {
   );
 }
 
-export default function SceneStage({ session }: { session: SceneSession }) {
+export default function SceneStage({ session, uris = {} }: { session: SceneSession; uris?: Record<string, string> }) {
   if (session.anatomy) {
     return (
       <View style={styles.stage}>
@@ -90,7 +95,7 @@ export default function SceneStage({ session }: { session: SceneSession }) {
     <View style={styles.stage}>
       <View style={styles.groundShadow} />
       {ordered.map((it) => (
-        <Item key={it.id} item={it} />
+        <Item key={it.id} item={it} uri={uris[it.type]} />
       ))}
       {!session.items.length && (
         <Text style={styles.empty}>Say an object — “table”, then “book behind the table”, then “open the cat’s eyes”.</Text>
