@@ -12,10 +12,10 @@ import { colors } from "../theme";
  */
 
 const STAGE_W = 320;
-const STAGE_H = 236;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.5, small: 0.72, normal: 1, big: 1.4, huge: 1.9 };
-const BASE = 46;
-const SLOT = 150;
+const STAGE_H = 264;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.62, small: 0.82, normal: 1, big: 1.35, huge: 1.75 };
+const BASE = 72;
+const SLOT = 210;
 
 function eyesGlyph(eyes: SceneItem["eyes"]): string | null {
   if (eyes === "open") return "eyes open";
@@ -23,11 +23,11 @@ function eyesGlyph(eyes: SceneItem["eyes"]): string | null {
   return null;
 }
 
-function Item({ item, uri }: { item: SceneItem; uri?: string }) {
-  const size = BASE * SIZE_SCALE[item.size];
+function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?: number }) {
+  const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
   const eLabel = eyesGlyph(item.eyes);
-  const pic = size * 1.9;
+  const pic = size * 2.5;
   return (
     <View
       style={{
@@ -90,12 +90,13 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
   }
 
   const ordered = [...session.items].sort((a, b) => Number(b.behind) - Number(a.behind));
+  const crowd = session.items.length >= 4 ? 0.68 : session.items.length === 3 ? 0.82 : 1;
 
   return (
     <View style={styles.stage}>
       <View style={styles.groundShadow} />
       {ordered.map((it) => (
-        <Item key={it.id} item={it} uri={uris[it.type]} />
+        <Item key={it.id} item={it} uri={uris[it.type]} crowd={crowd} />
       ))}
       {!session.items.length && (
         <Text style={styles.empty}>Say an object — “table”, then “book behind the table”, then “open the cat’s eyes”.</Text>
