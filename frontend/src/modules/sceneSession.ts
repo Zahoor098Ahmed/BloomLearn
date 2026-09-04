@@ -119,14 +119,14 @@ function detectRel(text: string): Rel | null {
 }
 
 const OFFSET: Record<Rel, { dx: number; dy: number; behind: boolean }> = {
-  behind: { dx: 0.05, dy: -0.12, behind: true },
-  "in front of": { dx: 0, dy: 0.16, behind: false },
-  left: { dx: -0.27, dy: 0, behind: false },
-  right: { dx: 0.27, dy: 0, behind: false },
-  above: { dx: 0, dy: -0.26, behind: false },
-  below: { dx: 0, dy: 0.24, behind: false },
-  on: { dx: 0, dy: -0.13, behind: false },
-  inside: { dx: 0, dy: 0.02, behind: false },
+  behind: { dx: 0.1, dy: -0.16, behind: true },
+  "in front of": { dx: 0, dy: 0.2, behind: false },
+  left: { dx: -0.34, dy: 0, behind: false },
+  right: { dx: 0.34, dy: 0, behind: false },
+  above: { dx: 0, dy: -0.34, behind: false },
+  below: { dx: 0, dy: 0.32, behind: false },
+  on: { dx: 0, dy: -0.18, behind: false },
+  inside: { dx: 0, dy: 0.0, behind: false },
   center: { dx: 0, dy: 0, behind: false },
 };
 
@@ -231,20 +231,14 @@ export function applyUtterance(prev: SceneSession, text: string): SceneSession {
     null;
 
   if (rel && rel !== "center" && (refType || g.subject)) {
-    // ensure the reference item exists (keep its current position if it does)
-    let ref = refType ? findItem(s.items, refType) : undefined;
-    if (!ref && refType) {
-      ref = makeItem(refType, { x: 0.5, y: 0.55 });
-      s.items.push(ref);
-    }
-    const anchor = ref ?? { x: 0.5, y: 0.55 };
     const subjType = g.subject?.type ?? tokens.find((w) => SUBJECTS[w]) ?? tokens[0];
+    const p = place(s, subjType ?? "", rel, refType); // creates the reference if missing
+    const ref = refType ? findItem(s.items, refType) : undefined;
     if (subjType) {
-      const off = OFFSET[rel];
       const patch: Partial<SceneItem> = {
-        x: clamp(anchor.x + off.dx),
-        y: clamp(anchor.y + off.dy),
-        behind: off.behind,
+        x: p.x,
+        y: p.y,
+        behind: p.behind,
         color: g.subject?.color ?? null,
         colorHex: colorHex(g.subject?.color ?? null),
         size: g.subject?.size ?? "normal",
@@ -342,12 +336,15 @@ export type SceneOp =
 
 function place(s: SceneSession, type: string, relation: Rel | null | undefined, reference: string | null | undefined) {
   if (!relation || relation === "center") return { x: clamp(0.5), y: clamp(0.5), behind: false };
+  // a fresh reference sits low for "above/on" and high for "below/under" so the
+  // subject has room; sideways relations keep it centred
+  const refY = relation === "above" || relation === "on" ? 0.68 : relation === "below" ? 0.34 : 0.52;
   let ref = reference ? findItem(s.items, norm(reference).trim()) : undefined;
   if (!ref && reference) {
-    ref = makeItem(norm(reference).trim(), { x: 0.5, y: 0.55 });
+    ref = makeItem(norm(reference).trim(), { x: 0.5, y: refY });
     s.items.push(ref);
   }
-  const anchor = ref ?? { x: 0.5, y: 0.55 };
+  const anchor = ref ?? { x: 0.5, y: refY };
   const off = OFFSET[relation];
   return { x: clamp(anchor.x + off.dx), y: clamp(anchor.y + off.dy), behind: off.behind };
 }
