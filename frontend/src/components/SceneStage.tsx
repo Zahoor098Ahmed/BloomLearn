@@ -10,10 +10,10 @@ import { colors } from "../theme";
  */
 
 const STAGE_W = 320;
-const STAGE_H = 320;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.74, small: 0.87, normal: 1, big: 1.18, huge: 1.4 };
-const BASE = 118;
-const SLOT = 300;
+const STAGE_H = 290;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.76, small: 0.88, normal: 1, big: 1.15, huge: 1.35 };
+const BASE = 96;
+const SLOT = 280;
 
 function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?: number }) {
   const size = BASE * SIZE_SCALE[item.size] * crowd;
@@ -198,7 +198,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
 
   const ordered = [...session.items].sort((a, b) => Number(b.behind) - Number(a.behind));
   const crowd =
-    session.items.length >= 4 ? 0.34 : session.items.length === 3 ? 0.42 : session.items.length === 2 ? 0.52 : 1;
+    session.items.length >= 4 ? 0.4 : session.items.length === 3 ? 0.5 : session.items.length === 2 ? 0.62 : 0.9;
 
   return (
     <View style={styles.stage}>

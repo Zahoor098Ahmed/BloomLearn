@@ -14,6 +14,7 @@ import {
   applyUtterance,
   applyOps,
   isReset,
+  isFreshScene,
   sessionPrompt,
   sessionChips,
   searchPhrase,
@@ -97,9 +98,11 @@ export default function SentencePictureScreen({ onBack }: Props) {
       mergedRef.current = q;
       setAiError(null);
       setImg(null);
+      // "start over", or a full "the X on the Y" sentence that drops leftovers
+      const fresh = isReset(q) || isFreshScene(q, sessionRef.current.items.map((i) => i.type));
+      if (fresh) setItemUris({});
       if (isReset(q)) {
         setSession(newSession());
-        setItemUris({});
         return;
       }
       // Agent route: an LLM turns free speech into scene ops. Falls back to the
@@ -107,11 +110,14 @@ export default function SentencePictureScreen({ onBack }: Props) {
       let ops = null;
       if (agentEnabled) {
         setAgentThinking(true);
-        ops = await parseUtteranceLLM(q, sessionRef.current);
+        ops = await parseUtteranceLLM(q, fresh ? newSession() : sessionRef.current);
         setAgentThinking(false);
       }
       if (mergedRef.current !== q) return;
-      setSession((s) => (ops && ops.length ? applyOps(s, ops) : applyUtterance(s, q)));
+      setSession((prev) => {
+        const s = fresh ? newSession() : prev;
+        return ops && ops.length ? applyOps(s, ops) : applyUtterance(s, q);
+      });
     }, 600);
     return () => clearTimeout(t);
   }, [text, buildMode]);

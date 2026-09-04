@@ -111,6 +111,26 @@ export function isReset(text: string): boolean {
   return /\b(start over|start again|new (picture|scene)|clear (it|the scene|everything)|reset|wipe)\b/i.test(text);
 }
 
+/**
+ * A self-contained sentence that describes a whole picture ("the cat below the
+ * table") starts a fresh scene — so leftovers from before don't linger.
+ * Fragments ("open its eyes", "make it red"), single objects, and anything
+ * prefixed with add / also / and keep building on what's there.
+ */
+export function isFreshScene(text: string, currentTypes: string[] = []): boolean {
+  const t = norm(text);
+  if (t.trim().split(" ").length < 3) return false;
+  if (/\b(add|also|another|put|give|and then|plus|too)\b/.test(t)) return false;
+  if (/\b(open|close|closed|shut)\b[^.]*\beyes?\b/.test(t)) return false;
+  if (/^\s*(make|turn|colou?r|paint) /.test(t)) return false;
+  const g = parseSceneGraph(text);
+  if (!g.subject || !g.relation || !g.reference) return false;
+  // start fresh only if the scene holds something this sentence doesn't mention
+  // (the speaker is describing the whole picture, leftovers should go)
+  const mentioned = [g.subject.type, g.reference.type];
+  return currentTypes.some((tp) => !mentioned.includes(tp));
+}
+
 function norm(s: string): string {
   return ` ${s.toLowerCase().replace(/[.,!?;:"']/g, " ").replace(/\s+/g, " ").trim()} `;
 }

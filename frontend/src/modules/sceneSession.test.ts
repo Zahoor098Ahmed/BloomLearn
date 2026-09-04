@@ -8,7 +8,7 @@
  *   5. additive (never delete)  + the "no dropped words" bug
  */
 
-import { newSession, applyUtterance, applyOps, type SceneSession } from "./sceneSession";
+import { newSession, applyUtterance, applyOps, isFreshScene, type SceneSession } from "./sceneSession";
 
 let pass = 0;
 let fail = 0;
@@ -160,6 +160,15 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
   check("body  'internal organs' fills the standard set (rules)", d.anatomy && d.anatomyParts.length >= 8);
   let e = applyOps(newSession(), [{ op: "add", type: "organs" }]);
   check("body  agent 'organs' op fills the standard set", e.anatomy && e.anatomyParts.length >= 8 && e.anatomyParts.includes("heart"));
+}
+
+// a full "the X on the Y" sentence starts a fresh scene (drops leftovers)
+{
+  check("fresh describes whole picture -> drop the leftover book", isFreshScene("the cat below the table", ["cat", "table", "book"]));
+  check("fresh 'cat on the table' after 'table' keeps building", !isFreshScene("cat on the table", ["table"]));
+  check("fresh 'add a book on the table' keeps building", !isFreshScene("add a book on the table", ["cat", "table"]));
+  check("fresh 'cat' (single object) keeps building", !isFreshScene("cat", ["table"]));
+  check("fresh 'open the cat's eyes' keeps building", !isFreshScene("open the cat's eyes", ["cat"]));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
