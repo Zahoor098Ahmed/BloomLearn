@@ -29,11 +29,17 @@ Operation shapes (omit keys you don't need):
 {"op":"reset"}
 
 Rules:
+- Use exactly the key "op" and the key "type" (not "action:modify", not "target"/"name").
 - Keep every existing object unless the phrase says to move, remove or reset it.
-- "a girl is crying" -> [{"op":"add","type":"girl","action":"crying"}]
-- "open the cat's eyes" -> [{"op":"update","type":"cat","eyes":"open"}]
-- "book behind the table" -> [{"op":"add","type":"book","relation":"behind","reference":"table"}]
-- Use singular nouns (cat, table, mosque, kidney). Prefer real object nouns.`;
+- Use singular nouns (cat, table, mosque, kidney). Prefer real object nouns.
+
+Examples:
+"a girl is crying" -> [{"op":"add","type":"girl","action":"crying"}]
+"open the cat's eyes" -> [{"op":"update","type":"cat","eyes":"open"}]
+"book behind the table" -> [{"op":"add","type":"book","relation":"behind","reference":"table"}]
+"put a small blue cat on the table and open its eyes" -> [{"op":"add","type":"cat","color":"blue","size":"small","relation":"on","reference":"table","eyes":"open"}]
+"move the ball to the left of the box" -> [{"op":"move","type":"ball","relation":"left","reference":"box"}]
+"take away the dog" -> [{"op":"remove","type":"dog"}]`;
 
 function sceneSummary(s: SceneSession): string {
   if (s.anatomy) return `anatomy diagram with: ${s.anatomyParts.join(", ") || "nothing yet"}`;
@@ -67,9 +73,10 @@ export async function parseUtteranceLLM(utterance: string, session: SceneSession
     ? "https://api.groq.com/openai/v1/chat/completions"
     : "https://api.openai.com/v1/chat/completions";
   const body = {
-    model: GROQ_KEY ? "llama-3.3-70b-versatile" : "gpt-4o-mini",
+    model: GROQ_KEY ? "openai/gpt-oss-20b" : "gpt-4o-mini",
     temperature: 0,
-    max_tokens: 400,
+    max_tokens: 600,
+    reasoning_effort: "low",
     messages: [
       { role: "system", content: SYSTEM },
       { role: "user", content: `Scene now: ${sceneSummary(session)}\nPhrase: "${utterance}"\nJSON:` },

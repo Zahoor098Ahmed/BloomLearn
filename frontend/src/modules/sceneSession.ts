@@ -354,9 +354,25 @@ export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
     note: null,
   };
   const done: string[] = [];
-  for (const raw of ops) {
-    if (!raw || typeof raw !== "object") continue;
-    const op = raw as SceneOp;
+  for (const rawAny of ops) {
+    if (!rawAny || typeof rawAny !== "object") continue;
+    // tolerate the aliases small models produce
+    const r = rawAny as Record<string, unknown>;
+    const opName = String(r.op ?? r.action ?? r.operation ?? "").toLowerCase();
+    const kind = /reset|clear/.test(opName)
+      ? "reset"
+      : /remov|delet|take/.test(opName)
+        ? "remove"
+        : /mov/.test(opName)
+          ? "move"
+          : /updat|modif|set|change/.test(opName)
+            ? "update"
+            : "add";
+    const op = {
+      ...r,
+      op: kind,
+      type: r.type ?? r.target ?? r.name ?? r.object ?? r.subject,
+    } as SceneOp;
     if (op.op === "reset") {
       s = newSession();
       done.push("cleared");
