@@ -12,10 +12,10 @@ import { colors } from "../theme";
  */
 
 const STAGE_W = 320;
-const STAGE_H = 264;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.62, small: 0.82, normal: 1, big: 1.35, huge: 1.75 };
-const BASE = 72;
-const SLOT = 210;
+const STAGE_H = 268;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.66, small: 0.84, normal: 1, big: 1.3, huge: 1.7 };
+const BASE = 104;
+const SLOT = 280;
 
 function eyesGlyph(eyes: SceneItem["eyes"]): string | null {
   if (eyes === "open") return "eyes open";
@@ -27,7 +27,7 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
   const eLabel = eyesGlyph(item.eyes);
-  const pic = size * 2.5;
+  const pic = size * 2.6;
   return (
     <View
       style={{
@@ -44,16 +44,14 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
       <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
         {Array.from({ length: n }).map((_, i) => (
           <View key={i} style={{ alignItems: "center", marginLeft: i === 0 ? 0 : -size * 0.12 }}>
-            {item.colorHex && (
-              <View
-                style={[
-                  styles.halo,
-                  { width: size, height: size, borderRadius: size, backgroundColor: item.colorHex, marginBottom: -size * 0.85 },
-                ]}
-              />
-            )}
             {uri ? (
-              <Image source={{ uri }} style={{ width: pic, height: pic }} resizeMode="contain" />
+              // colour tints the line-art itself ("blue cat" -> a blue-drawn cat),
+              // not a blob behind it
+              <Image
+                source={{ uri }}
+                style={[{ width: pic, height: pic }, item.colorHex ? { tintColor: item.colorHex } : null]}
+                resizeMode="contain"
+              />
             ) : (
               <Text style={{ fontSize: size * (n > 2 ? 0.8 : 1) }}>{item.glyph}</Text>
             )}
@@ -63,9 +61,12 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
           </View>
         ))}
       </View>
-      {(eLabel || (item.action && !ACTIONS[item.action])) && (
+      {(eLabel || item.color || (item.action && !ACTIONS[item.action])) && (
         <View style={styles.stateBadge}>
-          <Text style={styles.stateBadgeText}>{[eLabel, item.action && !ACTIONS[item.action] ? item.action : null].filter(Boolean).join(" · ")}</Text>
+          {item.colorHex && <View style={[styles.dot, { backgroundColor: item.colorHex }]} />}
+          <Text style={styles.stateBadgeText}>
+            {[item.color, eLabel, item.action && !ACTIONS[item.action] ? item.action : null].filter(Boolean).join(" · ")}
+          </Text>
         </View>
       )}
     </View>
@@ -131,14 +132,17 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "rgba(0,0,0,0.06)",
   },
-  halo: { position: "absolute", opacity: 0.34 },
   stateBadge: {
     marginTop: 2,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
     backgroundColor: colors.forest,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 7,
   },
+  dot: { width: 7, height: 7, borderRadius: 4, borderWidth: 1, borderColor: "rgba(255,255,255,0.7)" },
   stateBadgeText: { color: "white", fontSize: 9.5, fontWeight: "800" },
   empty: {
     position: "absolute",
