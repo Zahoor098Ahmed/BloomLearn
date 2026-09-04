@@ -31,13 +31,20 @@ Operation shapes (omit keys you don't need):
 Rules:
 - Use exactly the key "op" and the key "type" (not "action:modify", not "target"/"name").
 - Keep every existing object unless the phrase says to move, remove or reset it.
-- Use singular nouns (cat, table, mosque, kidney). Prefer real object nouns.
+- Singular nouns. KEEP a meaningful compound noun as the type: "office chair",
+  "dining table", "fire truck" (not just "chair"/"table").
+- "sit on / stand next to / lie on" -> set BOTH the action (sitting/standing/lying)
+  and the relation (on/left/on).
+- "make the cat green" / "the cat is green" on an existing object -> update, not add.
 
 Examples:
 "a girl is crying" -> [{"op":"add","type":"girl","action":"crying"}]
+"green cat" -> [{"op":"add","type":"cat","color":"green"}]
+"make the cat green" -> [{"op":"update","type":"cat","color":"green"}]
 "open the cat's eyes" -> [{"op":"update","type":"cat","eyes":"open"}]
 "book behind the table" -> [{"op":"add","type":"book","relation":"behind","reference":"table"}]
-"put a small blue cat on the table and open its eyes" -> [{"op":"add","type":"cat","color":"blue","size":"small","relation":"on","reference":"table","eyes":"open"}]
+"office chair" -> [{"op":"add","type":"office chair"}]
+"boy sit on the office chair" -> [{"op":"add","type":"boy","action":"sitting","relation":"on","reference":"office chair"}]
 "move the ball to the left of the box" -> [{"op":"move","type":"ball","relation":"left","reference":"box"}]
 "take away the dog" -> [{"op":"remove","type":"dog"}]`;
 

@@ -229,14 +229,11 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
   // null so the caller uses AI (which draws a real blue dog) and saves it.
   if (graph?.subject?.color) return null;
 
-  // 2. resolve from the bundled ARASAAC dictionary (instant, ~14,800 words).
-  //    Try the whole phrase and the parsed subject first (most specific), then
-  //    scan each meaningful word of the sentence ("the boy eats an apple" ->
-  //    boy / eat / apple), so almost any everyday sentence lands a picture.
   const phraseNorm = norm(phrase);
   const tokens = phraseNorm.split(" ").filter((w) => w.length > 1 && !STOP.has(w));
-  const terms = [...keys, graph?.subject?.type ?? "", ...tokens].filter(Boolean);
-  for (const term of terms) {
+
+  // 2. exact dictionary match on a full phrase ("office chair", "fire truck")
+  for (const term of [...keys, graph?.subject?.type ?? ""].filter(Boolean)) {
     const url = dictUrl(term);
     if (url) {
       const saved = await saveImage(keys[0] || term, url, { source: "arasaac", tags: keys });
@@ -244,7 +241,26 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
     }
   }
 
-  // 3. last resort: live ARASAAC search for the subject
+  // 3. a compound phrase ("office chair") -> live ARASAAC search for the whole
+  //    thing BEFORE falling back to the head noun, so variants win.
+  if (tokens.length >= 2) {
+    const remote = await arasaacFirst(phraseNorm);
+    if (remote) {
+      const saved = await saveImage(keys[0] || phraseNorm, remote, { source: "arasaac", tags: keys });
+      return { uri: saved?.uri ?? remote, source: "arasaac", fromLibrary: false };
+    }
+  }
+
+  // 4. scan each meaningful word ("the boy eats an apple" -> boy / eat / apple)
+  for (const term of tokens) {
+    const url = dictUrl(term);
+    if (url) {
+      const saved = await saveImage(keys[0] || term, url, { source: "arasaac", tags: keys });
+      return { uri: saved?.uri ?? url, source: "arasaac", fromLibrary: false };
+    }
+  }
+
+  // 5. last resort: live ARASAAC search for the subject / first key
   for (const term of [graph?.subject?.type, keys[0]].filter((t): t is string => !!t)) {
     const remote = await arasaacFirst(term);
     if (remote) {

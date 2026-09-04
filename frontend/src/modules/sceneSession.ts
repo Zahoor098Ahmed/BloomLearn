@@ -263,19 +263,30 @@ export function applyUtterance(prev: SceneSession, text: string): SceneSession {
     tokens.find((w) => GLYPHS[w]) ||
     tokens.filter((w) => w.length > 2)[0];
   if (type && GLYPHS[type]) {
-    const patch: Partial<SceneItem> = {
-      color: g.subject?.color ?? null,
-      colorHex: colorHex(g.subject?.color ?? null),
-      size: g.subject?.size ?? "normal",
-      count: g.subject?.count ?? 1,
-      action: actionWord ?? (exprWord ? exprWord : null),
-      eyes: eyesOpen ? "open" : eyesClose ? "closed" : null,
-    };
+    const color = g.subject?.color ?? null;
+    const action = actionWord ?? exprWord ?? null;
+    const eyes = eyesOpen ? "open" : eyesClose ? "closed" : null;
     const existing = findItem(s.items, type);
     if (existing) {
-      Object.assign(existing, patch);
+      // update in place — only change what was actually mentioned
+      if (color) {
+        existing.color = color;
+        existing.colorHex = colorHex(color);
+      }
+      if (g.subject?.size && g.subject.size !== "normal") existing.size = g.subject.size;
+      if (g.subject && g.subject.count > 1) existing.count = g.subject.count;
+      if (action) existing.action = action;
+      if (eyes) existing.eyes = eyes;
       s.note = `updated ${type}`;
     } else {
+      const patch: Partial<SceneItem> = {
+        color,
+        colorHex: colorHex(color),
+        size: g.subject?.size ?? "normal",
+        count: g.subject?.count ?? 1,
+        action,
+        eyes,
+      };
       const slot = s.items.length;
       s.items.push(
         makeItem(type, {
@@ -482,9 +493,10 @@ export function sessionPrompt(s: SceneSession): string {
  * state changes.
  */
 export function searchPhrase(i: SceneItem): string {
-  // With an action, look up the real AAC verb pictogram ("crying", "running")
-  // — no emoji. Otherwise the object itself.
-  return i.action ? `${i.action} ${i.type}` : i.type;
+  // With an action, show the real AAC verb pictogram ("crying", "running") — a
+  // person doing that, no emoji. Otherwise the object itself, keeping any
+  // compound noun ("office chair") so variants resolve.
+  return i.action ? i.action : i.type;
 }
 
 export function sessionChips(s: SceneSession): string[] {

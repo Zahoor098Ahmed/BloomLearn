@@ -48,7 +48,9 @@ illustration — needs a Pollinations token (`EXPO_PUBLIC_POLLINATIONS_TOKEN`).
 | `open the cat's eyes` | The **existing** cat's `eyes` become `open` — no new object. |
 | `close the cat's eyes` | Same cat, `eyes` → `closed`. |
 | `a girl is crying` | A girl is added with a `crying` expression (subject + emotion both parsed). |
-| `make it red` / `blue cat` | Sets the colour on the (new or existing) subject. |
+| `green cat` / `make the cat green` | Sets the colour — shown as a soft wash + coloured ring around the symbol so the pictogram's outline and detail stay clear (a flat tint would wipe them). Updates in place if the object already exists. |
+| `office chair`, `dining table`, `fire truck` | Compound nouns are kept as the type and looked up as a variant (`office chair` before the generic `chair`). |
+| `boy sit on the office chair` | Pose + relation together — the boy gets the `sitting` state and is placed on the chair. Also `stand next to`, `lie on`. |
 | `two apples` | Count is parsed; the item renders repeated. |
 | `mosque`, `prayer mat`, `Koran`, `crescent moon`, `prayer beads`, `lantern` | Islamic-education assets — places, objects and acts of worship only. No depiction of Prophets or sacred figures. |
 | `kidney` → `add heart` → `add lungs` | Switches to a labelled human-anatomy diagram; parts accumulate. |

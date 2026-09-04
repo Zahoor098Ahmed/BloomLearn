@@ -19,6 +19,10 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
   const pic = size * 2.3;
+  // A flat tint would wipe the pictogram's black outline and inner detail
+  // (eyes, whiskers), so colour is shown as a soft wash behind the symbol plus
+  // a coloured ring — the drawing stays fully clear.
+  const col = item.colorHex ?? undefined;
   return (
     <View
       style={{
@@ -34,18 +38,29 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
     >
       <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
         {Array.from({ length: n }).map((_, i) => (
-          <View key={i} style={{ alignItems: "center", marginLeft: i === 0 ? 0 : -size * 0.14 }}>
+          <View
+            key={i}
+            style={[
+              { alignItems: "center", justifyContent: "center", marginLeft: i === 0 ? 0 : -size * 0.14 },
+              col
+                ? {
+                    backgroundColor: `${col}2e`, // ~18% wash
+                    borderColor: col,
+                    borderWidth: 3,
+                    borderRadius: pic * 0.16,
+                    padding: pic * 0.05,
+                  }
+                : null,
+            ]}
+          >
             {uri ? (
               <Image source={{ uri }} style={{ width: pic, height: pic }} resizeMode="contain" />
             ) : (
               <View style={[styles.loading, { width: pic * 0.72, height: pic * 0.72, borderRadius: pic * 0.1 }]} />
-
             )}
           </View>
         ))}
       </View>
-
-      {item.colorHex && <View style={[styles.dot, { backgroundColor: item.colorHex }]} />}
     </View>
   );
 }
@@ -105,7 +120,6 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "rgba(0,0,0,0.06)",
   },
-  dot: { width: 12, height: 12, borderRadius: 6, marginTop: 3, borderWidth: 1.5, borderColor: "rgba(0,0,0,0.15)" },
   loading: { backgroundColor: "#eef0ee", borderWidth: 1, borderColor: colors.border },
   empty: {
     position: "absolute",

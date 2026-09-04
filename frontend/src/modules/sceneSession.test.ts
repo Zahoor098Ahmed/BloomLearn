@@ -106,5 +106,19 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
   check("ops  reset clears everything", s.items.length === 0);
 }
 
+// colour, variants and pose (the shapes the agent emits for the newer commands)
+{
+  let s = applyOps(newSession(), [{ op: "add", type: "cat" }]);
+  s = applyOps(s, [{ op: "update", type: "cat", color: "green" }]);
+  check("var  'make the cat green' updates colour, no new cat", s.items.length === 1 && item(s, "cat")!.color === "green");
+
+  s = applyOps(s, [{ op: "add", type: "office chair" }]);
+  check("var  'office chair' kept as its own type (not 'chair')", !!item(s, "office chair") && !item(s, "chair"));
+
+  s = applyOps(s, [{ op: "add", type: "boy", action: "sitting", relation: "on", reference: "office chair" }]);
+  const boy = item(s, "boy")!;
+  check("var  'boy sit on office chair' -> pose + placed on the chair", boy.action === "sitting" && boy.reference === "office chair" && boy.y < item(s, "office chair")!.y);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
