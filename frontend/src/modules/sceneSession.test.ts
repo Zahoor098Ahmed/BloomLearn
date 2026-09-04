@@ -120,5 +120,19 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
   check("var  'boy sit on office chair' -> pose + placed on the chair", boy.action === "sitting" && boy.reference === "office chair" && boy.y < item(s, "office chair")!.y);
 }
 
+// no duplicate object when a noun is referenced twice in one sentence
+{
+  // agent split it: add "office chair", then a boy whose reference is bare "chair"
+  let s = applyOps(newSession(), [
+    { op: "add", type: "office chair" },
+    { op: "add", type: "boy", action: "sitting", relation: "on", reference: "chair" },
+  ]);
+  const chairs = s.items.filter((i) => i.type.includes("chair"));
+  check("dup  only one chair, and it's the office chair", chairs.length === 1 && chairs[0].type === "office chair", `got ${s.items.map((i) => i.type).join()}`);
+
+  s = applyOps(newSession(), [{ op: "add", type: "table" }, { op: "add", type: "cat", relation: "under", reference: "table" }]);
+  check("dup  'cat under table' still one table", s.items.filter((i) => i.type === "table").length === 1);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

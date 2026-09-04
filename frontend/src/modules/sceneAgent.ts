@@ -33,8 +33,10 @@ Rules:
 - Keep every existing object unless the phrase says to move, remove or reset it.
 - Singular nouns. KEEP a meaningful compound noun as the type: "office chair",
   "dining table", "fire truck" (not just "chair"/"table").
-- "sit on / stand next to / lie on" -> set BOTH the action (sitting/standing/lying)
-  and the relation (on/left/on).
+- "sit on / stand next to / lie on" -> ONE op for the person with BOTH the
+  action (sitting/standing/lying) and the relation. Do NOT also add the
+  furniture separately — the relation creates it. Use the SAME wording for
+  "reference" as the object's name ("office chair", not "chair").
 - "make the cat green" / "the cat is green" on an existing object -> update, not add.
 
 Examples:

@@ -118,6 +118,21 @@ function detectRel(text: string): Rel | null {
   return null;
 }
 
+const REL_ALIAS: Record<string, Rel> = {
+  under: "below", underneath: "below", beneath: "below", down: "below",
+  "on top of": "on", onto: "on", atop: "on", over: "above", up: "above",
+  "next to": "left", beside: "left", near: "left", "left of": "left", "right of": "right",
+  "in front": "in front of", front: "in front of", ahead: "in front of",
+  "back of": "behind", back: "behind", into: "inside", in: "inside",
+  middle: "center", centre: "center", between: "center", with: "center",
+};
+function normRel(r: string | null | undefined): Rel | null {
+  if (!r) return null;
+  const k = r.toLowerCase().trim();
+  if (k in OFFSET) return k as Rel;
+  return REL_ALIAS[k] ?? null;
+}
+
 const OFFSET: Record<Rel, { dx: number; dy: number; behind: boolean }> = {
   behind: { dx: 0.1, dy: -0.16, behind: true },
   "in front of": { dx: 0, dy: 0.2, behind: false },
@@ -158,12 +173,67 @@ function findItem(items: SceneItem[], type: string): SceneItem | undefined {
   return items.find((i) => i.type === type);
 }
 
+const headWord = (s: string) => {
+  const w = norm(s).trim().split(" ").filter(Boolean);
+  return w[w.length - 1] ?? "";
+};
+
+/**
+ * Resolve a reference to an existing item, tolerating a looser name: "chair"
+ * matches an existing "office chair" so a pose command doesn't spawn a second,
+ * generic chair.
+ */
+function findRef(items: SceneItem[], name: string): SceneItem | undefined {
+  const n = norm(name).trim();
+  if (!n) return undefined;
+  return (
+    items.find((i) => i.type === n) ||
+    items.find((i) => i.type.endsWith(` ${n}`) || n.endsWith(` ${i.type}`)) ||
+    items.find((i) => headWord(i.type) === headWord(n))
+  );
+}
+
 function clamp(n: number): number {
   return Math.max(0.12, Math.min(0.88, n));
 }
 
+/**
+ * Drop a duplicate that slipped in when one noun was referenced twice in a
+ * sentence (e.g. "office chair" created, then a bare "chair" reference). Keeps
+ * the more specific / earlier item; merges the other's state into it.
+ */
+function dedupe(items: SceneItem[]): SceneItem[] {
+  const out: SceneItem[] = [];
+  for (const it of items) {
+    const twin = out.find(
+      (o) =>
+        o.type === it.type ||
+        (headWord(o.type) === headWord(it.type) && Math.abs(o.x - it.x) < 0.18 && Math.abs(o.y - it.y) < 0.18),
+    );
+    if (twin) {
+      // keep the more specific name, fill in any state the twin is missing
+      if (it.type.length > twin.type.length) twin.type = it.type;
+      twin.glyph = glyphFor(twin.type);
+      twin.color ??= it.color;
+      twin.colorHex ??= it.colorHex;
+      twin.action ??= it.action;
+      twin.eyes ??= it.eyes;
+      if (it.count > twin.count) twin.count = it.count;
+    } else {
+      out.push(it);
+    }
+  }
+  return out;
+}
+
 /** Merge one full utterance into the scene. */
 export function applyUtterance(prev: SceneSession, text: string): SceneSession {
+  const s = applyUtteranceRaw(prev, text);
+  s.items = dedupe(s.items);
+  return s;
+}
+
+function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
   const s: SceneSession = {
     ...prev,
     items: prev.items.map((i) => ({ ...i })),
@@ -233,7 +303,7 @@ export function applyUtterance(prev: SceneSession, text: string): SceneSession {
   if (rel && rel !== "center" && (refType || g.subject)) {
     const subjType = g.subject?.type ?? tokens.find((w) => SUBJECTS[w]) ?? tokens[0];
     const p = place(s, subjType ?? "", rel, refType); // creates the reference if missing
-    const ref = refType ? findItem(s.items, refType) : undefined;
+    const ref = refType ? findRef(s.items, refType) : undefined;
     if (subjType) {
       const patch: Partial<SceneItem> = {
         x: p.x,
@@ -330,7 +400,7 @@ export type SceneOp =
       size?: SceneSize;
       action?: string | null;
       eyes?: "open" | "closed" | null;
-      relation?: Rel | null;
+      relation?: Rel | string | null;
       reference?: string | null;
     }
   | {
@@ -342,15 +412,16 @@ export type SceneOp =
       action?: string | null;
       eyes?: "open" | "closed" | null;
     }
-  | { op: "move"; type: string; relation: Rel; reference?: string | null }
+  | { op: "move"; type: string; relation: Rel | string; reference?: string | null }
   | { op: "remove"; type: string };
 
-function place(s: SceneSession, type: string, relation: Rel | null | undefined, reference: string | null | undefined) {
+function place(s: SceneSession, type: string, relationRaw: Rel | string | null | undefined, reference: string | null | undefined) {
+  const relation = normRel(relationRaw as string);
   if (!relation || relation === "center") return { x: clamp(0.5), y: clamp(0.5), behind: false };
   // a fresh reference sits low for "above/on" and high for "below/under" so the
   // subject has room; sideways relations keep it centred
   const refY = relation === "above" || relation === "on" ? 0.68 : relation === "below" ? 0.34 : 0.52;
-  let ref = reference ? findItem(s.items, norm(reference).trim()) : undefined;
+  let ref = reference ? findRef(s.items, reference) : undefined;
   if (!ref && reference) {
     ref = makeItem(norm(reference).trim(), { x: 0.5, y: refY });
     s.items.push(ref);
@@ -361,6 +432,12 @@ function place(s: SceneSession, type: string, relation: Rel | null | undefined, 
 }
 
 export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
+  const s = applyOpsRaw(prev, ops);
+  s.items = dedupe(s.items);
+  return s;
+}
+
+function applyOpsRaw(prev: SceneSession, ops: SceneOp[]): SceneSession {
   let s: SceneSession = {
     ...prev,
     items: prev.items.map((i) => ({ ...i })),
@@ -407,7 +484,7 @@ export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
         it.x = p.x;
         it.y = p.y;
         it.behind = p.behind;
-        it.relation = op.relation;
+        it.relation = normRel(op.relation);
         it.reference = op.reference ? norm(op.reference).trim() : null;
         done.push(`moved ${type}`);
       }
@@ -423,7 +500,7 @@ export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
     if ("size" in op && op.size) patch.size = op.size;
     if ("action" in op && op.action) patch.action = op.action.replace(/^is /, "");
     if ("eyes" in op && (op.eyes === "open" || op.eyes === "closed")) patch.eyes = op.eyes;
-    const rel = "relation" in op && op.relation ? (op.relation as Rel) : null;
+    const rel = "relation" in op ? normRel(op.relation as string) : null;
     const ref = rel && "reference" in op && op.reference ? norm(op.reference).trim() : null;
     if (rel) {
       patch.relation = rel;
