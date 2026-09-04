@@ -482,9 +482,9 @@ export function sessionPrompt(s: SceneSession): string {
  * state changes.
  */
 export function searchPhrase(i: SceneItem): string {
-  // Always look up the object itself so a boy stays a boy and a girl stays a
-  // girl; the action is shown as a badge over the picture, not by swapping it.
-  return i.type;
+  // With an action, look up the real AAC verb pictogram ("crying", "running")
+  // — no emoji. Otherwise the object itself.
+  return i.action ? `${i.action} ${i.type}` : i.type;
 }
 
 export function sessionChips(s: SceneSession): string[] {
