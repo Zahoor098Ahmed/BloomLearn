@@ -117,18 +117,23 @@ export function isReset(text: string): boolean {
  * Fragments ("open its eyes", "make it red"), single objects, and anything
  * prefixed with add / also / and keep building on what's there.
  */
+const REL_TOKENS = /\b(on|onto|under|underneath|below|above|over|behind|beside|near|next|inside|in|left|right|front|top|between)\b/;
+
 export function isFreshScene(text: string, currentTypes: string[] = []): boolean {
   const t = norm(text);
-  if (t.trim().split(" ").length < 3) return false;
+  const words = t.trim().split(" ").filter(Boolean);
+  if (words.length < 3) return false;
   if (/\b(add|also|another|put|give|and then|plus|too)\b/.test(t)) return false;
   if (/\b(open|close|closed|shut)\b[^.]*\beyes?\b/.test(t)) return false;
   if (/^\s*(make|turn|colou?r|paint) /.test(t)) return false;
-  const g = parseSceneGraph(text);
-  if (!g.subject || !g.relation || !g.reference) return false;
-  // start fresh only if the scene holds something this sentence doesn't mention
-  // (the speaker is describing the whole picture, leftovers should go)
-  const mentioned = [g.subject.type, g.reference.type];
-  return currentTypes.some((tp) => !mentioned.includes(tp));
+  // a whole-picture sentence: a relation word with a noun on each side
+  const relIdx = words.findIndex((w) => REL_TOKENS.test(` ${w} `));
+  if (relIdx < 1 || relIdx >= words.length - 1) return false;
+  const STOP = new Set(["the", "a", "an", "is", "are", "of", "to", "this", "that", "his", "her", "its", "with"]);
+  const nouns = words.filter((w, i) => i !== relIdx && !STOP.has(w) && !REL_TOKENS.test(` ${w} `) && w.length > 1);
+  if (nouns.length < 2) return false;
+  // start fresh only if the scene holds something this sentence doesn't name
+  return currentTypes.some((tp) => !nouns.some((n) => tp === n || tp.includes(n) || n.includes(tp)));
 }
 
 function norm(s: string): string {
