@@ -17,7 +17,7 @@ import {
   sessionPrompt,
   sessionChips,
 } from "../modules/sceneSession";
-import { agentEnabled, agentName, parseUtteranceLLM } from "../modules/sceneAgent";
+import { agentEnabled, agentName, parseUtteranceLLM, describeScene } from "../modules/sceneAgent";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import SceneComposer from "../components/SceneComposer";
@@ -115,7 +115,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
     return () => clearTimeout(t);
   }, [text, buildMode]);
 
-  // Give every object in the built scene its own library picture.
+  // Give every object in the built scene its own library picture, and — when a
+  // Pollinations token is set — redraw the whole scene as one real picture.
   useEffect(() => {
     if (!buildMode) return;
     for (const it of session.items) {
@@ -125,26 +126,28 @@ export default function SentencePictureScreen({ onBack }: Props) {
         });
       }
     }
+    if (aiSceneEnabled && session.items.length && !session.anatomy) drawSceneWithAi(session);
   }, [session, buildMode]);
 
-  // Optional: turn the built scene into a single AI picture (needs a token).
-  async function drawSceneWithAi() {
+  // Turn the built scene into one real picture (needs a Pollinations token).
+  async function drawSceneWithAi(scene = session) {
     if (!aiSceneEnabled) {
-      setAiError("Live AI drawing needs a free Pollinations token (auth.pollinations.ai) in .env.");
+      setAiError("Real pictures need a free Pollinations token (auth.pollinations.ai) in .env — the built scene is shown for now.");
       return;
     }
     setAiLoading(true);
     setAiError(null);
-    const url = composeSceneUrl(sessionPrompt(session), session.seed);
+    const prompt = (await describeScene(scene)) ?? sessionPrompt(scene);
+    const url = composeSceneUrl(prompt, scene.seed);
     setImg({ uri: url, source: "ai-saved" });
-    saveImage(sessionPrompt(session), url, { source: "ai", tags: session.items.map((i) => i.type) }).catch(() => {});
+    saveImage(prompt, url, { source: "ai", tags: scene.items.map((i) => i.type) }).catch(() => {});
     if (aiTimer.current) clearTimeout(aiTimer.current);
-    setTimeout(() => setAiLoading(false), 5000);
+    setTimeout(() => setAiLoading(false), 6000);
     aiTimer.current = setTimeout(() => {
       setAiLoading(false);
       setImg(null);
       setAiError("The picture engine is slow — the built scene is still shown.");
-    }, 15000);
+    }, 18000);
   }
 
   // On sentence change: ask the library first. If it has (or can seed) a
@@ -372,18 +375,18 @@ export default function SentencePictureScreen({ onBack }: Props) {
                 <Text style={styles.buildToggleText}>Start over</Text>
               </Pressable>
             )}
-            {buildMode && aiSceneEnabled && !!session.items.length && (
-              <Pressable onPress={drawSceneWithAi} disabled={aiLoading} style={styles.buildReset}>
+            {buildMode && !!session.items.length && (
+              <Pressable onPress={() => drawSceneWithAi()} disabled={aiLoading} style={styles.buildReset}>
                 <Ionicons name="sparkles" size={15} color={colors.forestDark} />
-                <Text style={styles.buildToggleText}>Draw with AI</Text>
+                <Text style={styles.buildToggleText}>{aiSceneEnabled ? "Redraw" : "Real picture"}</Text>
               </Pressable>
             )}
           </View>
           {buildMode && (
             <Text style={styles.micHint}>
-              {agentEnabled
-                ? `Speak naturally — the ${agentName} agent understands full sentences. "put a small blue cat on the table and open its eyes", "move the book behind the chair", "remove the cat".`
-                : 'One thing at a time: "table" · "book behind the table" · "open the cat\'s eyes" · "a girl is crying". Add EXPO_PUBLIC_GROQ_API_KEY for free-speech understanding.'}
+              {!aiSceneEnabled
+                ? 'For real pictures, add a free Pollinations token (auth.pollinations.ai) as EXPO_PUBLIC_POLLINATIONS_TOKEN. Speak naturally: "put a small blue cat on the table and close its eyes", "add a book behind the table", "remove the cat".'
+                : `Speak naturally — the ${agentName} agent understands full sentences and the scene redraws as one real picture. "a girl is crying next to the mosque", "move the book behind the chair".`}
             </Text>
           )}
 

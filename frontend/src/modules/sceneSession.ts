@@ -442,17 +442,27 @@ export function sessionPrompt(s: SceneSession): string {
     return `a clear labelled anatomical diagram of the human ${s.anatomyParts.join(" and ")}, medical textbook illustration, clean labels`;
   }
   if (!s.items.length) return "an empty white page";
-  const parts = s.items.map((i) => {
-    const bits = [i.count > 1 ? `${i.count}` : "a", i.color, i.size !== "normal" ? i.size : "", i.type]
+  const main = s.items[0];
+  const phrase = (i: SceneItem, first: boolean): string => {
+    const noun = [
+      i.count > 1 ? `${i.count}` : first ? "a" : "a",
+      i.color,
+      i.size !== "normal" ? i.size : "",
+      i.type,
+    ]
       .filter(Boolean)
       .join(" ");
     const st: string[] = [];
-    if (i.eyes) st.push(`eyes ${i.eyes}`);
-    if (i.action) st.push(i.action);
-    return st.length ? `${bits} (${st.join(", ")})` : bits;
-  });
-  const rel = s.items.length > 1 ? s.items.slice(1).map((i) => `${i.type} ${i.behind ? "behind" : "near"} the ${s.items[0].type}`).join(", ") : "";
-  return `${parts.join(", ")}. ${rel}. flat children's illustration, plain white background`;
+    if (i.action) st.push(i.action.endsWith("ing") ? i.action : `${i.action}`);
+    if (i.eyes) st.push(`with its eyes ${i.eyes}`);
+    if (!first) {
+      const near = i.behind ? "behind" : "next to";
+      st.push(`positioned ${near} the ${main.type}`);
+    }
+    return st.length ? `${noun} ${st.join(", ")}` : noun;
+  };
+  const desc = s.items.map((i, idx) => phrase(i, idx === 0)).join("; ");
+  return `${desc}. A single wide scene, all objects visible together, soft flat children's book illustration, warm friendly colours, bold clean outlines, plain solid white background, no text, no labels`;
 }
 
 export function sessionChips(s: SceneSession): string[] {

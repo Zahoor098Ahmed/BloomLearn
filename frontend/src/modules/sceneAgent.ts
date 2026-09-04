@@ -66,6 +66,51 @@ function extractArray(text: string): SceneOp[] | null {
   }
 }
 
+async function groqChat(system: string, user: string, maxTokens = 400): Promise<string | null> {
+  if (!agentEnabled) return null;
+  const url = GROQ_KEY
+    ? "https://api.groq.com/openai/v1/chat/completions"
+    : "https://api.openai.com/v1/chat/completions";
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_KEY || OPENAI_KEY}` },
+      body: JSON.stringify({
+        model: GROQ_KEY ? "openai/gpt-oss-20b" : "gpt-4o-mini",
+        temperature: 0,
+        max_tokens: maxTokens,
+        reasoning_effort: "low",
+        messages: [
+          { role: "system", content: system },
+          { role: "user", content: user },
+        ],
+      }),
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    return json.choices?.[0]?.message?.content ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Turn the current scene into one vivid image-generation prompt. Used to draw
+ * the whole built scene as a single realistic picture.
+ */
+export async function describeScene(session: SceneSession): Promise<string | null> {
+  if (session.anatomy) return null;
+  const items = session.items
+    .map((i) => [i.count > 1 ? i.count : "", i.color, i.size !== "normal" ? i.size : "", i.type, i.action, i.eyes ? `eyes ${i.eyes}` : "", i.behind ? "(in the background)" : ""].filter(Boolean).join(" "))
+    .join("; ");
+  const out = await groqChat(
+    "You write ONE short image-generation prompt (max 45 words) for a warm, friendly children's picture. Describe every listed object, its colour, pose and where it sits relative to the others. End with: plain white background, soft flat illustration, no text. Reply with only the prompt.",
+    `Objects: ${items}`,
+    120,
+  );
+  return out ? out.trim().replace(/^["']|["']$/g, "") : null;
+}
+
 /** Ask the LLM for scene ops. Returns null on any failure so the caller falls back. */
 export async function parseUtteranceLLM(utterance: string, session: SceneSession): Promise<SceneOp[] | null> {
   if (!agentEnabled) return null;
