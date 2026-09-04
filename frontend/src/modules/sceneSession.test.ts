@@ -154,6 +154,12 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
   // "open the cat's eyes" must NOT trigger the body diagram
   let c = say(newSession(), "a cat", "open the cat's eyes");
   check("body  'open the cat's eyes' stays a cat command", !c.anatomy && item(c, "cat")?.eyes === "open");
+
+  // "internal organs" (rule + agent) fills the standard organ set
+  let d = say(newSession(), "internal organs");
+  check("body  'internal organs' fills the standard set (rules)", d.anatomy && d.anatomyParts.length >= 8);
+  let e = applyOps(newSession(), [{ op: "add", type: "organs" }]);
+  check("body  agent 'organs' op fills the standard set", e.anatomy && e.anatomyParts.length >= 8 && e.anatomyParts.includes("heart"));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

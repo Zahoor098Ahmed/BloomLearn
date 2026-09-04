@@ -84,6 +84,8 @@ const BODY_WORDS = new Set([
   "foot", "feet", "toe", "toes", "back",
 ]);
 const ANATOMY = new Set([...ORGAN_WORDS, ...BODY_WORDS]);
+// the standard set drawn for "internal organs" / "all the organs"
+const ORGAN_SET = ["brain", "lung", "heart", "liver", "stomach", "pancreas", "kidney", "intestine", "bladder"];
 
 const EXPRESSIONS: Record<string, string> = {
   crying: "crying", cry: "crying", sad: "crying", happy: "laughing",
@@ -256,13 +258,12 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
   if (!tokens.length) return s;
 
   // 1. anatomy: one labelled human body, parts accumulate on it
-  const sing = (w: string) => (w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
+  const sing = (w: string) => (w.endsWith("ss") || w.endsWith("eas") ? w : w.endsWith("s") ? w.slice(0, -1) : w);
   const wantsBody = /\b(internal body|body part|body parts|human body|the body|the organs?|inside the body|organs of)\b/.test(t);
   const wantsAll = /\b(all (the )?organs|every organ|internal organs)\b/.test(t);
   if (wantsAll) {
     s.anatomy = true;
-    for (const o of ["brain", "lung", "heart", "liver", "stomach", "kidney", "intestine", "bladder"])
-      if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
+    for (const o of ORGAN_SET) if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
     s.note = `human body: all organs`;
     return s;
   }
@@ -495,13 +496,21 @@ function applyOpsRaw(prev: SceneSession, ops: SceneOp[]): SceneSession {
     const type = "type" in op && op.type ? norm(op.type).trim() : "";
     if (!type) continue;
 
+    // "organs" / "internal organs" / "body parts" with no specific part named
+    if (/^(all |the )?(internal |human )?(organs?|body parts?|anatomy)$/.test(type) && op.op !== "remove") {
+      s.anatomy = true;
+      for (const o of ORGAN_SET) if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
+      done.push("body: all organs");
+      continue;
+    }
+
     // body-part words -> the labelled human body, parts accumulate on one figure
-    const sing = (w: string) => (w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
+    const sing = (w: string) => (w.endsWith("ss") || w.endsWith("eas") ? w : w.endsWith("s") ? w.slice(0, -1) : w);
     const words = type.split(" ");
     const bodyOk = s.anatomy || !s.items.length || /\b(organ|body part|body parts|human|internal body)\b/.test(type);
     const part = words.find((w) => ORGAN_WORDS.has(w)) || (bodyOk ? words.find((w) => BODY_WORDS.has(w)) : undefined);
-    if (part || /\b(organ|body part|body parts|internal body)\b/.test(type)) {
-      const p = sing(part ?? type);
+    if (part) {
+      const p = sing(part);
       if (op.op === "remove") s.anatomyParts = s.anatomyParts.filter((x) => x !== p);
       else {
         s.anatomy = true;
