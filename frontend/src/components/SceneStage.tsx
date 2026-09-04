@@ -16,16 +16,9 @@ const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.72, small: 0.86,
 const BASE = 64;
 const SLOT = 200;
 
-function eyesGlyph(eyes: SceneItem["eyes"]): string | null {
-  if (eyes === "open") return "eyes open";
-  if (eyes === "closed") return "eyes closed";
-  return null;
-}
-
 function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?: number }) {
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
-  const eLabel = eyesGlyph(item.eyes);
   const pic = size * 2.3;
   return (
     <View
@@ -54,17 +47,9 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
           </View>
         ))}
       </View>
-      <View style={styles.tag}>
-        <Text style={styles.tagName} numberOfLines={1}>
-          {item.color ? `${item.color} ` : ""}
-          {item.type}
-        </Text>
-        {(eLabel || (item.action && !ACTIONS[item.action])) && (
-          <Text style={styles.tagState} numberOfLines={1}>
-            {[eLabel, item.action && !ACTIONS[item.action] ? item.action : null].filter(Boolean).join(" · ")}
-          </Text>
-        )}
-      </View>
+      {item.colorHex && (
+        <View style={[styles.dot, { backgroundColor: item.colorHex }]} />
+      )}
     </View>
   );
 }
@@ -124,16 +109,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "rgba(0,0,0,0.06)",
   },
-  tag: {
-    marginTop: 1,
-    alignItems: "center",
-    backgroundColor: "rgba(255,255,255,0.92)",
-    paddingHorizontal: 7,
-    paddingVertical: 1,
-    borderRadius: 7,
-  },
-  tagName: { fontSize: 12.5, fontWeight: "800", color: colors.textDark, textTransform: "capitalize" },
-  tagState: { fontSize: 10, fontWeight: "700", color: colors.forest },
+  dot: { width: 12, height: 12, borderRadius: 6, marginTop: 3, borderWidth: 1.5, borderColor: "rgba(0,0,0,0.15)" },
   empty: {
     position: "absolute",
     left: 24,
