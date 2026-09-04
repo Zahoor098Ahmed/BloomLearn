@@ -60,46 +60,47 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   );
 }
 
-// One clean body outline; each named part is a labelled marker at its spot on
-// the body (a coloured dot + a name on its own side). No overlapping pictograms.
+// One clean body outline; each named part is a labelled marker on the figure
+// (dot on the body + a connector line out to a name in the side margin).
+// The body image sits in the centre ~40% of the box; x is where the dot goes.
 const ORGAN: Record<string, { label: string; x: number; y: number; color: string; side: "L" | "R" }> = {
   // internal organs
-  brain: { label: "brain", x: 0.5, y: 0.06, color: "#e79bc4", side: "R" },
-  heart: { label: "heart", x: 0.44, y: 0.34, color: "#d64545", side: "L" },
-  lungs: { label: "lungs", x: 0.58, y: 0.32, color: "#e0a3b4", side: "R" },
-  lung: { label: "lungs", x: 0.58, y: 0.32, color: "#e0a3b4", side: "R" },
-  liver: { label: "liver", x: 0.42, y: 0.46, color: "#a8632b", side: "L" },
-  stomach: { label: "stomach", x: 0.58, y: 0.46, color: "#e0b25a", side: "R" },
-  belly: { label: "stomach", x: 0.58, y: 0.46, color: "#e0b25a", side: "R" },
-  kidney: { label: "kidneys", x: 0.44, y: 0.54, color: "#8a5a2b", side: "L" },
-  kidneys: { label: "kidneys", x: 0.44, y: 0.54, color: "#8a5a2b", side: "L" },
-  intestine: { label: "intestines", x: 0.55, y: 0.6, color: "#c98a5a", side: "R" },
-  intestines: { label: "intestines", x: 0.55, y: 0.6, color: "#c98a5a", side: "R" },
-  bladder: { label: "bladder", x: 0.5, y: 0.68, color: "#e9c33c", side: "L" },
+  brain: { label: "brain", x: 0.5, y: 0.07, color: "#e79bc4", side: "R" },
+  heart: { label: "heart", x: 0.46, y: 0.34, color: "#d64545", side: "L" },
+  lungs: { label: "lungs", x: 0.55, y: 0.31, color: "#cf7f96", side: "R" },
+  lung: { label: "lungs", x: 0.55, y: 0.31, color: "#cf7f96", side: "R" },
+  liver: { label: "liver", x: 0.45, y: 0.44, color: "#a8632b", side: "L" },
+  stomach: { label: "stomach", x: 0.55, y: 0.44, color: "#d99a2b", side: "R" },
+  belly: { label: "stomach", x: 0.55, y: 0.44, color: "#d99a2b", side: "R" },
+  kidney: { label: "kidneys", x: 0.46, y: 0.53, color: "#8a5a2b", side: "L" },
+  kidneys: { label: "kidneys", x: 0.46, y: 0.53, color: "#8a5a2b", side: "L" },
+  intestine: { label: "intestines", x: 0.54, y: 0.58, color: "#c98a5a", side: "R" },
+  intestines: { label: "intestines", x: 0.54, y: 0.58, color: "#c98a5a", side: "R" },
+  bladder: { label: "bladder", x: 0.5, y: 0.66, color: "#c9a83c", side: "L" },
   // outside body parts
-  head: { label: "head", x: 0.5, y: 0.05, color: "#6c8cc9", side: "R" },
-  hair: { label: "hair", x: 0.5, y: 0.02, color: "#8a5a2b", side: "R" },
-  eye: { label: "eyes", x: 0.46, y: 0.05, color: "#4f9d5d", side: "L" },
-  eyes: { label: "eyes", x: 0.46, y: 0.05, color: "#4f9d5d", side: "L" },
-  ear: { label: "ears", x: 0.58, y: 0.06, color: "#c98a5a", side: "R" },
-  nose: { label: "nose", x: 0.5, y: 0.07, color: "#d64545", side: "L" },
-  mouth: { label: "mouth", x: 0.5, y: 0.09, color: "#d64545", side: "R" },
-  neck: { label: "neck", x: 0.5, y: 0.14, color: "#6c8cc9", side: "L" },
-  shoulder: { label: "shoulder", x: 0.3, y: 0.2, color: "#6c8cc9", side: "L" },
-  chest: { label: "chest", x: 0.5, y: 0.28, color: "#6c8cc9", side: "R" },
-  arm: { label: "arm", x: 0.22, y: 0.36, color: "#4f9d5d", side: "L" },
-  elbow: { label: "elbow", x: 0.18, y: 0.44, color: "#4f9d5d", side: "L" },
-  hand: { label: "hand", x: 0.14, y: 0.54, color: "#e08a3c", side: "L" },
-  finger: { label: "fingers", x: 0.12, y: 0.6, color: "#e08a3c", side: "L" },
-  tummy: { label: "tummy", x: 0.5, y: 0.44, color: "#e0b25a", side: "R" },
-  torso: { label: "torso", x: 0.62, y: 0.38, color: "#6c8cc9", side: "R" },
-  body: { label: "body", x: 0.62, y: 0.38, color: "#6c8cc9", side: "R" },
-  hip: { label: "hip", x: 0.5, y: 0.62, color: "#6c8cc9", side: "R" },
-  leg: { label: "leg", x: 0.42, y: 0.78, color: "#4f9d5d", side: "L" },
-  knee: { label: "knee", x: 0.44, y: 0.84, color: "#4f9d5d", side: "R" },
-  foot: { label: "foot", x: 0.42, y: 0.97, color: "#e08a3c", side: "L" },
-  toe: { label: "toes", x: 0.4, y: 0.99, color: "#e08a3c", side: "L" },
-  back: { label: "back", x: 0.62, y: 0.32, color: "#6c8cc9", side: "R" },
+  head: { label: "head", x: 0.5, y: 0.06, color: "#6c8cc9", side: "R" },
+  hair: { label: "hair", x: 0.5, y: 0.03, color: "#8a5a2b", side: "L" },
+  eye: { label: "eyes", x: 0.5, y: 0.06, color: "#4f9d5d", side: "L" },
+  eyes: { label: "eyes", x: 0.5, y: 0.06, color: "#4f9d5d", side: "L" },
+  ear: { label: "ears", x: 0.53, y: 0.07, color: "#c98a5a", side: "R" },
+  nose: { label: "nose", x: 0.5, y: 0.08, color: "#d64545", side: "L" },
+  mouth: { label: "mouth", x: 0.5, y: 0.1, color: "#d64545", side: "R" },
+  neck: { label: "neck", x: 0.5, y: 0.15, color: "#6c8cc9", side: "L" },
+  shoulder: { label: "shoulders", x: 0.42, y: 0.2, color: "#6c8cc9", side: "L" },
+  chest: { label: "chest", x: 0.5, y: 0.27, color: "#6c8cc9", side: "R" },
+  arm: { label: "arms", x: 0.38, y: 0.36, color: "#4f9d5d", side: "L" },
+  elbow: { label: "elbows", x: 0.36, y: 0.44, color: "#4f9d5d", side: "R" },
+  hand: { label: "hands", x: 0.34, y: 0.53, color: "#e08a3c", side: "L" },
+  finger: { label: "fingers", x: 0.33, y: 0.59, color: "#e08a3c", side: "R" },
+  tummy: { label: "tummy", x: 0.5, y: 0.42, color: "#d99a2b", side: "R" },
+  torso: { label: "torso", x: 0.5, y: 0.35, color: "#6c8cc9", side: "R" },
+  body: { label: "body", x: 0.5, y: 0.4, color: "#6c8cc9", side: "R" },
+  hip: { label: "hips", x: 0.5, y: 0.6, color: "#6c8cc9", side: "L" },
+  leg: { label: "legs", x: 0.47, y: 0.78, color: "#4f9d5d", side: "L" },
+  knee: { label: "knees", x: 0.47, y: 0.85, color: "#4f9d5d", side: "R" },
+  foot: { label: "feet", x: 0.47, y: 0.96, color: "#e08a3c", side: "L" },
+  toe: { label: "toes", x: 0.46, y: 0.99, color: "#e08a3c", side: "R" },
+  back: { label: "back", x: 0.5, y: 0.32, color: "#6c8cc9", side: "R" },
 };
 const asrc = (id: number) => `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 
@@ -114,27 +115,33 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
         <Text style={styles.bodyTitle}>The human body</Text>
         <View style={styles.bodyBox}>
           <Image source={{ uri: asrc(6473) }} style={styles.bodyBase} resizeMode="contain" />
-          {marks.map((o) => (
-            <View key={o.label}>
-              <View
-                style={[
-                  styles.organDot,
-                  { backgroundColor: o.color, left: `${o.x * 100}%`, top: `${o.y * 100}%` },
-                ]}
-              />
-              <Text
-                style={[
-                  styles.organLabel,
-                  o.side === "L"
-                    ? { right: `${(1 - o.x) * 100 + 6}%`, textAlign: "right" }
-                    : { left: `${o.x * 100 + 6}%` },
-                  { top: `${o.y * 100 - 4}%` },
-                ]}
-              >
-                {o.label}
-              </Text>
-            </View>
-          ))}
+          {marks.flatMap((o) => [
+            <View
+              key={`${o.label}-line`}
+              style={[
+                styles.organLine,
+                { top: `${o.y * 100}%` },
+                o.side === "L"
+                  ? { right: `${(1 - o.x) * 100}%`, left: "6%" }
+                  : { left: `${o.x * 100}%`, right: "6%" },
+              ]}
+            />,
+            <View
+              key={`${o.label}-dot`}
+              style={[styles.organDot, { backgroundColor: o.color, left: `${o.x * 100}%`, top: `${o.y * 100}%` }]}
+            />,
+            <Text
+              key={`${o.label}-lbl`}
+              style={[
+                styles.organLabel,
+                { top: `${o.y * 100}%` },
+                o.side === "L" ? { left: 0, textAlign: "left" } : { right: 0, textAlign: "right" },
+              ]}
+              numberOfLines={1}
+            >
+              {o.label}
+            </Text>,
+          ])}
         </View>
         {!marks.length && <Text style={styles.anatomyHint}>Say “heart”, “add lungs”, “add stomach”… to label the body.</Text>}
       </View>
@@ -190,26 +197,28 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
   },
   anatomyHint: { position: "absolute", left: 20, right: 20, top: "44%", fontSize: 12, color: colors.textLight, textAlign: "center" },
-  bodyTitle: { position: "absolute", top: 8, fontSize: 12, fontWeight: "800", color: colors.textMid },
-  bodyBox: { height: "88%", aspectRatio: 0.55, position: "relative", marginTop: 10 },
-  bodyBase: { position: "absolute", width: "100%", height: "100%", opacity: 0.85 },
+  bodyTitle: { position: "absolute", top: 6, fontSize: 12, fontWeight: "800", color: colors.textMid },
+  bodyBox: { position: "absolute", top: 24, bottom: 8, left: 8, right: 8 },
+  bodyBase: { position: "absolute", width: "100%", height: "100%", opacity: 0.9 },
   organDot: {
     position: "absolute",
-    width: 12,
-    height: 12,
+    width: 11,
+    height: 11,
     borderRadius: 6,
     borderWidth: 2,
     borderColor: "white",
-    marginLeft: -6,
-    marginTop: -6,
+    marginLeft: -5.5,
+    marginTop: -5.5,
+    zIndex: 2,
   },
+  organLine: { position: "absolute", height: 1.5, backgroundColor: "rgba(0,0,0,0.25)" },
   organLabel: {
     position: "absolute",
+    width: 62,
+    marginTop: -8,
     fontSize: 11,
     fontWeight: "800",
     color: colors.textDark,
-    backgroundColor: "rgba(255,255,255,0.9)",
-    paddingHorizontal: 3,
-    borderRadius: 3,
+    textTransform: "capitalize",
   },
 });
