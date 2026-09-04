@@ -257,7 +257,15 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
 
   // 1. anatomy: one labelled human body, parts accumulate on it
   const sing = (w: string) => (w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
-  const wantsBody = /\b(internal body|body part|body parts|human body|the body|the organs?|inside the body)\b/.test(t);
+  const wantsBody = /\b(internal body|body part|body parts|human body|the body|the organs?|inside the body|organs of)\b/.test(t);
+  const wantsAll = /\b(all (the )?organs|every organ|internal organs)\b/.test(t);
+  if (wantsAll) {
+    s.anatomy = true;
+    for (const o of ["brain", "lung", "heart", "liver", "stomach", "kidney", "intestine", "bladder"])
+      if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
+    s.note = `human body: all organs`;
+    return s;
+  }
   const hasRealItem = s.items.length > 0;
   const named = tokens.filter(
     (w) => ORGAN_WORDS.has(w) || (BODY_WORDS.has(w) && (s.anatomy || wantsBody || !hasRealItem)),

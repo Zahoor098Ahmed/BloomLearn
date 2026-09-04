@@ -64,89 +64,137 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
 }
 
 // One clean body outline; each named part is a labelled marker on the figure
-// (dot on the body + a connector line out to a name in the side margin).
-// The body image sits in the centre ~40% of the box; x is where the dot goes.
-const ORGAN: Record<string, { label: string; x: number; y: number; color: string; side: "L" | "R" }> = {
-  // internal organs
-  brain: { label: "brain", x: 0.5, y: 0.07, color: "#e79bc4", side: "R" },
-  heart: { label: "heart", x: 0.46, y: 0.34, color: "#d64545", side: "L" },
-  lungs: { label: "lungs", x: 0.55, y: 0.31, color: "#cf7f96", side: "R" },
-  lung: { label: "lungs", x: 0.55, y: 0.31, color: "#cf7f96", side: "R" },
-  liver: { label: "liver", x: 0.45, y: 0.44, color: "#a8632b", side: "L" },
-  stomach: { label: "stomach", x: 0.55, y: 0.44, color: "#d99a2b", side: "R" },
-  belly: { label: "stomach", x: 0.55, y: 0.44, color: "#d99a2b", side: "R" },
-  kidney: { label: "kidneys", x: 0.46, y: 0.53, color: "#8a5a2b", side: "L" },
-  kidneys: { label: "kidneys", x: 0.46, y: 0.53, color: "#8a5a2b", side: "L" },
-  intestine: { label: "intestines", x: 0.54, y: 0.58, color: "#c98a5a", side: "R" },
-  intestines: { label: "intestines", x: 0.54, y: 0.58, color: "#c98a5a", side: "R" },
-  bladder: { label: "bladder", x: 0.5, y: 0.66, color: "#c9a83c", side: "L" },
-  // outside body parts
-  head: { label: "head", x: 0.5, y: 0.06, color: "#6c8cc9", side: "R" },
-  hair: { label: "hair", x: 0.5, y: 0.03, color: "#8a5a2b", side: "L" },
-  eye: { label: "eyes", x: 0.5, y: 0.06, color: "#4f9d5d", side: "L" },
-  eyes: { label: "eyes", x: 0.5, y: 0.06, color: "#4f9d5d", side: "L" },
-  ear: { label: "ears", x: 0.53, y: 0.07, color: "#c98a5a", side: "R" },
-  nose: { label: "nose", x: 0.5, y: 0.08, color: "#d64545", side: "L" },
-  mouth: { label: "mouth", x: 0.5, y: 0.1, color: "#d64545", side: "R" },
-  neck: { label: "neck", x: 0.5, y: 0.15, color: "#6c8cc9", side: "L" },
-  shoulder: { label: "shoulders", x: 0.42, y: 0.2, color: "#6c8cc9", side: "L" },
-  chest: { label: "chest", x: 0.5, y: 0.27, color: "#6c8cc9", side: "R" },
-  arm: { label: "arms", x: 0.38, y: 0.36, color: "#4f9d5d", side: "L" },
-  elbow: { label: "elbows", x: 0.36, y: 0.44, color: "#4f9d5d", side: "R" },
-  hand: { label: "hands", x: 0.34, y: 0.53, color: "#e08a3c", side: "L" },
-  finger: { label: "fingers", x: 0.33, y: 0.59, color: "#e08a3c", side: "R" },
-  tummy: { label: "tummy", x: 0.5, y: 0.42, color: "#d99a2b", side: "R" },
-  torso: { label: "torso", x: 0.5, y: 0.35, color: "#6c8cc9", side: "R" },
-  body: { label: "body", x: 0.5, y: 0.4, color: "#6c8cc9", side: "R" },
-  hip: { label: "hips", x: 0.5, y: 0.6, color: "#6c8cc9", side: "L" },
-  leg: { label: "legs", x: 0.47, y: 0.78, color: "#4f9d5d", side: "L" },
-  knee: { label: "knees", x: 0.47, y: 0.85, color: "#4f9d5d", side: "R" },
-  foot: { label: "feet", x: 0.47, y: 0.96, color: "#e08a3c", side: "L" },
-  toe: { label: "toes", x: 0.46, y: 0.99, color: "#e08a3c", side: "R" },
-  back: { label: "back", x: 0.5, y: 0.32, color: "#6c8cc9", side: "R" },
+// "Organs of the body" style diagram: a figure in the centre, each named organ
+// in a circular badge around the edge with a connector line to its spot.
+type OrganDef = { label: string; id: number; ax: number; ay: number };
+const ORGAN: Record<string, OrganDef> = {
+  brain: { label: "Brain", id: 2696, ax: 0.5, ay: 0.12 },
+  lungs: { label: "Lungs", id: 2822, ax: 0.5, ay: 0.34 },
+  lung: { label: "Lungs", id: 2822, ax: 0.5, ay: 0.34 },
+  heart: { label: "Heart", id: 4613, ax: 0.47, ay: 0.37 },
+  liver: { label: "Liver", id: 2980, ax: 0.45, ay: 0.46 },
+  stomach: { label: "Stomach", id: 2786, ax: 0.55, ay: 0.45 },
+  belly: { label: "Stomach", id: 2786, ax: 0.55, ay: 0.45 },
+  pancreas: { label: "Pancreas", id: 28407, ax: 0.53, ay: 0.49 },
+  kidney: { label: "Kidneys", id: 2812, ax: 0.53, ay: 0.51 },
+  kidneys: { label: "Kidneys", id: 2812, ax: 0.53, ay: 0.51 },
+  intestine: { label: "Intestines", id: 2967, ax: 0.5, ay: 0.56 },
+  intestines: { label: "Intestines", id: 2967, ax: 0.5, ay: 0.56 },
+  bladder: { label: "Bladder", id: 3407, ax: 0.5, ay: 0.62 },
+};
+// simple outside parts — a dot + label on the figure (no organ picture)
+const PART: Record<string, { label: string; x: number; y: number; side: "L" | "R" }> = {
+  head: { label: "Head", x: 0.5, y: 0.07, side: "R" },
+  hair: { label: "Hair", x: 0.5, y: 0.04, side: "L" },
+  eye: { label: "Eyes", x: 0.48, y: 0.07, side: "L" }, eyes: { label: "Eyes", x: 0.48, y: 0.07, side: "L" },
+  ear: { label: "Ears", x: 0.54, y: 0.08, side: "R" }, ears: { label: "Ears", x: 0.54, y: 0.08, side: "R" },
+  nose: { label: "Nose", x: 0.5, y: 0.09, side: "L" },
+  mouth: { label: "Mouth", x: 0.5, y: 0.11, side: "R" },
+  neck: { label: "Neck", x: 0.5, y: 0.16, side: "L" },
+  shoulder: { label: "Shoulders", x: 0.4, y: 0.21, side: "L" }, shoulders: { label: "Shoulders", x: 0.4, y: 0.21, side: "L" },
+  chest: { label: "Chest", x: 0.5, y: 0.28, side: "R" },
+  arm: { label: "Arms", x: 0.34, y: 0.34, side: "L" }, arms: { label: "Arms", x: 0.34, y: 0.34, side: "L" },
+  elbow: { label: "Elbows", x: 0.3, y: 0.42, side: "R" },
+  hand: { label: "Hands", x: 0.27, y: 0.5, side: "L" }, hands: { label: "Hands", x: 0.27, y: 0.5, side: "L" },
+  finger: { label: "Fingers", x: 0.25, y: 0.56, side: "R" },
+  tummy: { label: "Tummy", x: 0.5, y: 0.43, side: "R" },
+  hip: { label: "Hips", x: 0.5, y: 0.6, side: "L" }, hips: { label: "Hips", x: 0.5, y: 0.6, side: "L" },
+  leg: { label: "Legs", x: 0.46, y: 0.78, side: "L" }, legs: { label: "Legs", x: 0.46, y: 0.78, side: "L" },
+  knee: { label: "Knees", x: 0.46, y: 0.86, side: "R" },
+  foot: { label: "Feet", x: 0.46, y: 0.96, side: "L" }, feet: { label: "Feet", x: 0.46, y: 0.96, side: "L" },
+  toe: { label: "Toes", x: 0.45, y: 0.99, side: "R" },
+  back: { label: "Back", x: 0.5, y: 0.32, side: "R" },
+  torso: { label: "Torso", x: 0.5, y: 0.36, side: "R" },
+  body: { label: "Body", x: 0.5, y: 0.4, side: "R" },
 };
 const asrc = (id: number) => `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
+
+const AW = 320;
+const AH = 410;
+// badge slots around the edge, filled in this order
+const SLOTS = [
+  { x: 0.135, y: 0.16 }, { x: 0.865, y: 0.16 },
+  { x: 0.135, y: 0.37 }, { x: 0.865, y: 0.37 },
+  { x: 0.135, y: 0.58 }, { x: 0.865, y: 0.58 },
+  { x: 0.135, y: 0.79 }, { x: 0.865, y: 0.79 },
+  { x: 0.34, y: 0.93 }, { x: 0.66, y: 0.93 },
+];
+
+function Connector({ from, to, color = "#3f8f86" }: { from: { x: number; y: number }; to: { x: number; y: number }; color?: string }) {
+  const dx = (to.x - from.x) * AW;
+  const dy = (to.y - from.y) * AH;
+  const len = Math.hypot(dx, dy);
+  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
+  return (
+    <View
+      style={{
+        position: "absolute",
+        left: `${from.x * 100}%`,
+        top: `${from.y * 100}%`,
+        width: len,
+        height: 1.5,
+        backgroundColor: color,
+        transformOrigin: "left center",
+        transform: [{ rotate: `${angle}deg` }],
+      }}
+    />
+  );
+}
 
 export default function SceneStage({ session, uris = {} }: { session: SceneSession; uris?: Record<string, string> }) {
   if (session.anatomy) {
     const seen = new Set<string>();
-    const marks = session.anatomyParts
-      .map((p) => ORGAN[p])
-      .filter((o): o is (typeof ORGAN)[string] => !!o && !seen.has(o.label) && !!seen.add(o.label));
+    const uniq = session.anatomyParts.filter((p) => {
+      const k = ORGAN[p]?.label ?? PART[p]?.label ?? p;
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+    const organs = uniq.map((p) => ORGAN[p]).filter((o): o is OrganDef => !!o).slice(0, SLOTS.length);
+    const parts = uniq.map((p) => PART[p]).filter((o): o is (typeof PART)[string] => !!o);
+
     return (
-      <View style={styles.stage}>
-        <Text style={styles.bodyTitle}>The human body</Text>
-        <View style={styles.bodyBox}>
-          <Image source={{ uri: asrc(6473) }} style={styles.bodyBase} resizeMode="contain" />
-          {marks.flatMap((o) => [
+      <View style={styles.bodyStage}>
+        <Text style={styles.bodyTitle}>Parts of the body</Text>
+        <Image source={{ uri: asrc(6473) }} style={styles.bodyFigure} resizeMode="contain" />
+
+        {organs.map((o, i) => {
+          const slot = SLOTS[i];
+          return (
+            <View key={o.label}>
+              <Connector from={slot} to={{ x: o.ax, y: o.ay }} />
+              <View style={[styles.badge, { left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }]}>
+                <Image source={{ uri: asrc(o.id) }} style={styles.badgeImg} resizeMode="contain" />
+              </View>
+              <Text style={[styles.badgeLabel, { left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }]} numberOfLines={1}>
+                {o.label}
+              </Text>
+            </View>
+          );
+        })}
+
+        {parts.map((p) => (
+          <View key={p.label}>
             <View
-              key={`${o.label}-line`}
               style={[
                 styles.organLine,
-                { top: `${o.y * 100}%` },
-                o.side === "L"
-                  ? { right: `${(1 - o.x) * 100}%`, left: "6%" }
-                  : { left: `${o.x * 100}%`, right: "6%" },
+                { top: `${p.y * 100}%` },
+                p.side === "L" ? { right: `${(1 - p.x) * 100}%`, left: "4%" } : { left: `${p.x * 100}%`, right: "4%" },
               ]}
-            />,
-            <View
-              key={`${o.label}-dot`}
-              style={[styles.organDot, { backgroundColor: o.color, left: `${o.x * 100}%`, top: `${o.y * 100}%` }]}
-            />,
+            />
+            <View style={[styles.organDot, { left: `${p.x * 100}%`, top: `${p.y * 100}%` }]} />
             <Text
-              key={`${o.label}-lbl`}
-              style={[
-                styles.organLabel,
-                { top: `${o.y * 100}%` },
-                o.side === "L" ? { left: 0, textAlign: "left" } : { right: 0, textAlign: "right" },
-              ]}
+              style={[styles.organLabel, { top: `${p.y * 100}%` }, p.side === "L" ? { left: 0 } : { right: 0, textAlign: "right" }]}
               numberOfLines={1}
             >
-              {o.label}
-            </Text>,
-          ])}
-        </View>
-        {!marks.length && <Text style={styles.anatomyHint}>Say “heart”, “add lungs”, “add stomach”… to label the body.</Text>}
+              {p.label}
+            </Text>
+          </View>
+        ))}
+
+        {!organs.length && !parts.length && (
+          <Text style={styles.anatomyHint}>Say “heart”, “add lungs”, “add stomach”… to build the diagram.</Text>
+        )}
       </View>
     );
   }
@@ -200,9 +248,52 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
   },
   anatomyHint: { position: "absolute", left: 20, right: 20, top: "44%", fontSize: 12, color: colors.textLight, textAlign: "center" },
-  bodyTitle: { position: "absolute", top: 6, fontSize: 12, fontWeight: "800", color: colors.textMid },
-  bodyBox: { position: "absolute", top: 24, bottom: 8, left: 8, right: 8 },
-  bodyBase: { position: "absolute", width: "100%", height: "100%", opacity: 0.9 },
+  bodyStage: {
+    width: "100%",
+    aspectRatio: AW / AH,
+    backgroundColor: "#ffffff",
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: "hidden",
+  },
+  bodyTitle: {
+    position: "absolute",
+    top: 8,
+    alignSelf: "center",
+    fontSize: 13,
+    fontWeight: "800",
+    color: "#3f8f86",
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+  },
+  bodyFigure: { position: "absolute", left: "33%", right: "33%", top: "9%", bottom: "3%" },
+  badge: {
+    position: "absolute",
+    width: 62,
+    height: 62,
+    marginLeft: -31,
+    marginTop: -31,
+    borderRadius: 31,
+    backgroundColor: "#e8f4f2",
+    borderWidth: 1.5,
+    borderColor: "#bfe0da",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 3,
+  },
+  badgeImg: { width: 46, height: 46 },
+  badgeLabel: {
+    position: "absolute",
+    width: 90,
+    marginLeft: -45,
+    marginTop: 32,
+    textAlign: "center",
+    fontSize: 10.5,
+    fontWeight: "800",
+    color: "#3f8f86",
+    zIndex: 3,
+  },
   organDot: {
     position: "absolute",
     width: 11,
