@@ -19,9 +19,9 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
   const pic = size * 2.3;
-  // A flat tint would wipe the pictogram's black outline and inner detail
-  // (eyes, whiskers), so colour is shown as a soft wash behind the symbol plus
-  // a coloured ring — the drawing stays fully clear.
+  // Colour "glaze": the plain pictogram underneath (full detail) with a
+  // semi-transparent tinted copy on top. The body picks up the colour while the
+  // black outline, eyes and whiskers still read through. No background box.
   const col = item.colorHex ?? undefined;
   return (
     <View
@@ -38,23 +38,18 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
     >
       <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
         {Array.from({ length: n }).map((_, i) => (
-          <View
-            key={i}
-            style={[
-              { alignItems: "center", justifyContent: "center", marginLeft: i === 0 ? 0 : -size * 0.14 },
-              col
-                ? {
-                    backgroundColor: `${col}2e`, // ~18% wash
-                    borderColor: col,
-                    borderWidth: 3,
-                    borderRadius: pic * 0.16,
-                    padding: pic * 0.05,
-                  }
-                : null,
-            ]}
-          >
+          <View key={i} style={{ alignItems: "center", marginLeft: i === 0 ? 0 : -size * 0.14, width: pic, height: pic }}>
             {uri ? (
-              <Image source={{ uri }} style={{ width: pic, height: pic }} resizeMode="contain" />
+              <>
+                <Image source={{ uri }} style={{ width: pic, height: pic }} resizeMode="contain" />
+                {col && (
+                  <Image
+                    source={{ uri }}
+                    style={{ position: "absolute", width: pic, height: pic, tintColor: col, opacity: 0.5 }}
+                    resizeMode="contain"
+                  />
+                )}
+              </>
             ) : (
               <View style={[styles.loading, { width: pic * 0.72, height: pic * 0.72, borderRadius: pic * 0.1 }]} />
             )}

@@ -179,6 +179,36 @@ function dictUrl(term: string): string | null {
   return id ? idUrl(id) : null;
 }
 
+// Compound nouns ARASAAC files under a different name — pin them so a variant
+// never falls through to an unrelated icon.
+const VARIANT_IDS: Record<string, number> = {
+  "office chair": 28085, // "swivel chair"
+  "desk chair": 28085,
+  "swivel chair": 28085,
+  "dining table": 3129,
+  "kitchen table": 3129,
+  sofa: 25479,
+  couch: 25479,
+  "bunk bed": 2939,
+  "fire engine": 4925,
+  "fire truck": 4925,
+  "police car": 3426,
+  "sports car": 3081,
+  "race car": 3081,
+};
+
+function variantUrl(phrase: string): string | null {
+  const id = VARIANT_IDS[norm(phrase).trim()];
+  return id ? idUrl(id) : null;
+}
+
+/** the last significant word — the thing itself ("office chair" -> "chair") */
+function headNoun(phrase: string): string {
+  const t = norm(phrase).trim().split(" ").filter(Boolean);
+  for (let i = t.length - 1; i >= 0; i--) if (t[i].length > 2 && !STOP.has(t[i])) return t[i];
+  return t[t.length - 1] ?? "";
+}
+
 // --- ARASAAC live search (fallback for words not in the dictionary) --
 
 interface ArasaacItem { _id: number; keywords?: { keyword?: string }[] }
@@ -189,13 +219,20 @@ async function arasaacFirst(term: string): Promise<string | null> {
     if (!res.ok) return null;
     const json = (await res.json()) as ArasaacItem[];
     if (!Array.isArray(json) || !json.length) return null;
-    const want = term.toLowerCase().trim();
-    // Prefer a pictogram whose keyword is exactly the word ("table" must not
-    // return "chair"), then a keyword that starts with it, else the first hit.
-    const exact = json.find((it) => it.keywords?.some((k) => (k.keyword ?? "").toLowerCase().trim() === want));
-    const starts = json.find((it) => it.keywords?.some((k) => (k.keyword ?? "").toLowerCase().trim().startsWith(want)));
-    const id = (exact ?? starts ?? json[0])._id;
-    return id ? `https://static.arasaac.org/pictograms/${id}/${id}_500.png` : null;
+    const want = norm(term).trim();
+    const head = headNoun(term);
+    const kws = (it: ArasaacItem) => (it.keywords ?? []).map((k) => (k.keyword ?? "").toLowerCase().trim());
+    // exact keyword, then a keyword that contains the head noun as a whole word.
+    // NEVER fall back to json[0] blindly — that returns unrelated icons
+    // ("office chair" -> a first-aid cross).
+    const exact = json.find((it) => kws(it).some((k) => k === want));
+    const related = json.find((it) => kws(it).some((k) => new RegExp(`\\b${head}\\b`).test(k)));
+    const pick = exact ?? related;
+    if (!pick) {
+      console.log(`[library] ARASAAC search "${term}" — no relevant match (head "${head}"), skipping`);
+      return null;
+    }
+    return `https://static.arasaac.org/pictograms/${pick._id}/${pick._id}_500.png`;
   } catch {
     return null;
   }
@@ -231,44 +268,41 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
 
   const phraseNorm = norm(phrase);
   const tokens = phraseNorm.split(" ").filter((w) => w.length > 1 && !STOP.has(w));
+  const hit = async (via: string, term: string, url: string): Promise<LibraryHit> => {
+    console.log(`[library] "${phrase}" -> ${via} ("${term}") ${url}`);
+    const saved = await saveImage(keys[0] || term, url, { source: "arasaac", tags: keys });
+    return { uri: saved?.uri ?? url, source: "arasaac", fromLibrary: false };
+  };
 
-  // 2. exact dictionary match on a full phrase ("office chair", "fire truck")
+  // 2. a pinned variant ("office chair" -> swivel chair), then an exact
+  //    dictionary match on a full phrase ("fire truck")
+  const pinned = variantUrl(phrase);
+  if (pinned) return hit("variant", phraseNorm, pinned);
   for (const term of [...keys, graph?.subject?.type ?? ""].filter(Boolean)) {
     const url = dictUrl(term);
-    if (url) {
-      const saved = await saveImage(keys[0] || term, url, { source: "arasaac", tags: keys });
-      return { uri: saved?.uri ?? url, source: "arasaac", fromLibrary: false };
-    }
+    if (url) return hit("dict", term, url);
   }
 
-  // 3. a compound phrase ("office chair") -> live ARASAAC search for the whole
-  //    thing BEFORE falling back to the head noun, so variants win.
+  // 3. a compound phrase ("office chair") -> live ARASAAC search, but only a
+  //    result that actually relates to the head noun (never an unrelated icon).
   if (tokens.length >= 2) {
     const remote = await arasaacFirst(phraseNorm);
-    if (remote) {
-      const saved = await saveImage(keys[0] || phraseNorm, remote, { source: "arasaac", tags: keys });
-      return { uri: saved?.uri ?? remote, source: "arasaac", fromLibrary: false };
-    }
+    if (remote) return hit("search", phraseNorm, remote);
   }
 
   // 4. scan each meaningful word ("the boy eats an apple" -> boy / eat / apple)
   for (const term of tokens) {
     const url = dictUrl(term);
-    if (url) {
-      const saved = await saveImage(keys[0] || term, url, { source: "arasaac", tags: keys });
-      return { uri: saved?.uri ?? url, source: "arasaac", fromLibrary: false };
-    }
+    if (url) return hit("word", term, url);
   }
 
   // 5. last resort: live ARASAAC search for the subject / first key
   for (const term of [graph?.subject?.type, keys[0]].filter((t): t is string => !!t)) {
     const remote = await arasaacFirst(term);
-    if (remote) {
-      const saved = await saveImage(keys[0] || term, remote, { source: "arasaac", tags: keys });
-      return { uri: saved?.uri ?? remote, source: "arasaac", fromLibrary: false };
-    }
+    if (remote) return hit("search", term, remote);
   }
 
+  console.log(`[library] "${phrase}" -> no match`);
   return null;
 }
 
