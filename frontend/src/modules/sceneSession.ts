@@ -475,6 +475,16 @@ export function sessionPrompt(s: SceneSession): string {
   return `${desc}. A single wide scene, all objects visible together, soft flat children's book illustration, warm friendly colours, bold clean outlines, plain solid white background, no text, no labels`;
 }
 
+/**
+ * The phrase to look up a library picture for one item. An action or expression
+ * comes first so the pictogram shows it ("crying girl" -> the crying pictogram,
+ * not a plain girl). Also used as the cache key, so the picture updates when the
+ * state changes.
+ */
+export function searchPhrase(i: SceneItem): string {
+  return i.action ? `${i.action} ${i.type}` : i.type;
+}
+
 export function sessionChips(s: SceneSession): string[] {
   if (s.anatomy) return ["human", ...s.anatomyParts, "labelled"];
   const out: string[] = [];

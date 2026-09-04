@@ -1,5 +1,6 @@
 import { View, Text, Image, StyleSheet } from "react-native";
 import type { SceneSession, SceneItem } from "../modules/sceneSession";
+import { searchPhrase } from "../modules/sceneSession";
 import { ACTIONS } from "../modules/sentenceScene";
 import { colors } from "../theme";
 
@@ -47,7 +48,7 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
             ) : (
               <Text style={{ fontSize: size * (n > 2 ? 0.8 : 1) }}>{item.glyph}</Text>
             )}
-            {i === 0 && item.action && ACTIONS[item.action] && (
+            {i === 0 && !uri && item.action && ACTIONS[item.action] && (
               <Text style={{ fontSize: size * 0.34, marginTop: -size * 0.1 }}>{ACTIONS[item.action]}</Text>
             )}
           </View>
@@ -93,7 +94,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
     <View style={styles.stage}>
       <View style={styles.groundShadow} />
       {ordered.map((it) => (
-        <Item key={it.id} item={it} uri={uris[it.type]} crowd={crowd} />
+        <Item key={it.id} item={it} uri={uris[searchPhrase(it)]} crowd={crowd} />
       ))}
       {!session.items.length && (
         <Text style={styles.empty}>Say an object — “table”, then “cat above the table”, then “open the cat’s eyes”.</Text>

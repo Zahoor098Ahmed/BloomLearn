@@ -16,6 +16,7 @@ import {
   isReset,
   sessionPrompt,
   sessionChips,
+  searchPhrase,
 } from "../modules/sceneSession";
 import { agentEnabled, agentName, parseUtteranceLLM, describeScene } from "../modules/sceneAgent";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
@@ -120,9 +121,10 @@ export default function SentencePictureScreen({ onBack }: Props) {
   useEffect(() => {
     if (!buildMode) return;
     for (const it of session.items) {
-      if (!itemUrisRef.current[it.type]) {
-        lookupImage(it.type).then((h) => {
-          if (h) setItemUris((m) => ({ ...m, [it.type]: h.uri }));
+      const key = searchPhrase(it);
+      if (!itemUrisRef.current[key]) {
+        lookupImage(key).then((h) => {
+          if (h) setItemUris((m) => ({ ...m, [key]: h.uri }));
         });
       }
     }
