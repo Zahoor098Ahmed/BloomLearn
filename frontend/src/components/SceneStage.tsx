@@ -10,21 +10,18 @@ import { colors } from "../theme";
  */
 
 const STAGE_W = 320;
-const STAGE_H = 250;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.74, small: 0.87, normal: 1, big: 1.2, huge: 1.45 };
-const BASE = 116;
-const SLOT = 260;
+const STAGE_H = 320;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.74, small: 0.87, normal: 1, big: 1.18, huge: 1.4 };
+const BASE = 118;
+const SLOT = 300;
 
 function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?: number }) {
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
-  const pic = Math.min(size * 2.2, STAGE_W * 0.86, STAGE_H * 0.92);
-  const rowW = pic * (1 + (n - 1) * 0.86); // total width of the (possibly repeated) picture
-  // keep the whole picture inside the stage — clamp the centre by its half-size
-  const hw = Math.min(0.5, rowW / 2 / STAGE_W);
-  const hh = Math.min(0.5, pic / 2 / STAGE_H);
-  const cx = Math.min(1 - hw, Math.max(hw, item.x));
-  const cy = Math.min(1 - hh, Math.max(hh, item.y));
+  const pic = Math.min(size * 2.2, STAGE_W * 0.92, STAGE_H * 0.9);
+  // a light fixed clamp keeps items on-stage without flattening the layout
+  const cx = Math.max(0.13, Math.min(0.87, item.x));
+  const cy = Math.max(0.12, Math.min(0.9, item.y));
   const col = item.colorHex ?? undefined;
   return (
     <View
@@ -201,7 +198,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
 
   const ordered = [...session.items].sort((a, b) => Number(b.behind) - Number(a.behind));
   const crowd =
-    session.items.length >= 4 ? 0.5 : session.items.length === 3 ? 0.64 : session.items.length === 2 ? 0.78 : 1;
+    session.items.length >= 4 ? 0.34 : session.items.length === 3 ? 0.42 : session.items.length === 2 ? 0.52 : 1;
 
   return (
     <View style={styles.stage}>

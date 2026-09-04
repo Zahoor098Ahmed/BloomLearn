@@ -146,13 +146,13 @@ function normRel(r: string | null | undefined): Rel | null {
 }
 
 const OFFSET: Record<Rel, { dx: number; dy: number; behind: boolean }> = {
-  behind: { dx: 0.1, dy: -0.16, behind: true },
-  "in front of": { dx: 0, dy: 0.2, behind: false },
-  left: { dx: -0.34, dy: 0, behind: false },
-  right: { dx: 0.34, dy: 0, behind: false },
-  above: { dx: 0, dy: -0.34, behind: false },
-  below: { dx: 0, dy: 0.32, behind: false },
-  on: { dx: 0, dy: -0.18, behind: false },
+  behind: { dx: 0.14, dy: -0.2, behind: true },
+  "in front of": { dx: 0, dy: 0.24, behind: false },
+  left: { dx: -0.37, dy: 0, behind: false },
+  right: { dx: 0.37, dy: 0, behind: false },
+  above: { dx: 0, dy: -0.36, behind: false },
+  below: { dx: 0, dy: 0.36, behind: false },
+  on: { dx: 0, dy: -0.2, behind: false },
   inside: { dx: 0, dy: 0.0, behind: false },
   center: { dx: 0, dy: 0, behind: false },
 };
