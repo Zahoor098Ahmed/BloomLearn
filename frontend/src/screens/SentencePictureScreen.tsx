@@ -19,6 +19,7 @@ import {
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import SceneComposer from "../components/SceneComposer";
+import SceneStage from "../components/SceneStage";
 import { colors, radius } from "../theme";
 
 interface Props {
@@ -77,45 +78,40 @@ export default function SentencePictureScreen({ onBack }: Props) {
     return () => clearInterval(poll);
   }, []);
 
-  // Conversational builder: each new phrase is merged into the running scene
-  // and the picture is redrawn — same character, changed details.
+  // Voice-controlled scene builder: the whole spoken sentence is merged into the
+  // running scene (never word-by-word) and <SceneStage> redraws from it. Offline.
   useEffect(() => {
     if (!buildMode) return;
     const q = text.trim();
     if (!q || q === mergedRef.current) return;
-    const t = setTimeout(async () => {
+    const t = setTimeout(() => {
       mergedRef.current = q;
-      const next = isReset(q) ? newSession() : applyUtterance(session, q);
-      setSession(next);
-      if (aiTimer.current) clearTimeout(aiTimer.current);
       setAiError(null);
-
-      // Reliable base: a library picture of the main subject (always works).
-      const subj = next.subjects[0] ?? q;
-      const hit = subj ? await lookupImage(subj) : null;
-      if (mergedRef.current !== q) return;
-      if (hit) setImg({ uri: hit.uri, source: "library" });
-
-      // Live drawing on top — only if a Pollinations token is configured, since
-      // the anonymous tier is rate-limited and would just fail.
-      if (aiSceneEnabled) {
-        setAiLoading(true);
-        const url = composeSceneUrl(sessionPrompt(next), next.seed);
-        setImg({ uri: url, source: "ai-saved" });
-        saveImage(sessionPrompt(next), url, { source: "ai", tags: next.subjects }).catch(() => {});
-        setTimeout(() => setAiLoading(false), 5000);
-        aiTimer.current = setTimeout(() => {
-          setAiLoading(false);
-          if (hit) setImg({ uri: hit.uri, source: "library" });
-          else setAiError("Couldn't draw that one — try saying it again.");
-        }, 15000);
-      } else if (!hit) {
-        setImg(null);
-        setAiError('No picture for "' + subj + '" yet. Add a free Pollinations token for live AI drawings.');
-      }
-    }, 700);
+      setImg(null);
+      setSession((s) => (isReset(q) ? newSession() : applyUtterance(s, q)));
+    }, 600);
     return () => clearTimeout(t);
-  }, [text, buildMode, session]);
+  }, [text, buildMode]);
+
+  // Optional: turn the built scene into a single AI picture (needs a token).
+  async function drawSceneWithAi() {
+    if (!aiSceneEnabled) {
+      setAiError("Live AI drawing needs a free Pollinations token (auth.pollinations.ai) in .env.");
+      return;
+    }
+    setAiLoading(true);
+    setAiError(null);
+    const url = composeSceneUrl(sessionPrompt(session), session.seed);
+    setImg({ uri: url, source: "ai-saved" });
+    saveImage(sessionPrompt(session), url, { source: "ai", tags: session.items.map((i) => i.type) }).catch(() => {});
+    if (aiTimer.current) clearTimeout(aiTimer.current);
+    setTimeout(() => setAiLoading(false), 5000);
+    aiTimer.current = setTimeout(() => {
+      setAiLoading(false);
+      setImg(null);
+      setAiError("The picture engine is slow — the built scene is still shown.");
+    }, 15000);
+  }
 
   // On sentence change: ask the library first. If it has (or can seed) a
   // matching picture, show it; otherwise fall back to the instant scene.
@@ -282,6 +278,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
                   setAiError("The picture engine did not respond. Tap AI to try again.");
                 }}
               />
+            ) : buildMode ? (
+              <SceneStage session={session} />
             ) : concept ? (
               <View style={styles.stageWhite}><ConceptView concept={concept} /></View>
             ) : (
@@ -335,11 +333,17 @@ export default function SentencePictureScreen({ onBack }: Props) {
                 <Text style={styles.buildToggleText}>Start over</Text>
               </Pressable>
             )}
+            {buildMode && aiSceneEnabled && !!session.items.length && (
+              <Pressable onPress={drawSceneWithAi} disabled={aiLoading} style={styles.buildReset}>
+                <Ionicons name="sparkles" size={15} color={colors.forestDark} />
+                <Text style={styles.buildToggleText}>Draw with AI</Text>
+              </Pressable>
+            )}
           </View>
           {buildMode && (
             <Text style={styles.micHint}>
-              Say it in small pieces: "blue cat" · "open eyes" · "close eyes" · "make it red" · "kidney" · "add heart" — the
-              picture keeps updating.
+              One thing at a time: "table" · "book behind the table" · "cat to the right of the table" · "open the cat's
+              eyes" · "a girl is crying" · "mosque". Objects stay put — the scene keeps building.
             </Text>
           )}
 

@@ -1,176 +1,337 @@
 /**
- * Conversational scene builder.
+ * Voice-controlled scene builder — additive scene state.
  *
- * You keep talking and the picture keeps updating:
+ * The whole spoken sentence is parsed together (never word-by-word), then merged
+ * into a running scene of items. Existing items stay where they are; new items
+ * are added; state commands ("open the cat's eyes", "the girl is crying") update
+ * an item in place. Nothing is deleted unless the speaker says "start over".
  *
- *   "blue cat"        -> a blue cat
- *   "open eyes"       -> the same blue cat, eyes open
- *   "close eyes"      -> the same blue cat, eyes closed
- *   "red"             -> now a red cat, still eyes closed
- *   "kidney"          -> a labelled human kidney (anatomy mode)
- *   "heart"           -> kidney AND heart, one labelled diagram
- *   "eyes"            -> kidney, heart AND eyes
+ *   "table"                        -> a table
+ *   "book behind the table"        -> table stays, book added behind it
+ *   "book to the right of the table" -> book added on the table's right
+ *   "open the cat's eyes"          -> the existing cat's eyes open
+ *   "a girl is crying"             -> a girl with a crying expression
  *
- * Each utterance is merged into a running state; the seed stays fixed for the
- * session so it is the same character / same diagram while details change.
- * The prompt is regenerated and drawn by the free Pollinations engine.
+ * Rendering is done by <SceneStage> from these items — offline, free, no keys.
  */
+
+import { parseSceneGraph, SUBJECTS, REFERENCES, ACTIONS, colorHex } from "./sentenceScene";
+import type { SceneSize } from "../types";
+
+// Islamic education assets (respectful — objects, places and prayer poses only;
+// never any depiction of Prophets or sacred figures).
+export const RELIGION_GLYPHS: Record<string, string> = {
+  mosque: "🕌", masjid: "🕌", minaret: "🕌", kaaba: "🕋", "prayer mat": "🟫",
+  "prayer rug": "🟫", "prayer beads": "📿", tasbih: "📿", misbaha: "📿",
+  crescent: "🌙", "crescent moon": "🌙", "star and crescent": "☪️", lantern: "🏮",
+  fanoos: "🏮", dates: "🫓", "date fruit": "🫓", quran: "📗", koran: "📗",
+  "holy quran": "📗", "islamic pattern": "🔷", "geometric pattern": "🔷",
+  compass: "🧭", "prayer clock": "🕐",
+};
+
+// A few everyday objects the shared vocabulary doesn't carry yet.
+const EXTRA_GLYPHS: Record<string, string> = {
+  laptop: "💻", computer: "💻", tv: "📺", television: "📺", lamp: "💡",
+  clock: "🕐", plate: "🍽️", spoon: "🥄", fork: "🍴", pillow: "🛏️",
+  mirror: "🪞", plant: "🪴", pot: "🍲", pan: "🍳", guitar: "🎸", drum: "🥁",
+  computermouse: "🖱️", keyboard: "⌨️", camera: "📷", clockwall: "🕰️",
+};
+
+const GLYPHS: Record<string, string> = { ...REFERENCES, ...SUBJECTS, ...EXTRA_GLYPHS, ...RELIGION_GLYPHS };
+
+const REFERENCE_TYPES = new Set([...Object.keys(REFERENCES), ...Object.keys(EXTRA_GLYPHS)]);
+
+export type Rel = "behind" | "in front of" | "left" | "right" | "above" | "below" | "on" | "inside" | "center";
+
+export interface SceneItem {
+  id: string;
+  type: string;
+  glyph: string;
+  color: string | null;
+  colorHex: string | null;
+  size: SceneSize;
+  count: number;
+  action: string | null; // running / crying / praying …
+  eyes: "open" | "closed" | null;
+  x: number; // 0..1 centre, fraction of stage width
+  y: number; // 0..1 centre, fraction of stage height
+  behind: boolean; // drawn before the others (depth)
+}
 
 export interface SceneSession {
   seed: number;
-  subjects: string[]; // ["cat"] normally; anatomy accumulates ["kidney","heart"]
-  color: string | null;
-  pose: string | null;
-  eyes: string | null;
-  mouth: string | null;
-  extras: string[];
+  items: SceneItem[];
   anatomy: boolean;
+  anatomyParts: string[];
   lastHeard: string;
+  note: string | null;
 }
-
-const COLORS = [
-  "red", "blue", "green", "yellow", "orange", "purple", "pink", "brown",
-  "black", "white", "grey", "gray", "gold", "silver",
-];
-
-const POSES: Record<string, string> = {
-  sit: "sitting", sitting: "sitting", stand: "standing", standing: "standing",
-  run: "running", running: "running", walk: "walking", walking: "walking",
-  jump: "jumping", jumping: "jumping", fly: "flying", flying: "flying",
-  sleep: "sleeping", sleeping: "sleeping", lie: "lying down", lying: "lying down",
-  dance: "dancing", dancing: "dancing", swim: "swimming", swimming: "swimming",
-  eat: "eating", eating: "eating", drink: "drinking", drinking: "drinking",
-};
 
 const ANATOMY = new Set([
   "kidney", "kidneys", "heart", "liver", "lung", "lungs", "brain", "stomach",
   "intestine", "intestines", "bladder", "skeleton", "bone", "bones", "muscle",
-  "muscles", "skull", "spine", "ribs", "rib", "pancreas", "spleen", "artery",
-  "vein", "nerve", "cell", "tooth", "teeth", "ear", "ears", "eye", "eyes",
-  "tongue", "throat", "womb", "uterus",
+  "muscles", "skull", "spine", "ribs", "rib", "pancreas", "spleen",
 ]);
 
-const STOP = new Set([
-  "the", "a", "an", "is", "are", "was", "were", "to", "of", "and", "with",
-  "please", "now", "make", "it", "its", "his", "her", "him", "she", "he",
-  "that", "this", "them", "then", "show", "me", "i", "want", "can", "you",
-]);
+const EXPRESSIONS: Record<string, string> = {
+  crying: "crying", cry: "crying", sad: "crying", happy: "laughing",
+  smiling: "laughing", smile: "laughing", laughing: "laughing", laugh: "laughing",
+  sleeping: "sleeping", sleep: "sleeping", angry: "angry", scared: "scared",
+};
 
-function tokens(s: string): string[] {
-  return s.toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim().split(" ").filter(Boolean);
-}
+let counter = 0;
+const nextId = () => `it_${Date.now().toString(36)}_${(counter++).toString(36)}`;
 
 export function newSession(): SceneSession {
   return {
     seed: Math.floor(Math.random() * 1_000_000),
-    subjects: [],
-    color: null,
-    pose: null,
-    eyes: null,
-    mouth: null,
-    extras: [],
+    items: [],
     anatomy: false,
+    anatomyParts: [],
     lastHeard: "",
+    note: null,
   };
 }
 
-/** Is the whole utterance asking to start again? */
 export function isReset(text: string): boolean {
-  return /\b(start over|start again|new picture|clear|reset|forget)\b/i.test(text);
+  return /\b(start over|start again|new (picture|scene)|clear (it|the scene|everything)|reset|wipe)\b/i.test(text);
 }
 
-/** Merge one spoken/typed phrase into the running scene. */
+function norm(s: string): string {
+  return ` ${s.toLowerCase().replace(/[.,!?;:"']/g, " ").replace(/\s+/g, " ").trim()} `;
+}
+
+/** left / right aren't in the shared preposition list — detect them here. */
+function detectRel(text: string): Rel | null {
+  const t = norm(text);
+  if (/\b(to the left|left of|on the left)\b/.test(t)) return "left";
+  if (/\b(to the right|right of|on the right)\b/.test(t)) return "right";
+  if (/\bin front of\b/.test(t)) return "in front of";
+  if (/\bbehind\b/.test(t)) return "behind";
+  if (/\b(on top of|on)\b/.test(t)) return "on";
+  if (/\b(above|over)\b/.test(t)) return "above";
+  if (/\b(below|under|underneath|beneath)\b/.test(t)) return "below";
+  if (/\b(inside|in the|into)\b/.test(t)) return "inside";
+  if (/\b(between|middle|centre|center)\b/.test(t)) return "center";
+  return null;
+}
+
+const OFFSET: Record<Rel, { dx: number; dy: number; behind: boolean }> = {
+  behind: { dx: 0.05, dy: -0.12, behind: true },
+  "in front of": { dx: 0, dy: 0.16, behind: false },
+  left: { dx: -0.27, dy: 0, behind: false },
+  right: { dx: 0.27, dy: 0, behind: false },
+  above: { dx: 0, dy: -0.26, behind: false },
+  below: { dx: 0, dy: 0.24, behind: false },
+  on: { dx: 0, dy: -0.13, behind: false },
+  inside: { dx: 0, dy: 0.02, behind: false },
+  center: { dx: 0, dy: 0, behind: false },
+};
+
+function glyphFor(type: string): string {
+  return GLYPHS[type] ?? "❔";
+}
+
+function makeItem(type: string, opts: Partial<SceneItem> = {}): SceneItem {
+  return {
+    id: nextId(),
+    type,
+    glyph: glyphFor(type),
+    color: null,
+    colorHex: null,
+    size: "normal",
+    count: 1,
+    action: null,
+    eyes: null,
+    x: 0.5,
+    y: 0.5,
+    behind: false,
+    ...opts,
+  };
+}
+
+function findItem(items: SceneItem[], type: string): SceneItem | undefined {
+  return items.find((i) => i.type === type);
+}
+
+function clamp(n: number): number {
+  return Math.max(0.12, Math.min(0.88, n));
+}
+
+/** Merge one full utterance into the scene. */
 export function applyUtterance(prev: SceneSession, text: string): SceneSession {
-  const s: SceneSession = { ...prev, extras: [...prev.extras], subjects: [...prev.subjects], lastHeard: text.trim() };
-  const t = tokens(text);
-  if (!t.length) return s;
+  const s: SceneSession = {
+    ...prev,
+    items: prev.items.map((i) => ({ ...i })),
+    anatomyParts: [...prev.anatomyParts],
+    lastHeard: text.trim(),
+    note: null,
+  };
+  const t = norm(text);
+  const tokens = t.trim().split(" ").filter(Boolean);
+  if (!tokens.length) return s;
 
-  const has = (...w: string[]) => w.some((x) => t.includes(x));
-  const add = has("add", "also", "another", "put", "give") || (t[0] === "and");
-
-  // eyes open / closed  (works for a character or, in anatomy mode, is an organ)
-  if (has("eyes", "eye")) {
-    if (has("open", "opened")) s.eyes = "eyes wide open";
-    else if (has("close", "closed", "shut", "closing")) s.eyes = "eyes closed";
-  }
-  if (has("wink", "winking")) s.eyes = "winking";
-
-  // mouth / expression
-  if (has("smile", "smiling", "happy")) s.mouth = "a big happy smile";
-  else if (has("sad", "crying", "cry")) s.mouth = "a sad face";
-  else if (has("angry", "cross")) s.mouth = "an angry face";
-  else if (has("surprised", "shocked")) s.mouth = "a surprised face, mouth open";
-  else if (has("tongue")) s.mouth = "tongue sticking out";
-
-  // colour
-  for (const c of COLORS) if (t.includes(c)) s.color = c === "gray" ? "grey" : c;
-
-  // pose
-  for (const k of Object.keys(POSES)) if (t.includes(k)) s.pose = POSES[k];
-
-  // anatomy: any organ word switches to a labelled diagram and accumulates
-  const organs = t.filter((w) => ANATOMY.has(w) && !["eye", "eyes"].includes(w));
-  const wantsEyeOrgan = (has("eyes", "eye") && (s.anatomy || prev.subjects.some((x) => ANATOMY.has(x)))) && !has("open", "close", "closed", "shut", "opening", "closing");
-  if (organs.length || wantsEyeOrgan) {
+  // 1. anatomy: labelled human-organ diagram, parts accumulate
+  const organs = tokens.filter((w) => ANATOMY.has(w)).map((w) =>
+    w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w,
+  );
+  if (organs.length) {
     s.anatomy = true;
-    s.eyes = null;
-    s.mouth = null;
-    const parts = [...organs, ...(wantsEyeOrgan ? ["eyes"] : [])].map((w) =>
-      w === "kidneys" ? "kidney" : w === "lungs" ? "lung" : w === "bones" ? "bone" : w === "muscles" ? "muscle" : w,
-    );
-    for (const p of parts) if (!s.subjects.includes(p)) s.subjects.push(p);
+    for (const o of organs) if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
+    s.note = `human ${s.anatomyParts.join(" + ")}`;
+    return s;
+  }
+  if (s.anatomy && /\b(add|also)\b/.test(t) === false && parseSceneGraph(text).subject) {
+    s.anatomy = false; // a real subject leaves anatomy mode
+    s.anatomyParts = [];
+  }
+
+  const g = parseSceneGraph(text);
+
+  // 2. eyes open / close — update an existing (or named) character in place
+  const eyesOpen = /\b(open|opened)\b[^.]*\beyes?\b|\beyes?\b[^.]*\b(open|opened)\b/.test(t);
+  const eyesClose = /\b(close|closed|shut)\b[^.]*\beyes?\b|\beyes?\b[^.]*\b(close|closed|shut)\b/.test(t);
+  if (eyesOpen || eyesClose) {
+    const targetType =
+      g.subject?.type ||
+      tokens.map((w) => w.replace(/'s$/, "")).find((w) => findItem(s.items, w)) ||
+      s.items[s.items.length - 1]?.type;
+    const target = targetType ? findItem(s.items, targetType) : undefined;
+    if (target) {
+      target.eyes = eyesOpen ? "open" : "closed";
+      s.note = `${target.type}: eyes ${target.eyes}`;
+      return s;
+    }
+    // no such character yet — fall through and create it below
+  }
+
+  // 3. expression / action word ("crying", "sleeping", "running")
+  const exprWord = tokens.map((w) => EXPRESSIONS[w]).find(Boolean) ?? null;
+  const actionWord = g.subject?.action ?? null;
+
+  // 4. relational placement — needs a reference object
+  const rel = detectRel(text);
+  // the reference noun is whatever is named after the relation word
+  const relWords = ["behind", "of", "on", "above", "over", "below", "under", "underneath", "beneath", "inside", "into", "front"];
+  let afterRel = tokens;
+  for (let i = tokens.length - 1; i >= 0; i--) {
+    if (relWords.includes(tokens[i])) {
+      afterRel = tokens.slice(i + 1);
+      break;
+    }
+  }
+  const refType =
+    g.reference?.type ||
+    afterRel.find((w) => GLYPHS[w]) ||
+    (rel ? tokens.slice(1).find((w) => REFERENCE_TYPES.has(w) || GLYPHS[w]) : undefined) ||
+    null;
+
+  if (rel && rel !== "center" && (refType || g.subject)) {
+    // ensure the reference item exists (keep its current position if it does)
+    let ref = refType ? findItem(s.items, refType) : undefined;
+    if (!ref && refType) {
+      ref = makeItem(refType, { x: 0.5, y: 0.55 });
+      s.items.push(ref);
+    }
+    const anchor = ref ?? { x: 0.5, y: 0.55 };
+    const subjType = g.subject?.type ?? tokens.find((w) => SUBJECTS[w]) ?? tokens[0];
+    if (subjType) {
+      const off = OFFSET[rel];
+      const patch: Partial<SceneItem> = {
+        x: clamp(anchor.x + off.dx),
+        y: clamp(anchor.y + off.dy),
+        behind: off.behind,
+        color: g.subject?.color ?? null,
+        colorHex: colorHex(g.subject?.color ?? null),
+        size: g.subject?.size ?? "normal",
+        count: g.subject?.count ?? 1,
+        action: actionWord,
+        eyes: eyesOpen ? "open" : eyesClose ? "closed" : null,
+      };
+      const existing = findItem(s.items, subjType);
+      if (existing) Object.assign(existing, patch);
+      else s.items.push(makeItem(subjType, patch));
+      s.note = `${subjType} ${rel} ${ref?.type ?? "centre"}`;
+    }
     return s;
   }
 
-  // a plain subject noun (skip words we already consumed)
-  const consumed = new Set([
-    ...COLORS, "eyes", "eye", "open", "opened", "close", "closed", "shut", "closing",
-    "smile", "smiling", "happy", "sad", "crying", "cry", "angry", "cross",
-    "surprised", "shocked", "tongue", "wink", "winking", "add", "also", "another",
-    "put", "give", ...Object.keys(POSES),
-  ]);
-  const nouns = t.filter((w) => !STOP.has(w) && !consumed.has(w) && w.length > 1);
-  if (nouns.length) {
-    if (s.anatomy && !add) {
-      // leaving anatomy mode for a real subject
-      s.anatomy = false;
-      s.subjects = [nouns[0]];
-    } else if (add) {
-      for (const n of nouns) if (!s.subjects.includes(n)) s.subjects.push(n);
+  // 5. a plain subject / object — add it, or update it if already there
+  const type =
+    g.subject?.type ||
+    g.reference?.type ||
+    tokens.find((w) => GLYPHS[w]) ||
+    tokens.filter((w) => w.length > 2)[0];
+  if (type && GLYPHS[type]) {
+    const patch: Partial<SceneItem> = {
+      color: g.subject?.color ?? null,
+      colorHex: colorHex(g.subject?.color ?? null),
+      size: g.subject?.size ?? "normal",
+      count: g.subject?.count ?? 1,
+      action: actionWord ?? (exprWord ? exprWord : null),
+      eyes: eyesOpen ? "open" : eyesClose ? "closed" : null,
+    };
+    const existing = findItem(s.items, type);
+    if (existing) {
+      Object.assign(existing, patch);
+      s.note = `updated ${type}`;
     } else {
-      s.subjects = [nouns[0]];
+      const slot = s.items.length;
+      s.items.push(
+        makeItem(type, {
+          ...patch,
+          x: clamp(0.5 + (slot % 2 === 0 ? -0.16 : 0.16) * Math.ceil(slot / 2)),
+          y: clamp(0.5 + (slot > 1 ? 0.12 : 0)),
+        }),
+      );
+      s.note = `added ${type}`;
     }
+    return s;
   }
 
+  // 6. expression only, no subject named — apply to the last character
+  if ((exprWord || eyesOpen || eyesClose) && s.items.length) {
+    const last = s.items[s.items.length - 1];
+    if (exprWord) last.action = exprWord;
+    if (eyesOpen) last.eyes = "open";
+    if (eyesClose) last.eyes = "closed";
+    s.note = `${last.type}: ${exprWord ?? `eyes ${last.eyes}`}`;
+    return s;
+  }
+
+  s.note = "not understood — try naming an object";
   return s;
 }
 
-/** Build the image prompt for the current scene. */
+/** Build a text prompt for the optional AI drawing. */
 export function sessionPrompt(s: SceneSession): string {
   if (s.anatomy) {
-    const list = s.subjects.length ? s.subjects.join(" and the human ") : "body";
-    return `a clear labelled anatomical diagram of the human ${list}, medical textbook illustration, accurate, clean labels with arrows`;
+    return `a clear labelled anatomical diagram of the human ${s.anatomyParts.join(" and ")}, medical textbook illustration, clean labels`;
   }
-  const subj = s.subjects[0] || "cat";
-  const bits: string[] = [];
-  bits.push(s.color ? `a ${s.color} ${subj}, the ${subj} is entirely ${s.color} coloured` : `a ${subj}`);
-  if (s.pose) bits.push(s.pose);
-  if (s.eyes) bits.push(`with ${s.eyes}`);
-  if (s.mouth) bits.push(`with ${s.mouth}`);
-  for (const e of s.extras) bits.push(e);
-  if (s.subjects.length > 1) bits.push(`together with a ${s.subjects.slice(1).join(" and a ")}`);
-  return bits.join(", ");
+  if (!s.items.length) return "an empty white page";
+  const parts = s.items.map((i) => {
+    const bits = [i.count > 1 ? `${i.count}` : "a", i.color, i.size !== "normal" ? i.size : "", i.type]
+      .filter(Boolean)
+      .join(" ");
+    const st: string[] = [];
+    if (i.eyes) st.push(`eyes ${i.eyes}`);
+    if (i.action) st.push(i.action);
+    return st.length ? `${bits} (${st.join(", ")})` : bits;
+  });
+  const rel = s.items.length > 1 ? s.items.slice(1).map((i) => `${i.type} ${i.behind ? "behind" : "near"} the ${s.items[0].type}`).join(", ") : "";
+  return `${parts.join(", ")}. ${rel}. flat children's illustration, plain white background`;
 }
 
-/** Short chips describing what the builder currently understands. */
 export function sessionChips(s: SceneSession): string[] {
-  if (s.anatomy) return ["human", ...s.subjects, "labelled diagram"];
-  const c: string[] = [];
-  if (s.color) c.push(s.color);
-  if (s.subjects[0]) c.push(s.subjects[0]);
-  if (s.subjects.length > 1) c.push(...s.subjects.slice(1).map((x) => `+ ${x}`));
-  if (s.pose) c.push(s.pose);
-  if (s.eyes) c.push(s.eyes);
-  if (s.mouth) c.push(s.mouth);
-  return c;
+  if (s.anatomy) return ["human", ...s.anatomyParts, "labelled"];
+  const out: string[] = [];
+  for (const i of s.items) {
+    let label = i.type;
+    if (i.color) label = `${i.color} ${label}`;
+    if (i.count > 1) label = `${i.count} ${label}`;
+    if (i.eyes) label += ` · eyes ${i.eyes}`;
+    if (i.action && ACTIONS[i.action]) label += ` · ${i.action}`;
+    out.push(label);
+  }
+  return out;
 }

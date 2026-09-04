@@ -72,6 +72,11 @@ export const SEED_WORDS: string[] = [
   // numbers / time
   "one", "two", "three", "four", "five", "clock time", "day", "night", "morning",
   "calendar", "birthday",
+  // Islamic education (respectful: places, objects and acts of worship only —
+  // never any depiction of Prophets or sacred figures)
+  "mosque", "minaret", "prayer mat", "prayer beads", "Koran", "crescent moon",
+  "star", "lantern", "pray", "praying", "kneel", "wash hands", "fasting",
+  "dates", "moon", "charity", "gift", "family", "book",
 ];
 
 /** De-duplicated, lower-cased seed list. */
