@@ -12,10 +12,10 @@ import { colors } from "../theme";
  */
 
 const STAGE_W = 320;
-const STAGE_H = 268;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.66, small: 0.84, normal: 1, big: 1.3, huge: 1.7 };
-const BASE = 104;
-const SLOT = 280;
+const STAGE_H = 272;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.7, small: 0.85, normal: 1, big: 1.28, huge: 1.6 };
+const BASE = 132;
+const SLOT = 320;
 
 function eyesGlyph(eyes: SceneItem["eyes"]): string | null {
   if (eyes === "open") return "eyes open";
@@ -45,13 +45,7 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
         {Array.from({ length: n }).map((_, i) => (
           <View key={i} style={{ alignItems: "center", marginLeft: i === 0 ? 0 : -size * 0.12 }}>
             {uri ? (
-              // colour tints the line-art itself ("blue cat" -> a blue-drawn cat),
-              // not a blob behind it
-              <Image
-                source={{ uri }}
-                style={[{ width: pic, height: pic }, item.colorHex ? { tintColor: item.colorHex } : null]}
-                resizeMode="contain"
-              />
+              <Image source={{ uri }} style={{ width: pic, height: pic }} resizeMode="contain" />
             ) : (
               <Text style={{ fontSize: size * (n > 2 ? 0.8 : 1) }}>{item.glyph}</Text>
             )}
@@ -91,7 +85,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
   }
 
   const ordered = [...session.items].sort((a, b) => Number(b.behind) - Number(a.behind));
-  const crowd = session.items.length >= 4 ? 0.68 : session.items.length === 3 ? 0.82 : 1;
+  const crowd = session.items.length >= 4 ? 0.58 : session.items.length === 3 ? 0.74 : session.items.length === 2 ? 0.9 : 1;
 
   return (
     <View style={styles.stage}>
@@ -101,11 +95,6 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
       ))}
       {!session.items.length && (
         <Text style={styles.empty}>Say an object — “table”, then “book behind the table”, then “open the cat’s eyes”.</Text>
-      )}
-      {session.note && (
-        <View style={styles.note}>
-          <Text style={styles.noteText}>{session.note}</Text>
-        </View>
       )}
     </View>
   );
@@ -153,16 +142,6 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontSize: 12.5,
   },
-  note: {
-    position: "absolute",
-    bottom: 8,
-    alignSelf: "center",
-    backgroundColor: colors.cardMuted,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  noteText: { fontSize: 11, fontWeight: "700", color: colors.textMid },
   anatomyTitle: { fontSize: 14, fontWeight: "800", color: colors.textDark, marginBottom: 10 },
   anatomyRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center", paddingHorizontal: 16 },
   anatomyChip: {
