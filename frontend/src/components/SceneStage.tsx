@@ -10,18 +10,30 @@ import { colors } from "../theme";
  */
 
 const STAGE_W = 320;
-const STAGE_H = 290;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.76, small: 0.88, normal: 1, big: 1.15, huge: 1.35 };
-const BASE = 96;
+const STAGE_H = 255;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.78, small: 0.89, normal: 1, big: 1.12, huge: 1.3 };
+const BASE = 100;
 const SLOT = 280;
 
-function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?: number }) {
+function Item({
+  item,
+  uri,
+  crowd = 1,
+  shiftX = 0,
+  shiftY = 0,
+}: {
+  item: SceneItem;
+  uri?: string;
+  crowd?: number;
+  shiftX?: number;
+  shiftY?: number;
+}) {
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
   const pic = Math.min(size * 2.2, STAGE_W * 0.92, STAGE_H * 0.9);
-  // a light fixed clamp keeps items on-stage without flattening the layout
-  const cx = Math.max(0.13, Math.min(0.87, item.x));
-  const cy = Math.max(0.12, Math.min(0.9, item.y));
+  // centre the group, then a light clamp keeps items on-stage
+  const cx = Math.max(0.13, Math.min(0.87, item.x + shiftX));
+  const cy = Math.max(0.12, Math.min(0.9, item.y + shiftY));
   const col = item.colorHex ?? undefined;
   return (
     <View
@@ -196,17 +208,27 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
     );
   }
 
-  const ordered = [...session.items].sort((a, b) => Number(b.behind) - Number(a.behind));
-  const crowd =
-    session.items.length >= 4 ? 0.4 : session.items.length === 3 ? 0.5 : session.items.length === 2 ? 0.62 : 0.9;
+  const items = session.items;
+  const ordered = [...items].sort((a, b) => Number(b.behind) - Number(a.behind));
+  const crowd = items.length >= 4 ? 0.46 : items.length === 3 ? 0.58 : items.length === 2 ? 0.74 : 0.95;
+
+  // centre the whole group in the stage (keeps the relations, kills the drift)
+  let sx = 0;
+  let sy = 0;
+  if (items.length) {
+    const xs = items.map((i) => i.x);
+    const ys = items.map((i) => i.y);
+    sx = 0.5 - (Math.min(...xs) + Math.max(...xs)) / 2;
+    sy = 0.5 - (Math.min(...ys) + Math.max(...ys)) / 2;
+  }
 
   return (
     <View style={styles.stage}>
       <View style={styles.groundShadow} />
       {ordered.map((it) => (
-        <Item key={it.id} item={it} uri={uris[searchPhrase(it)]} crowd={crowd} />
+        <Item key={it.id} item={it} uri={uris[searchPhrase(it)]} crowd={crowd} shiftX={sx} shiftY={sy} />
       ))}
-      {!session.items.length && (
+      {!items.length && (
         <Text style={styles.empty}>Say an object — “table”, then “cat above the table”, then “open the cat’s eyes”.</Text>
       )}
     </View>
