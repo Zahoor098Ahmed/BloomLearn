@@ -60,21 +60,46 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   );
 }
 
-// One clean body outline; each named organ is a labelled marker at its spot on
+// One clean body outline; each named part is a labelled marker at its spot on
 // the body (a coloured dot + a name on its own side). No overlapping pictograms.
 const ORGAN: Record<string, { label: string; x: number; y: number; color: string; side: "L" | "R" }> = {
-  brain: { label: "brain", x: 0.5, y: 0.07, color: "#e79bc4", side: "R" },
-  heart: { label: "heart", x: 0.44, y: 0.36, color: "#d64545", side: "L" },
-  lungs: { label: "lungs", x: 0.58, y: 0.34, color: "#e0a3b4", side: "R" },
-  lung: { label: "lungs", x: 0.58, y: 0.34, color: "#e0a3b4", side: "R" },
-  liver: { label: "liver", x: 0.42, y: 0.5, color: "#a8632b", side: "L" },
-  stomach: { label: "stomach", x: 0.57, y: 0.5, color: "#e0b25a", side: "R" },
-  belly: { label: "stomach", x: 0.57, y: 0.5, color: "#e0b25a", side: "R" },
-  kidney: { label: "kidneys", x: 0.5, y: 0.6, color: "#8a5a2b", side: "L" },
-  kidneys: { label: "kidneys", x: 0.5, y: 0.6, color: "#8a5a2b", side: "L" },
-  intestine: { label: "intestines", x: 0.5, y: 0.68, color: "#c98a5a", side: "R" },
-  intestines: { label: "intestines", x: 0.5, y: 0.68, color: "#c98a5a", side: "R" },
-  bladder: { label: "bladder", x: 0.5, y: 0.78, color: "#e9c33c", side: "L" },
+  // internal organs
+  brain: { label: "brain", x: 0.5, y: 0.06, color: "#e79bc4", side: "R" },
+  heart: { label: "heart", x: 0.44, y: 0.34, color: "#d64545", side: "L" },
+  lungs: { label: "lungs", x: 0.58, y: 0.32, color: "#e0a3b4", side: "R" },
+  lung: { label: "lungs", x: 0.58, y: 0.32, color: "#e0a3b4", side: "R" },
+  liver: { label: "liver", x: 0.42, y: 0.46, color: "#a8632b", side: "L" },
+  stomach: { label: "stomach", x: 0.58, y: 0.46, color: "#e0b25a", side: "R" },
+  belly: { label: "stomach", x: 0.58, y: 0.46, color: "#e0b25a", side: "R" },
+  kidney: { label: "kidneys", x: 0.44, y: 0.54, color: "#8a5a2b", side: "L" },
+  kidneys: { label: "kidneys", x: 0.44, y: 0.54, color: "#8a5a2b", side: "L" },
+  intestine: { label: "intestines", x: 0.55, y: 0.6, color: "#c98a5a", side: "R" },
+  intestines: { label: "intestines", x: 0.55, y: 0.6, color: "#c98a5a", side: "R" },
+  bladder: { label: "bladder", x: 0.5, y: 0.68, color: "#e9c33c", side: "L" },
+  // outside body parts
+  head: { label: "head", x: 0.5, y: 0.05, color: "#6c8cc9", side: "R" },
+  hair: { label: "hair", x: 0.5, y: 0.02, color: "#8a5a2b", side: "R" },
+  eye: { label: "eyes", x: 0.46, y: 0.05, color: "#4f9d5d", side: "L" },
+  eyes: { label: "eyes", x: 0.46, y: 0.05, color: "#4f9d5d", side: "L" },
+  ear: { label: "ears", x: 0.58, y: 0.06, color: "#c98a5a", side: "R" },
+  nose: { label: "nose", x: 0.5, y: 0.07, color: "#d64545", side: "L" },
+  mouth: { label: "mouth", x: 0.5, y: 0.09, color: "#d64545", side: "R" },
+  neck: { label: "neck", x: 0.5, y: 0.14, color: "#6c8cc9", side: "L" },
+  shoulder: { label: "shoulder", x: 0.3, y: 0.2, color: "#6c8cc9", side: "L" },
+  chest: { label: "chest", x: 0.5, y: 0.28, color: "#6c8cc9", side: "R" },
+  arm: { label: "arm", x: 0.22, y: 0.36, color: "#4f9d5d", side: "L" },
+  elbow: { label: "elbow", x: 0.18, y: 0.44, color: "#4f9d5d", side: "L" },
+  hand: { label: "hand", x: 0.14, y: 0.54, color: "#e08a3c", side: "L" },
+  finger: { label: "fingers", x: 0.12, y: 0.6, color: "#e08a3c", side: "L" },
+  tummy: { label: "tummy", x: 0.5, y: 0.44, color: "#e0b25a", side: "R" },
+  torso: { label: "torso", x: 0.62, y: 0.38, color: "#6c8cc9", side: "R" },
+  body: { label: "body", x: 0.62, y: 0.38, color: "#6c8cc9", side: "R" },
+  hip: { label: "hip", x: 0.5, y: 0.62, color: "#6c8cc9", side: "R" },
+  leg: { label: "leg", x: 0.42, y: 0.78, color: "#4f9d5d", side: "L" },
+  knee: { label: "knee", x: 0.44, y: 0.84, color: "#4f9d5d", side: "R" },
+  foot: { label: "foot", x: 0.42, y: 0.97, color: "#e08a3c", side: "L" },
+  toe: { label: "toes", x: 0.4, y: 0.99, color: "#e08a3c", side: "L" },
+  back: { label: "back", x: 0.62, y: 0.32, color: "#6c8cc9", side: "R" },
 };
 const asrc = (id: number) => `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 

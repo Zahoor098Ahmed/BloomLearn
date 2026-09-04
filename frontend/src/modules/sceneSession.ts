@@ -69,11 +69,21 @@ export interface SceneSession {
   note: string | null;
 }
 
-const ANATOMY = new Set([
+// unambiguous — naming one always means the human-body diagram
+const ORGAN_WORDS = new Set([
   "kidney", "kidneys", "heart", "liver", "lung", "lungs", "brain", "stomach",
   "intestine", "intestines", "bladder", "skeleton", "bone", "bones", "muscle",
-  "muscles", "skull", "spine", "ribs", "rib", "pancreas", "spleen",
+  "muscles", "skull", "spine", "ribs", "rib", "pancreas", "spleen", "torso",
 ]);
+// ambiguous ("open the cat's eyes") — only the body diagram when the scene is
+// already about the body, or the phrase says so, or nothing else is on screen
+const BODY_WORDS = new Set([
+  "head", "hair", "eye", "eyes", "ear", "ears", "nose", "mouth", "neck",
+  "shoulder", "shoulders", "chest", "arm", "arms", "elbow", "hand", "hands",
+  "finger", "fingers", "tummy", "hip", "hips", "leg", "legs", "knee", "knees",
+  "foot", "feet", "toe", "toes", "back",
+]);
+const ANATOMY = new Set([...ORGAN_WORDS, ...BODY_WORDS]);
 
 const EXPRESSIONS: Record<string, string> = {
   crying: "crying", cry: "crying", sad: "crying", happy: "laughing",
@@ -245,15 +255,19 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
   const tokens = t.trim().split(" ").filter(Boolean);
   if (!tokens.length) return s;
 
-  // 1. anatomy: one labelled human body, organs accumulate on it
-  const organs = tokens.filter((w) => ANATOMY.has(w)).map((w) =>
-    w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w,
+  // 1. anatomy: one labelled human body, parts accumulate on it
+  const sing = (w: string) => (w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
+  const wantsBody = /\b(internal body|body part|body parts|human body|the body|the organs?|inside the body)\b/.test(t);
+  const hasRealItem = s.items.length > 0;
+  const named = tokens.filter(
+    (w) => ORGAN_WORDS.has(w) || (BODY_WORDS.has(w) && (s.anatomy || wantsBody || !hasRealItem)),
   );
-  const wantsBody = /\b(internal body|body part|body parts|human body|the organs?|inside the body)\b/.test(t);
-  if (organs.length || wantsBody) {
+  // don't hijack "open the cat's eyes" style commands
+  const isEyeCommand = /\b(open|close|closed|shut)\b/.test(t) && /\beyes?\b/.test(t);
+  if ((named.length && !isEyeCommand) || wantsBody) {
     s.anatomy = true;
-    for (const o of organs) if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
-    s.note = s.anatomyParts.length ? `human body: ${s.anatomyParts.join(" + ")}` : "human body — name the organs";
+    for (const o of named.map(sing)) if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
+    s.note = s.anatomyParts.length ? `human body: ${s.anatomyParts.join(" + ")}` : "human body — name the parts";
     return s;
   }
   if (s.anatomy && /\b(add|also)\b/.test(t) === false && parseSceneGraph(text).subject) {
@@ -473,15 +487,17 @@ function applyOpsRaw(prev: SceneSession, ops: SceneOp[]): SceneSession {
     const type = "type" in op && op.type ? norm(op.type).trim() : "";
     if (!type) continue;
 
-    // organ words -> the labelled human body, parts accumulate on one figure
-    const organ = type.split(" ").find((w) => ANATOMY.has(w));
-    if (organ || /\b(organ|body part|body parts|internal body)\b/.test(type)) {
-      if (op.op === "remove") {
-        s.anatomyParts = s.anatomyParts.filter((p) => p !== (organ ?? type));
-      } else {
+    // body-part words -> the labelled human body, parts accumulate on one figure
+    const sing = (w: string) => (w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w);
+    const words = type.split(" ");
+    const bodyOk = s.anatomy || !s.items.length || /\b(organ|body part|body parts|human|internal body)\b/.test(type);
+    const part = words.find((w) => ORGAN_WORDS.has(w)) || (bodyOk ? words.find((w) => BODY_WORDS.has(w)) : undefined);
+    if (part || /\b(organ|body part|body parts|internal body)\b/.test(type)) {
+      const p = sing(part ?? type);
+      if (op.op === "remove") s.anatomyParts = s.anatomyParts.filter((x) => x !== p);
+      else {
         s.anatomy = true;
-        const part = organ ?? type;
-        if (!s.anatomyParts.includes(part)) s.anatomyParts.push(part);
+        if (!s.anatomyParts.includes(p)) s.anatomyParts.push(p);
       }
       done.push(`body: ${s.anatomyParts.join(" + ")}`);
       continue;

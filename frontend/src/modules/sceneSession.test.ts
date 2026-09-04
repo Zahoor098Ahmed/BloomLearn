@@ -146,6 +146,14 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
   // agent path
   let a = applyOps(newSession(), [{ op: "add", type: "heart" }, { op: "add", type: "lungs" }]);
   check("body  agent organ ops build the body too", a.anatomy && a.anatomyParts.length === 2 && a.items.length === 0);
+
+  // outside body parts
+  let b = say(newSession(), "human body parts", "head", "add an arm", "add a leg");
+  check("body  outside parts (head/arm/leg) build the body", b.anatomy && b.anatomyParts.includes("head") && b.anatomyParts.includes("arm") && b.anatomyParts.includes("leg"));
+
+  // "open the cat's eyes" must NOT trigger the body diagram
+  let c = say(newSession(), "a cat", "open the cat's eyes");
+  check("body  'open the cat's eyes' stays a cat command", !c.anatomy && item(c, "cat")?.eyes === "open");
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);
