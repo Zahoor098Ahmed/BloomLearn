@@ -31,6 +31,9 @@ Operation shapes (omit keys you don't need):
 Rules:
 - Use exactly the key "op" and the key "type" (not "action:modify", not "target"/"name").
 - Keep every existing object unless the phrase says to move, remove or reset it.
+- NEVER invent an object the speaker did not say. If a phrase gives only a
+  relation and a reference ("below the table", "now on the left"), it MOVES the
+  object that was added most recently — emit {"op":"move","type":"<that object>",...}.
 - Singular nouns. KEEP a meaningful compound noun as the type: "office chair",
   "dining table", "fire truck" (not just "chair"/"table").
 - "sit on / stand next to / lie on" -> ONE op for the person with BOTH the
@@ -48,7 +51,8 @@ Examples:
 "office chair" -> [{"op":"add","type":"office chair"}]
 "boy sit on the office chair" -> [{"op":"add","type":"boy","action":"sitting","relation":"on","reference":"office chair"}]
 "move the ball to the left of the box" -> [{"op":"move","type":"ball","relation":"left","reference":"box"}]
-"take away the dog" -> [{"op":"remove","type":"dog"}]`;
+"take away the dog" -> [{"op":"remove","type":"dog"}]
+(scene: table, laptop) "below the table" -> [{"op":"move","type":"laptop","relation":"below","reference":"table"}]`;
 
 function sceneSummary(s: SceneSession): string {
   if (s.anatomy) return `anatomy diagram with: ${s.anatomyParts.join(", ") || "nothing yet"}`;

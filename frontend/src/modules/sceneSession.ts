@@ -350,28 +350,45 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
     null;
 
   if (rel && rel !== "center" && (refType || g.subject)) {
-    const subjType = g.subject?.type ?? tokens.find((w) => SUBJECTS[w]) ?? tokens[0];
-    const p = place(s, subjType ?? "", rel, refType); // creates the reference if missing
+    // a real subject noun, or nothing -> then it's a MOVE of the last object
+    const namedSubj =
+      g.subject?.type ??
+      tokens.find((w) => (SUBJECTS[w] || GLYPHS[w]) && w !== refType) ??
+      null;
+    const p = place(s, namedSubj ?? "", rel, refType); // creates the reference if missing
     const ref = refType ? findRef(s.items, refType) : undefined;
-    if (subjType) {
-      const patch: Partial<SceneItem> = {
-        x: p.x,
-        y: p.y,
-        behind: p.behind,
-        color: g.subject?.color ?? null,
-        colorHex: colorHex(g.subject?.color ?? null),
-        size: g.subject?.size ?? "normal",
-        count: g.subject?.count ?? 1,
-        action: actionWord,
-        eyes: eyesOpen ? "open" : eyesClose ? "closed" : null,
-        relation: rel,
-        reference: ref?.type ?? refType ?? null,
-      };
-      const existing = findItem(s.items, subjType);
-      if (existing) Object.assign(existing, patch);
-      else s.items.push(makeItem(subjType, patch));
-      s.note = `${subjType} ${rel} ${ref?.type ?? "centre"}`;
+
+    if (!namedSubj) {
+      // "below the table" with no subject -> move the most recent movable item
+      const mover = [...s.items].reverse().find((i) => i !== ref && i.type !== refType);
+      if (mover) {
+        mover.x = p.x;
+        mover.y = p.y;
+        mover.behind = p.behind;
+        mover.relation = rel;
+        mover.reference = ref?.type ?? refType ?? null;
+        s.note = `${mover.type} ${rel} ${ref?.type ?? "centre"}`;
+      }
+      return s;
     }
+
+    const patch: Partial<SceneItem> = {
+      x: p.x,
+      y: p.y,
+      behind: p.behind,
+      color: g.subject?.color ?? null,
+      colorHex: colorHex(g.subject?.color ?? null),
+      size: g.subject?.size ?? "normal",
+      count: g.subject?.count ?? 1,
+      action: actionWord,
+      eyes: eyesOpen ? "open" : eyesClose ? "closed" : null,
+      relation: rel,
+      reference: ref?.type ?? refType ?? null,
+    };
+    const existing = findItem(s.items, namedSubj);
+    if (existing) Object.assign(existing, patch);
+    else s.items.push(makeItem(namedSubj, patch));
+    s.note = `${namedSubj} ${rel} ${ref?.type ?? "centre"}`;
     return s;
   }
 
@@ -518,7 +535,14 @@ function applyOpsRaw(prev: SceneSession, ops: SceneOp[]): SceneSession {
       done.push("cleared");
       continue;
     }
-    const type = "type" in op && op.type ? norm(op.type).trim() : "";
+    let type = "type" in op && op.type ? norm(op.type).trim() : "";
+    // the model gave a relation but no real object -> move the most recent item
+    const relOnly = !type || REL_TOKENS.test(` ${type} `) || ["it", "this", "that", "them"].includes(type);
+    if (relOnly && "relation" in op && op.relation && s.items.length) {
+      const last = s.items[s.items.length - 1];
+      type = last.type;
+      (op as Record<string, unknown>).op = "move";
+    }
     if (!type) continue;
 
     // "organs" / "internal organs" / "body parts" with no specific part named
