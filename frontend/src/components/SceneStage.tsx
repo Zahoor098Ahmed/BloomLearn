@@ -5,69 +5,96 @@ import { colors } from "../theme";
 
 /**
  * The built scene, positioned: "cat above the table" draws the cat above the
- * table. Items keep their own place and state (eyes, expression, count, colour).
- * "behind" items draw first for depth. Clear ARASAAC symbols, offline, no keys.
+ * table. A single layout pass sizes every object, then scales + centres the
+ * whole group to fit the frame with a margin — nothing is cropped, the scene
+ * is always centred, and it scales with the container (mobile → desktop).
  */
 
+// the stage is a percentage-width box with this aspect ratio; all sizes and
+// positions below are fractions of it, so it is fully responsive
 const STAGE_W = 320;
-const STAGE_H = 255;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.78, small: 0.89, normal: 1, big: 1.12, huge: 1.3 };
-const BASE = 100;
-const SLOT = 280;
+const STAGE_H = 300;
+const ASPECT = STAGE_W / STAGE_H;
+const PAD = 0.06; // keep everything this far from the edge
 
-function Item({
-  item,
-  uri,
-  crowd = 1,
-  shiftX = 0,
-  shiftY = 0,
-}: {
-  item: SceneItem;
-  uri?: string;
-  crowd?: number;
-  shiftX?: number;
-  shiftY?: number;
-}) {
-  const size = BASE * SIZE_SCALE[item.size] * crowd;
-  const n = Math.max(1, Math.min(5, item.count));
-  const pic = Math.min(size * 2.2, STAGE_W * 0.92, STAGE_H * 0.9);
-  // centre the group, then a light clamp keeps items on-stage
-  const cx = Math.max(0.13, Math.min(0.87, item.x + shiftX));
-  const cy = Math.max(0.12, Math.min(0.9, item.y + shiftY));
-  const col = item.colorHex ?? undefined;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.6, small: 0.8, normal: 1, big: 1.3, huge: 1.7 };
+// common-sense relative sizes so a laptop reads smaller than a table, etc.
+const NATURAL: Record<string, number> = {
+  table: 1.3, "dining table": 1.35, desk: 1.3, sofa: 1.5, couch: 1.5, bed: 1.5, "office chair": 1.05,
+  chair: 1.0, stool: 0.8, house: 1.7, tree: 1.6, car: 1.5, bus: 1.7, mosque: 1.7,
+  laptop: 0.68, computer: 0.75, book: 0.55, cup: 0.45, ball: 0.5, phone: 0.4, apple: 0.42,
+  key: 0.35, flower: 0.55, hat: 0.5, shoe: 0.5, cat: 0.78, dog: 0.85, bird: 0.55, fish: 0.5,
+  boy: 1.0, girl: 1.0, man: 1.1, woman: 1.1, baby: 0.7, kidney: 0.5, heart: 0.5,
+};
+const BASE_W = 0.5; // a lone "normal" object is half the stage wide before fit-scaling
+
+interface Placed {
+  it: SceneItem;
+  cx: number;
+  cy: number;
+  w: number; // fraction of stage width
+}
+
+function layoutScene(items: SceneItem[]): Placed[] {
+  if (!items.length) return [];
+  const nodes = items.map((it) => {
+    const w = BASE_W * SIZE_SCALE[it.size] * (NATURAL[it.type] ?? 0.9);
+    return { it, x: it.x, y: it.y, w, h: w / ASPECT };
+  });
+  const minX = Math.min(...nodes.map((n) => n.x - n.w / 2));
+  const maxX = Math.max(...nodes.map((n) => n.x + n.w / 2));
+  const minY = Math.min(...nodes.map((n) => n.y - n.h / 2));
+  const maxY = Math.max(...nodes.map((n) => n.y + n.h / 2));
+  const gw = Math.max(0.01, maxX - minX);
+  const gh = Math.max(0.01, maxY - minY);
+  // scale so the group fits the padded area; allow a little zoom for tiny scenes
+  const k = Math.min((1 - 2 * PAD) / gw, (1 - 2 * PAD) / gh, nodes.length === 1 ? 1.25 : 1);
+  const gcx = (minX + maxX) / 2;
+  const gcy = (minY + maxY) / 2;
+  return nodes.map((n) => ({
+    it: n.it,
+    cx: 0.5 + (n.x - gcx) * k,
+    cy: 0.5 + (n.y - gcy) * k,
+    w: n.w * k,
+  }));
+}
+
+function Item({ p, uri }: { p: Placed; uri?: string }) {
+  const { it } = p;
+  const n = Math.max(1, Math.min(5, it.count));
+  const ratio = 1 + (n - 1) * 0.68; // width : height of the row
+  const rowW = p.w * 100 * ratio; // % of stage width
+  const negLeft = rowW / -2;
+  const negTop = (p.w * 100) / -2;
+  const col = it.colorHex ?? undefined;
   return (
     <View
       style={{
         position: "absolute",
-        left: cx * STAGE_W - SLOT / 2,
-        top: cy * STAGE_H - SLOT / 2,
-        width: SLOT,
-        height: SLOT,
+        left: `${p.cx * 100}%`,
+        top: `${p.cy * 100}%`,
+        width: `${rowW}%`,
+        aspectRatio: ratio,
+        marginLeft: `${negLeft}%`,
+        marginTop: `${negTop}%`,
+        flexDirection: "row",
         alignItems: "center",
         justifyContent: "center",
-        opacity: item.behind ? 0.7 : 1,
+        opacity: it.behind ? 0.7 : 1,
       }}
     >
-      <View style={{ flexDirection: "row", alignItems: "flex-end" }}>
-        {Array.from({ length: n }).map((_, i) => (
-          <View key={i} style={{ alignItems: "center", marginLeft: i === 0 ? 0 : -size * 0.14, width: pic, height: pic }}>
-            {uri ? (
-              <>
-                <Image source={{ uri }} style={{ width: pic, height: pic }} resizeMode="contain" />
-                {col && (
-                  <Image
-                    source={{ uri }}
-                    style={{ position: "absolute", width: pic, height: pic, tintColor: col, opacity: 0.5 }}
-                    resizeMode="contain"
-                  />
-                )}
-              </>
-            ) : (
-              <View style={[styles.loading, { width: pic * 0.72, height: pic * 0.72, borderRadius: pic * 0.1 }]} />
-            )}
-          </View>
-        ))}
-      </View>
+      {Array.from({ length: n }).map((_, i) => (
+        <View key={i} style={{ flex: 1, height: "100%", marginLeft: i === 0 ? 0 : "-10%" }}>
+          {uri ? (
+            <>
+              <Image source={{ uri }} style={styles.pic} resizeMode="contain" />
+              {col && <Image source={{ uri }} style={[styles.pic, styles.glaze, { tintColor: col }]} resizeMode="contain" />}
+            </>
+          ) : (
+            <View style={styles.loading} />
+          )}
+        </View>
+      ))}
     </View>
   );
 }
@@ -208,27 +235,15 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
     );
   }
 
-  const items = session.items;
-  const ordered = [...items].sort((a, b) => Number(b.behind) - Number(a.behind));
-  const crowd = items.length >= 4 ? 0.46 : items.length === 3 ? 0.58 : items.length === 2 ? 0.74 : 0.95;
-
-  // centre the whole group in the stage (keeps the relations, kills the drift)
-  let sx = 0;
-  let sy = 0;
-  if (items.length) {
-    const xs = items.map((i) => i.x);
-    const ys = items.map((i) => i.y);
-    sx = 0.5 - (Math.min(...xs) + Math.max(...xs)) / 2;
-    sy = 0.5 - (Math.min(...ys) + Math.max(...ys)) / 2;
-  }
+  const placed = layoutScene(session.items).sort((a, b) => Number(b.it.behind) - Number(a.it.behind));
 
   return (
     <View style={styles.stage}>
       <View style={styles.groundShadow} />
-      {ordered.map((it) => (
-        <Item key={it.id} item={it} uri={uris[searchPhrase(it)]} crowd={crowd} shiftX={sx} shiftY={sy} />
+      {placed.map((p) => (
+        <Item key={p.it.id} p={p} uri={uris[searchPhrase(p.it)]} />
       ))}
-      {!items.length && (
+      {!session.items.length && (
         <Text style={styles.empty}>Say an object — “table”, then “cat above the table”, then “open the cat’s eyes”.</Text>
       )}
     </View>
@@ -256,7 +271,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     backgroundColor: "rgba(0,0,0,0.06)",
   },
-  loading: { backgroundColor: "#eef0ee", borderWidth: 1, borderColor: colors.border },
+  pic: { width: "100%", height: "100%" },
+  glaze: { position: "absolute", opacity: 0.5 },
+  loading: {
+    width: "72%",
+    height: "72%",
+    alignSelf: "center",
+    marginTop: "14%",
+    borderRadius: 10,
+    backgroundColor: "#eef0ee",
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
   empty: {
     position: "absolute",
     left: 24,
