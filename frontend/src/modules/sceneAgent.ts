@@ -1,0 +1,91 @@
+/**
+ * The "agent" brain for the voice scene builder.
+ *
+ * With a free Groq key (console.groq.com) or an OpenAI key, free speech is sent
+ * to an LLM that returns structured scene-edit operations — so almost anything
+ * the teacher or child says is understood, not just the built-in vocabulary.
+ * Without a key the app falls back to the on-device rule parser (applyUtterance).
+ *
+ *   EXPO_PUBLIC_GROQ_API_KEY=gsk_...      (preferred — fast, generous free tier)
+ *   EXPO_PUBLIC_OPENAI_API_KEY=sk-...     (also works)
+ */
+
+import type { SceneSession, SceneOp } from "./sceneSession";
+
+const GROQ_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY ?? "";
+const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? "";
+
+export const agentEnabled = !!GROQ_KEY || !!OPENAI_KEY;
+export const agentName = GROQ_KEY ? "Groq" : OPENAI_KEY ? "OpenAI" : "on-device";
+
+const SYSTEM = `You convert one short spoken phrase from a teacher or child into edit operations for a children's picture scene.
+Reply with ONLY a JSON array of operations. No prose, no markdown fences.
+
+Operation shapes (omit keys you don't need):
+{"op":"add","type":"<singular common noun>","color":"<basic colour>","count":<1-5>,"size":"tiny|small|normal|big|huge","action":"<verb ending in -ing>","eyes":"open|closed","relation":"behind|in front of|left|right|above|below|on|inside","reference":"<noun to place near>"}
+{"op":"update","type":"<noun already in the scene>", ...same attribute keys}
+{"op":"move","type":"<noun in scene>","relation":"...","reference":"..."}
+{"op":"remove","type":"<noun in scene>"}
+{"op":"reset"}
+
+Rules:
+- Keep every existing object unless the phrase says to move, remove or reset it.
+- "a girl is crying" -> [{"op":"add","type":"girl","action":"crying"}]
+- "open the cat's eyes" -> [{"op":"update","type":"cat","eyes":"open"}]
+- "book behind the table" -> [{"op":"add","type":"book","relation":"behind","reference":"table"}]
+- Use singular nouns (cat, table, mosque, kidney). Prefer real object nouns.`;
+
+function sceneSummary(s: SceneSession): string {
+  if (s.anatomy) return `anatomy diagram with: ${s.anatomyParts.join(", ") || "nothing yet"}`;
+  if (!s.items.length) return "(empty)";
+  return s.items
+    .map((i) => [i.count > 1 ? i.count : "", i.color, i.type].filter(Boolean).join(" "))
+    .join("; ");
+}
+
+function extractArray(text: string): SceneOp[] | null {
+  let t = text.trim().replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
+  const a = t.indexOf("[");
+  const b = t.lastIndexOf("]");
+  try {
+    if (a >= 0 && b > a) {
+      const arr = JSON.parse(t.slice(a, b + 1));
+      return Array.isArray(arr) ? (arr as SceneOp[]) : null;
+    }
+    const obj = JSON.parse(t);
+    const arr = Array.isArray(obj) ? obj : obj.ops ?? obj.operations;
+    return Array.isArray(arr) ? (arr as SceneOp[]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Ask the LLM for scene ops. Returns null on any failure so the caller falls back. */
+export async function parseUtteranceLLM(utterance: string, session: SceneSession): Promise<SceneOp[] | null> {
+  if (!agentEnabled) return null;
+  const url = GROQ_KEY
+    ? "https://api.groq.com/openai/v1/chat/completions"
+    : "https://api.openai.com/v1/chat/completions";
+  const body = {
+    model: GROQ_KEY ? "llama-3.3-70b-versatile" : "gpt-4o-mini",
+    temperature: 0,
+    max_tokens: 400,
+    messages: [
+      { role: "system", content: SYSTEM },
+      { role: "user", content: `Scene now: ${sceneSummary(session)}\nPhrase: "${utterance}"\nJSON:` },
+    ],
+  };
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_KEY || OPENAI_KEY}` },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
+    const content = json.choices?.[0]?.message?.content ?? "";
+    return extractArray(content);
+  } catch {
+    return null;
+  }
+}

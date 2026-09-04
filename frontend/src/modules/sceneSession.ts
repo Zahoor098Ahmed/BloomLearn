@@ -129,7 +129,7 @@ const OFFSET: Record<Rel, { dx: number; dy: number; behind: boolean }> = {
 };
 
 function glyphFor(type: string): string {
-  return GLYPHS[type] ?? "❔";
+  return GLYPHS[norm(type).trim()] ?? GLYPHS[type] ?? "🔹";
 }
 
 function makeItem(type: string, opts: Partial<SceneItem> = {}): SceneItem {
@@ -300,6 +300,123 @@ export function applyUtterance(prev: SceneSession, text: string): SceneSession {
   }
 
   s.note = "not understood — try naming an object";
+  return s;
+}
+
+// --- LLM "agent" operations -----------------------------------------
+//
+// When a Groq / OpenAI key is set, sceneAgent.ts turns free speech into these
+// operations; applyOps() applies them to the scene. Same placement maths as the
+// rule-based path, so both routes behave identically.
+
+export type SceneOp =
+  | { op: "reset" }
+  | {
+      op: "add";
+      type: string;
+      color?: string | null;
+      count?: number;
+      size?: SceneSize;
+      action?: string | null;
+      eyes?: "open" | "closed" | null;
+      relation?: Rel | null;
+      reference?: string | null;
+    }
+  | {
+      op: "update";
+      type: string;
+      color?: string | null;
+      count?: number;
+      size?: SceneSize;
+      action?: string | null;
+      eyes?: "open" | "closed" | null;
+    }
+  | { op: "move"; type: string; relation: Rel; reference?: string | null }
+  | { op: "remove"; type: string };
+
+function place(s: SceneSession, type: string, relation: Rel | null | undefined, reference: string | null | undefined) {
+  if (!relation || relation === "center") return { x: clamp(0.5), y: clamp(0.5), behind: false };
+  let ref = reference ? findItem(s.items, norm(reference).trim()) : undefined;
+  if (!ref && reference) {
+    ref = makeItem(norm(reference).trim(), { x: 0.5, y: 0.55 });
+    s.items.push(ref);
+  }
+  const anchor = ref ?? { x: 0.5, y: 0.55 };
+  const off = OFFSET[relation];
+  return { x: clamp(anchor.x + off.dx), y: clamp(anchor.y + off.dy), behind: off.behind };
+}
+
+export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
+  let s: SceneSession = {
+    ...prev,
+    items: prev.items.map((i) => ({ ...i })),
+    anatomyParts: [...prev.anatomyParts],
+    note: null,
+  };
+  const done: string[] = [];
+  for (const raw of ops) {
+    if (!raw || typeof raw !== "object") continue;
+    const op = raw as SceneOp;
+    if (op.op === "reset") {
+      s = newSession();
+      done.push("cleared");
+      continue;
+    }
+    const type = "type" in op && op.type ? norm(op.type).trim() : "";
+    if (!type) continue;
+
+    if (op.op === "remove") {
+      s.items = s.items.filter((i) => i.type !== type);
+      done.push(`removed ${type}`);
+      continue;
+    }
+    if (op.op === "move") {
+      const it = findItem(s.items, type);
+      if (it) {
+        const p = place(s, type, op.relation, op.reference);
+        it.x = p.x;
+        it.y = p.y;
+        it.behind = p.behind;
+        done.push(`moved ${type}`);
+      }
+      continue;
+    }
+
+    const patch: Partial<SceneItem> = {};
+    if ("color" in op && op.color) {
+      patch.color = op.color;
+      patch.colorHex = colorHex(op.color);
+    }
+    if ("count" in op && op.count) patch.count = Math.max(1, Math.min(5, op.count));
+    if ("size" in op && op.size) patch.size = op.size;
+    if ("action" in op && op.action) patch.action = op.action.replace(/^is /, "");
+    if ("eyes" in op && (op.eyes === "open" || op.eyes === "closed")) patch.eyes = op.eyes;
+
+    const existing = findItem(s.items, type);
+    if (op.op === "update" || existing) {
+      if (existing) {
+        Object.assign(existing, patch);
+        if (op.op === "add" && "relation" in op && op.relation) {
+          const p = place(s, type, op.relation, op.reference);
+          existing.x = p.x;
+          existing.y = p.y;
+          existing.behind = p.behind;
+        }
+        done.push(`updated ${type}`);
+      }
+      continue;
+    }
+
+    // add
+    const p =
+      "relation" in op && op.relation
+        ? place(s, type, op.relation, op.reference)
+        : { x: clamp(0.5 + (s.items.length % 2 === 0 ? -0.16 : 0.16) * Math.ceil(s.items.length / 2)), y: clamp(0.5 + (s.items.length > 1 ? 0.12 : 0)), behind: false };
+    s.items.push(makeItem(type, { ...patch, ...p }));
+    done.push(`added ${type}`);
+  }
+  s.anatomy = false;
+  s.note = done.join(" · ") || null;
   return s;
 }
 

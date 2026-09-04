@@ -12,10 +12,12 @@ import {
   type SceneSession,
   newSession,
   applyUtterance,
+  applyOps,
   isReset,
   sessionPrompt,
   sessionChips,
 } from "../modules/sceneSession";
+import { agentEnabled, agentName, parseUtteranceLLM } from "../modules/sceneAgent";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import SceneComposer from "../components/SceneComposer";
@@ -57,6 +59,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const itemUrisRef = useRef<Record<string, string>>({});
   itemUrisRef.current = itemUris;
   const mergedRef = useRef<string>("");
+  const sessionRef = useRef(session);
+  sessionRef.current = session;
+  const [agentThinking, setAgentThinking] = useState(false);
 
   const graph = useMemo(() => parseSceneGraph(text), [text]);
   const concept = conceptByKey(graph.conceptKey);
@@ -87,26 +92,40 @@ export default function SentencePictureScreen({ onBack }: Props) {
     if (!buildMode) return;
     const q = text.trim();
     if (!q || q === mergedRef.current) return;
-    const t = setTimeout(() => {
+    const t = setTimeout(async () => {
       mergedRef.current = q;
       setAiError(null);
       setImg(null);
-      setSession((s) => {
-        const next = isReset(q) ? newSession() : applyUtterance(s, q);
-        if (isReset(q)) setItemUris({});
-        // fetch a real library picture for each object in the scene
-        for (const it of next.items) {
-          if (!itemUrisRef.current[it.type]) {
-            lookupImage(it.type).then((h) => {
-              if (h) setItemUris((m) => ({ ...m, [it.type]: h.uri }));
-            });
-          }
-        }
-        return next;
-      });
+      if (isReset(q)) {
+        setSession(newSession());
+        setItemUris({});
+        return;
+      }
+      // Agent route: an LLM turns free speech into scene ops. Falls back to the
+      // on-device rule parser when there's no key or the call fails.
+      let ops = null;
+      if (agentEnabled) {
+        setAgentThinking(true);
+        ops = await parseUtteranceLLM(q, sessionRef.current);
+        setAgentThinking(false);
+      }
+      if (mergedRef.current !== q) return;
+      setSession((s) => (ops && ops.length ? applyOps(s, ops) : applyUtterance(s, q)));
     }, 600);
     return () => clearTimeout(t);
   }, [text, buildMode]);
+
+  // Give every object in the built scene its own library picture.
+  useEffect(() => {
+    if (!buildMode) return;
+    for (const it of session.items) {
+      if (!itemUrisRef.current[it.type]) {
+        lookupImage(it.type).then((h) => {
+          if (h) setItemUris((m) => ({ ...m, [it.type]: h.uri }));
+        });
+      }
+    }
+  }, [session, buildMode]);
 
   // Optional: turn the built scene into a single AI picture (needs a token).
   async function drawSceneWithAi() {
@@ -303,10 +322,10 @@ export default function SentencePictureScreen({ onBack }: Props) {
             ) : (
               <SceneComposer graph={graph} />
             )}
-            {aiLoading && (
+            {(aiLoading || agentThinking) && (
               <View style={styles.stageOverlay}>
                 <ActivityIndicator color="white" />
-                <Text style={styles.stageOverlayText}>Making the picture…</Text>
+                <Text style={styles.stageOverlayText}>{agentThinking ? "Understanding…" : "Making the picture…"}</Text>
               </View>
             )}
             <View style={[styles.sourceBadge, img ? styles.sourceAi : styles.sourceInstant]}>
@@ -362,8 +381,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
           </View>
           {buildMode && (
             <Text style={styles.micHint}>
-              One thing at a time: "table" · "book behind the table" · "cat to the right of the table" · "open the cat's
-              eyes" · "a girl is crying" · "mosque". Objects stay put — the scene keeps building.
+              {agentEnabled
+                ? `Speak naturally — the ${agentName} agent understands full sentences. "put a small blue cat on the table and open its eyes", "move the book behind the chair", "remove the cat".`
+                : 'One thing at a time: "table" · "book behind the table" · "open the cat\'s eyes" · "a girl is crying". Add EXPO_PUBLIC_GROQ_API_KEY for free-speech understanding.'}
             </Text>
           )}
 

@@ -8,7 +8,7 @@
  *   5. additive (never delete)  + the "no dropped words" bug
  */
 
-import { newSession, applyUtterance, type SceneSession } from "./sceneSession";
+import { newSession, applyUtterance, applyOps, type SceneSession } from "./sceneSession";
 
 let pass = 0;
 let fail = 0;
@@ -89,6 +89,20 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
 {
   const s = say(newSession(), "mosque", "prayer mat");
   check("islam  mosque + prayer mat both render", s.items.length === 2 && s.items.every((i) => i.glyph !== "❔"));
+}
+
+// agent ops (what the LLM route produces) apply the same way
+{
+  let s = applyOps(newSession(), [{ op: "add", type: "table" }]);
+  s = applyOps(s, [{ op: "add", type: "cat", relation: "on", reference: "table", color: "blue" }]);
+  check("ops  table + blue cat on it", types(s).sort().join() === "cat,table" && item(s, "cat")!.color === "blue");
+  check("ops  cat sits above the table centre", item(s, "cat")!.y < item(s, "table")!.y);
+  s = applyOps(s, [{ op: "update", type: "cat", eyes: "open" }]);
+  check("ops  update opens the cat's eyes only", item(s, "cat")!.eyes === "open" && s.items.length === 2);
+  s = applyOps(s, [{ op: "remove", type: "cat" }]);
+  check("ops  remove drops just the cat", types(s).join() === "table");
+  s = applyOps(s, [{ op: "reset" }]);
+  check("ops  reset clears everything", s.items.length === 0);
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

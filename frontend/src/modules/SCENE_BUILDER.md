@@ -4,16 +4,30 @@ Turn **"Keep-talking mode"** on in Picture Talk. You speak (or type) one thing a
 a time; the whole sentence is parsed together and merged into a running scene.
 Existing objects stay where they are — the scene keeps building.
 
-Everything here is **offline and free** — no API keys. `<SceneStage>` renders the
-scene from `View`/`Text` (open-source emoji glyphs). An optional **"Draw with
-AI"** button turns the built scene into one illustration, but only when a free
-Pollinations token is set (`EXPO_PUBLIC_POLLINATIONS_TOKEN`).
+Everything works **offline with no API key**. `<SceneStage>` renders the scene
+from `View`/`Text` — each object shows its own ARASAAC library picture (falling
+back to an emoji glyph while it loads).
+
+Two levels of understanding:
+
+| | How it parses | Needs |
+|---|---|---|
+| **On-device** (default) | rule-based `applyUtterance()` — handles the common patterns below | nothing |
+| **Agent** | an LLM turns *any* sentence into scene ops (`sceneAgent.ts` → `applyOps()`) | free Groq key `EXPO_PUBLIC_GROQ_API_KEY` (or an OpenAI key) |
+
+With the agent on you can speak naturally: *"put a small blue cat on the table
+and open its eyes"*, *"move the book behind the chair"*, *"remove the cat"*,
+*"now make it night"*. Without a key, say one change at a time.
+
+An optional **"Draw with AI"** button turns the whole built scene into one
+illustration — needs a Pollinations token (`EXPO_PUBLIC_POLLINATIONS_TOKEN`).
 
 ## Files
 
 | File | Role |
 |---|---|
-| `sceneSession.ts` | Scene state + `applyUtterance()` — the parser/merger |
+| `sceneSession.ts` | Scene state + `applyUtterance()` (rules) + `applyOps()` (agent) |
+| `sceneAgent.ts` | LLM route — `parseUtteranceLLM()` returns `SceneOp[]` |
 | `sentenceScene.ts` | Shared rule-based sentence parser (`parseSceneGraph`) reused for subject / colour / size / count / action / preposition |
 | `../components/SceneStage.tsx` | Renders the additive scene, with depth ordering |
 | `sceneSession.test.ts` | Behaviour tests — `npm run test:scene` |
