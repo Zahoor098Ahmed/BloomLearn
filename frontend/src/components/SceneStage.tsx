@@ -10,25 +10,28 @@ import { colors } from "../theme";
  */
 
 const STAGE_W = 320;
-const STAGE_H = 246;
-const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.74, small: 0.87, normal: 1, big: 1.22, huge: 1.5 };
-const BASE = 92;
-const SLOT = 250;
+const STAGE_H = 250;
+const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.74, small: 0.87, normal: 1, big: 1.2, huge: 1.45 };
+const BASE = 116;
+const SLOT = 260;
 
 function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?: number }) {
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
-  const pic = size * 2.3;
-  // Colour "glaze": the plain pictogram underneath (full detail) with a
-  // semi-transparent tinted copy on top. The body picks up the colour while the
-  // black outline, eyes and whiskers still read through. No background box.
+  const pic = Math.min(size * 2.2, STAGE_W * 0.86, STAGE_H * 0.92);
+  const rowW = pic * (1 + (n - 1) * 0.86); // total width of the (possibly repeated) picture
+  // keep the whole picture inside the stage — clamp the centre by its half-size
+  const hw = Math.min(0.5, rowW / 2 / STAGE_W);
+  const hh = Math.min(0.5, pic / 2 / STAGE_H);
+  const cx = Math.min(1 - hw, Math.max(hw, item.x));
+  const cy = Math.min(1 - hh, Math.max(hh, item.y));
   const col = item.colorHex ?? undefined;
   return (
     <View
       style={{
         position: "absolute",
-        left: item.x * STAGE_W - SLOT / 2,
-        top: item.y * STAGE_H - SLOT / 2,
+        left: cx * STAGE_W - SLOT / 2,
+        top: cy * STAGE_H - SLOT / 2,
         width: SLOT,
         height: SLOT,
         alignItems: "center",
@@ -150,7 +153,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
 
   const ordered = [...session.items].sort((a, b) => Number(b.behind) - Number(a.behind));
   const crowd =
-    session.items.length >= 4 ? 0.62 : session.items.length === 3 ? 0.76 : session.items.length === 2 ? 0.9 : 1;
+    session.items.length >= 4 ? 0.5 : session.items.length === 3 ? 0.64 : session.items.length === 2 ? 0.78 : 1;
 
   return (
     <View style={styles.stage}>
