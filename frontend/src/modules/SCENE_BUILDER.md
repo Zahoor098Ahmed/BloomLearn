@@ -6,9 +6,10 @@ Existing objects stay where they are — the scene keeps building.
 
 Everything works **offline with no API key**. `<SceneStage>` renders the scene
 **positioned** — "cat above the table" draws the cat above the table — using
-clear **ARASAAC** symbols on a white background, each labelled. "behind" items
-draw faded and first for depth. An emoji glyph stands in only while a symbol's
-ARASAAC picture loads.
+clear **ARASAAC** symbols on a white background. "behind" items draw faded and
+first for depth. A neutral grey box stands in only while a symbol loads. No
+emoji, no text labels on the pictures (the chip row under the stage lists what
+was understood).
 
 Two levels of understanding:
 
@@ -53,7 +54,9 @@ illustration — needs a Pollinations token (`EXPO_PUBLIC_POLLINATIONS_TOKEN`).
 | `boy sit on the office chair` | Pose + relation together — the boy gets the `sitting` state and is placed on the chair. Also `stand next to`, `lie on`. |
 | `two apples` | Count is parsed; the item renders repeated. |
 | `mosque`, `prayer mat`, `Koran`, `crescent moon`, `prayer beads`, `lantern` | Islamic-education assets — places, objects and acts of worship only. No depiction of Prophets or sacred figures. |
-| `kidney` → `add heart` → `add lungs` | Switches to a labelled human-anatomy diagram; parts accumulate. |
+| `kidney` → `add heart` → `add lungs` | Switches to an "Organs of the body" diagram — a figure with each organ in a circular badge and a connector line to its spot. Parts accumulate. |
+| `internal organs` / `all the organs` | Fills the whole standard organ set at once. |
+| `human body parts` → `head` → `add an arm` | Outside parts (head, arm, leg, hand, foot…) label the same figure with a dot + name. |
 | `start over` / `new scene` / `reset` | Clears the scene. |
 
 ## Supported spatial relations
@@ -105,6 +108,8 @@ microphone is used instead.
 npm run test:scene
 ```
 
-Covers: single object, relational placement (for several object pairs), state
+35 checks: single object, relational placement (several object pairs), state
 command on an existing object, descriptive sentence → scene, additive building,
-the "no dropped words" bug, and the Islamic-asset glyphs.
+the "no dropped words" bug, colour update, object variants, pose+relation, no
+duplicate on double-reference, the body diagram (rule + agent paths), and the
+Islamic-asset glyphs.
