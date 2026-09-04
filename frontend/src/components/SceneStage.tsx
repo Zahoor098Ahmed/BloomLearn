@@ -60,58 +60,58 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   );
 }
 
-// ARASAAC organ pictograms + where each sits on the body (fractions of the
-// torso box). Each organ pictogram already carries a faint body outline, so
-// overlapping them builds up one coherent figure.
-const ORGAN: Record<string, { id: number; x: number; y: number; s: number }> = {
-  brain: { id: 2696, x: 0.5, y: 0.11, s: 0.3 },
-  head: { id: 2696, x: 0.5, y: 0.11, s: 0.3 },
-  heart: { id: 4613, x: 0.47, y: 0.4, s: 0.34 },
-  lungs: { id: 2822, x: 0.5, y: 0.4, s: 0.62 },
-  lung: { id: 2822, x: 0.5, y: 0.4, s: 0.62 },
-  liver: { id: 2980, x: 0.5, y: 0.52, s: 0.5 },
-  stomach: { id: 2786, x: 0.5, y: 0.52, s: 0.5 },
-  belly: { id: 2786, x: 0.5, y: 0.52, s: 0.5 },
-  kidney: { id: 2812, x: 0.5, y: 0.58, s: 0.5 },
-  kidneys: { id: 2812, x: 0.5, y: 0.58, s: 0.5 },
-  intestine: { id: 2967, x: 0.5, y: 0.68, s: 0.55 },
-  intestines: { id: 2967, x: 0.5, y: 0.68, s: 0.55 },
-  bladder: { id: 3407, x: 0.5, y: 0.78, s: 0.3 },
+// One clean body outline; each named organ is a labelled marker at its spot on
+// the body (a coloured dot + a name on its own side). No overlapping pictograms.
+const ORGAN: Record<string, { label: string; x: number; y: number; color: string; side: "L" | "R" }> = {
+  brain: { label: "brain", x: 0.5, y: 0.07, color: "#e79bc4", side: "R" },
+  heart: { label: "heart", x: 0.44, y: 0.36, color: "#d64545", side: "L" },
+  lungs: { label: "lungs", x: 0.58, y: 0.34, color: "#e0a3b4", side: "R" },
+  lung: { label: "lungs", x: 0.58, y: 0.34, color: "#e0a3b4", side: "R" },
+  liver: { label: "liver", x: 0.42, y: 0.5, color: "#a8632b", side: "L" },
+  stomach: { label: "stomach", x: 0.57, y: 0.5, color: "#e0b25a", side: "R" },
+  belly: { label: "stomach", x: 0.57, y: 0.5, color: "#e0b25a", side: "R" },
+  kidney: { label: "kidneys", x: 0.5, y: 0.6, color: "#8a5a2b", side: "L" },
+  kidneys: { label: "kidneys", x: 0.5, y: 0.6, color: "#8a5a2b", side: "L" },
+  intestine: { label: "intestines", x: 0.5, y: 0.68, color: "#c98a5a", side: "R" },
+  intestines: { label: "intestines", x: 0.5, y: 0.68, color: "#c98a5a", side: "R" },
+  bladder: { label: "bladder", x: 0.5, y: 0.78, color: "#e9c33c", side: "L" },
 };
-const ORGAN_ORDER = ["lungs", "lung", "liver", "stomach", "belly", "intestine", "intestines", "kidney", "kidneys", "bladder", "heart", "brain", "head"];
 const asrc = (id: number) => `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 
 export default function SceneStage({ session, uris = {} }: { session: SceneSession; uris?: Record<string, string> }) {
   if (session.anatomy) {
-    const parts = session.anatomyParts.filter((p) => ORGAN[p]);
-    const shown = ORGAN_ORDER.filter((k) => parts.includes(k));
-    // de-dupe by pictogram id (kidney/kidneys etc.)
-    const seen = new Set<number>();
+    const seen = new Set<string>();
+    const marks = session.anatomyParts
+      .map((p) => ORGAN[p])
+      .filter((o): o is (typeof ORGAN)[string] => !!o && !seen.has(o.label) && !!seen.add(o.label));
     return (
       <View style={styles.stage}>
+        <Text style={styles.bodyTitle}>The human body</Text>
         <View style={styles.bodyBox}>
           <Image source={{ uri: asrc(6473) }} style={styles.bodyBase} resizeMode="contain" />
-          {shown.map((k) => {
-            const o = ORGAN[k];
-            if (seen.has(o.id)) return null;
-            seen.add(o.id);
-            return (
-              <Image
-                key={k}
-                source={{ uri: asrc(o.id) }}
-                resizeMode="contain"
-                style={{
-                  position: "absolute",
-                  width: `${o.s * 100}%`,
-                  height: `${o.s * 100}%`,
-                  left: `${(o.x - o.s / 2) * 100}%`,
-                  top: `${(o.y - o.s / 2) * 100}%`,
-                }}
+          {marks.map((o) => (
+            <View key={o.label}>
+              <View
+                style={[
+                  styles.organDot,
+                  { backgroundColor: o.color, left: `${o.x * 100}%`, top: `${o.y * 100}%` },
+                ]}
               />
-            );
-          })}
+              <Text
+                style={[
+                  styles.organLabel,
+                  o.side === "L"
+                    ? { right: `${(1 - o.x) * 100 + 6}%`, textAlign: "right" }
+                    : { left: `${o.x * 100 + 6}%` },
+                  { top: `${o.y * 100 - 4}%` },
+                ]}
+              >
+                {o.label}
+              </Text>
+            </View>
+          ))}
         </View>
-        {!parts.length && <Text style={styles.anatomyHint}>Say “heart”, “add lungs”, “add stomach”… to build the body.</Text>}
+        {!marks.length && <Text style={styles.anatomyHint}>Say “heart”, “add lungs”, “add stomach”… to label the body.</Text>}
       </View>
     );
   }
@@ -165,6 +165,26 @@ const styles = StyleSheet.create({
     fontSize: 12.5,
   },
   anatomyHint: { position: "absolute", left: 20, right: 20, top: "44%", fontSize: 12, color: colors.textLight, textAlign: "center" },
-  bodyBox: { height: "94%", aspectRatio: 0.62, position: "relative" },
-  bodyBase: { position: "absolute", width: "100%", height: "100%", opacity: 0.5 },
+  bodyTitle: { position: "absolute", top: 8, fontSize: 12, fontWeight: "800", color: colors.textMid },
+  bodyBox: { height: "88%", aspectRatio: 0.55, position: "relative", marginTop: 10 },
+  bodyBase: { position: "absolute", width: "100%", height: "100%", opacity: 0.85 },
+  organDot: {
+    position: "absolute",
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
+    borderColor: "white",
+    marginLeft: -6,
+    marginTop: -6,
+  },
+  organLabel: {
+    position: "absolute",
+    fontSize: 11,
+    fontWeight: "800",
+    color: colors.textDark,
+    backgroundColor: "rgba(255,255,255,0.9)",
+    paddingHorizontal: 3,
+    borderRadius: 3,
+  },
 });
