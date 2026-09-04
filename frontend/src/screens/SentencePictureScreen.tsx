@@ -126,7 +126,6 @@ export default function SentencePictureScreen({ onBack }: Props) {
         });
       }
     }
-    if (aiSceneEnabled && session.items.length && !session.anatomy) drawSceneWithAi(session);
   }, [session, buildMode]);
 
   // Turn the built scene into one real picture (needs a Pollinations token).
@@ -384,9 +383,9 @@ export default function SentencePictureScreen({ onBack }: Props) {
           </View>
           {buildMode && (
             <Text style={styles.micHint}>
-              {!aiSceneEnabled
-                ? 'For real pictures, add a free Pollinations token (auth.pollinations.ai) as EXPO_PUBLIC_POLLINATIONS_TOKEN. Speak naturally: "put a small blue cat on the table and close its eyes", "add a book behind the table", "remove the cat".'
-                : `Speak naturally — the ${agentName} agent understands full sentences and the scene redraws as one real picture. "a girl is crying next to the mosque", "move the book behind the chair".`}
+              {agentEnabled
+                ? `Speak naturally — the ${agentName} agent understands full sentences. "cat under the table", "a girl is crying next to the mosque", "move the book behind the chair", "remove the cat". "Real picture" turns the whole scene into one AI drawing.`
+                : 'One change at a time: "table" · "cat under the table" · "open the cat\'s eyes" · "a girl is crying". Add EXPO_PUBLIC_GROQ_API_KEY for free-speech understanding.'}
             </Text>
           )}
 

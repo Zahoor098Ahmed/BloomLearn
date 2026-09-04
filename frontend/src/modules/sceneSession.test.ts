@@ -51,6 +51,7 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
 
   const r = say(newSession(), "table", "book to the right of the table");
   check("2d  book to the right sits at greater x", item(r, "book")!.x > item(r, "table")!.x);
+  check("2d2 relation is recorded on the item", item(r, "book")!.relation === "right" && item(r, "book")!.reference === "table");
 
   const l = say(newSession(), "laptop", "cat to the left of the laptop");
   check("2e  works for any objects (laptop/cat)", item(l, "cat")!.x < item(l, "laptop")!.x);

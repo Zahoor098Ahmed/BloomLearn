@@ -5,8 +5,12 @@ a time; the whole sentence is parsed together and merged into a running scene.
 Existing objects stay where they are — the scene keeps building.
 
 Everything works **offline with no API key**. `<SceneStage>` renders the scene
-from `View`/`Text` — each object shows its own ARASAAC library picture (falling
-back to an emoji glyph while it loads).
+as an **AAC sentence strip** — the autism / AAC study standard: clear,
+consistent single-concept **ARASAAC** symbols laid out left to right, each a
+clean tile with its label. Spatial relations show as a connector tile
+("under ⬇", "behind", "right ➡"). No overlapping picture.
+
+An emoji glyph stands in for a symbol only while its ARASAAC picture loads.
 
 Two levels of understanding:
 

@@ -53,6 +53,8 @@ export interface SceneItem {
   count: number;
   action: string | null; // running / crying / praying …
   eyes: "open" | "closed" | null;
+  relation: Rel | null; // how this item relates to the first item ("under", "behind"…)
+  reference: string | null; // the item it is placed relative to
   x: number; // 0..1 centre, fraction of stage width
   y: number; // 0..1 centre, fraction of stage height
   behind: boolean; // drawn before the others (depth)
@@ -143,6 +145,8 @@ function makeItem(type: string, opts: Partial<SceneItem> = {}): SceneItem {
     count: 1,
     action: null,
     eyes: null,
+    relation: null,
+    reference: null,
     x: 0.5,
     y: 0.5,
     behind: false,
@@ -247,6 +251,8 @@ export function applyUtterance(prev: SceneSession, text: string): SceneSession {
         count: g.subject?.count ?? 1,
         action: actionWord,
         eyes: eyesOpen ? "open" : eyesClose ? "closed" : null,
+        relation: rel,
+        reference: ref?.type ?? refType ?? null,
       };
       const existing = findItem(s.items, subjType);
       if (existing) Object.assign(existing, patch);
@@ -393,6 +399,8 @@ export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
         it.x = p.x;
         it.y = p.y;
         it.behind = p.behind;
+        it.relation = op.relation;
+        it.reference = op.reference ? norm(op.reference).trim() : null;
         done.push(`moved ${type}`);
       }
       continue;
@@ -407,13 +415,19 @@ export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
     if ("size" in op && op.size) patch.size = op.size;
     if ("action" in op && op.action) patch.action = op.action.replace(/^is /, "");
     if ("eyes" in op && (op.eyes === "open" || op.eyes === "closed")) patch.eyes = op.eyes;
+    const rel = "relation" in op && op.relation ? (op.relation as Rel) : null;
+    const ref = rel && "reference" in op && op.reference ? norm(op.reference).trim() : null;
+    if (rel) {
+      patch.relation = rel;
+      patch.reference = ref;
+    }
 
     const existing = findItem(s.items, type);
     if (op.op === "update" || existing) {
       if (existing) {
         Object.assign(existing, patch);
-        if (op.op === "add" && "relation" in op && op.relation) {
-          const p = place(s, type, op.relation, op.reference);
+        if (rel) {
+          const p = place(s, type, rel, ref);
           existing.x = p.x;
           existing.y = p.y;
           existing.behind = p.behind;
@@ -424,10 +438,9 @@ export function applyOps(prev: SceneSession, ops: SceneOp[]): SceneSession {
     }
 
     // add
-    const p =
-      "relation" in op && op.relation
-        ? place(s, type, op.relation, op.reference)
-        : { x: clamp(0.5 + (s.items.length % 2 === 0 ? -0.16 : 0.16) * Math.ceil(s.items.length / 2)), y: clamp(0.5 + (s.items.length > 1 ? 0.12 : 0)), behind: false };
+    const p = rel
+      ? place(s, type, rel, ref)
+      : { x: clamp(0.5 + (s.items.length % 2 === 0 ? -0.16 : 0.16) * Math.ceil(s.items.length / 2)), y: clamp(0.5 + (s.items.length > 1 ? 0.12 : 0)), behind: false };
     s.items.push(makeItem(type, { ...patch, ...p }));
     done.push(`added ${type}`);
   }
