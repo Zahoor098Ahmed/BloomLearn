@@ -134,5 +134,19 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
   check("dup  'cat under table' still one table", s.items.filter((i) => i.type === "table").length === 1);
 }
 
+// anatomy: one body, organs accumulate (never separate scattered pictures)
+{
+  let s = say(newSession(), "internal body parts");
+  check("body  'internal body parts' enters body mode", s.anatomy && s.items.length === 0);
+  s = say(s, "heart", "add lungs", "add the stomach");
+  check("body  organs accumulate on the one body", s.anatomy && s.anatomyParts.includes("heart") && s.anatomyParts.includes("lung") && s.anatomyParts.includes("stomach"));
+  s = say(s, "a cat");
+  check("body  a real object leaves body mode", !s.anatomy && !!item(s, "cat"));
+
+  // agent path
+  let a = applyOps(newSession(), [{ op: "add", type: "heart" }, { op: "add", type: "lungs" }]);
+  check("body  agent organ ops build the body too", a.anatomy && a.anatomyParts.length === 2 && a.items.length === 0);
+}
+
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

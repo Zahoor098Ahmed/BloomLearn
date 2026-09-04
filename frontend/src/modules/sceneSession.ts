@@ -245,14 +245,15 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
   const tokens = t.trim().split(" ").filter(Boolean);
   if (!tokens.length) return s;
 
-  // 1. anatomy: labelled human-organ diagram, parts accumulate
+  // 1. anatomy: one labelled human body, organs accumulate on it
   const organs = tokens.filter((w) => ANATOMY.has(w)).map((w) =>
     w.endsWith("s") && !w.endsWith("ss") ? w.slice(0, -1) : w,
   );
-  if (organs.length) {
+  const wantsBody = /\b(internal body|body part|body parts|human body|the organs?|inside the body)\b/.test(t);
+  if (organs.length || wantsBody) {
     s.anatomy = true;
     for (const o of organs) if (!s.anatomyParts.includes(o)) s.anatomyParts.push(o);
-    s.note = `human ${s.anatomyParts.join(" + ")}`;
+    s.note = s.anatomyParts.length ? `human body: ${s.anatomyParts.join(" + ")}` : "human body — name the organs";
     return s;
   }
   if (s.anatomy && /\b(add|also)\b/.test(t) === false && parseSceneGraph(text).subject) {
@@ -472,6 +473,25 @@ function applyOpsRaw(prev: SceneSession, ops: SceneOp[]): SceneSession {
     const type = "type" in op && op.type ? norm(op.type).trim() : "";
     if (!type) continue;
 
+    // organ words -> the labelled human body, parts accumulate on one figure
+    const organ = type.split(" ").find((w) => ANATOMY.has(w));
+    if (organ || /\b(organ|body part|body parts|internal body)\b/.test(type)) {
+      if (op.op === "remove") {
+        s.anatomyParts = s.anatomyParts.filter((p) => p !== (organ ?? type));
+      } else {
+        s.anatomy = true;
+        const part = organ ?? type;
+        if (!s.anatomyParts.includes(part)) s.anatomyParts.push(part);
+      }
+      done.push(`body: ${s.anatomyParts.join(" + ")}`);
+      continue;
+    }
+    // a real object leaves anatomy mode
+    if (s.anatomy && op.op === "add") {
+      s.anatomy = false;
+      s.anatomyParts = [];
+    }
+
     if (op.op === "remove") {
       s.items = s.items.filter((i) => i.type !== type);
       done.push(`removed ${type}`);
@@ -529,7 +549,6 @@ function applyOpsRaw(prev: SceneSession, ops: SceneOp[]): SceneSession {
     s.items.push(makeItem(type, { ...patch, ...p }));
     done.push(`added ${type}`);
   }
-  s.anatomy = false;
   s.note = done.join(" · ") || null;
   return s;
 }

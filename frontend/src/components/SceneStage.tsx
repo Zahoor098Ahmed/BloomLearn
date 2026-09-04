@@ -60,19 +60,58 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   );
 }
 
+// ARASAAC organ pictograms + where each sits on the body (fractions of the
+// torso box). Each organ pictogram already carries a faint body outline, so
+// overlapping them builds up one coherent figure.
+const ORGAN: Record<string, { id: number; x: number; y: number; s: number }> = {
+  brain: { id: 2696, x: 0.5, y: 0.11, s: 0.3 },
+  head: { id: 2696, x: 0.5, y: 0.11, s: 0.3 },
+  heart: { id: 4613, x: 0.47, y: 0.4, s: 0.34 },
+  lungs: { id: 2822, x: 0.5, y: 0.4, s: 0.62 },
+  lung: { id: 2822, x: 0.5, y: 0.4, s: 0.62 },
+  liver: { id: 2980, x: 0.5, y: 0.52, s: 0.5 },
+  stomach: { id: 2786, x: 0.5, y: 0.52, s: 0.5 },
+  belly: { id: 2786, x: 0.5, y: 0.52, s: 0.5 },
+  kidney: { id: 2812, x: 0.5, y: 0.58, s: 0.5 },
+  kidneys: { id: 2812, x: 0.5, y: 0.58, s: 0.5 },
+  intestine: { id: 2967, x: 0.5, y: 0.68, s: 0.55 },
+  intestines: { id: 2967, x: 0.5, y: 0.68, s: 0.55 },
+  bladder: { id: 3407, x: 0.5, y: 0.78, s: 0.3 },
+};
+const ORGAN_ORDER = ["lungs", "lung", "liver", "stomach", "belly", "intestine", "intestines", "kidney", "kidneys", "bladder", "heart", "brain", "head"];
+const asrc = (id: number) => `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
+
 export default function SceneStage({ session, uris = {} }: { session: SceneSession; uris?: Record<string, string> }) {
   if (session.anatomy) {
+    const parts = session.anatomyParts.filter((p) => ORGAN[p]);
+    const shown = ORGAN_ORDER.filter((k) => parts.includes(k));
+    // de-dupe by pictogram id (kidney/kidneys etc.)
+    const seen = new Set<number>();
     return (
       <View style={styles.stage}>
-        <Text style={styles.anatomyTitle}>Human body — labelled</Text>
-        <View style={styles.anatomyRow}>
-          {(session.anatomyParts.length ? session.anatomyParts : ["body"]).map((p) => (
-            <View key={p} style={styles.anatomyChip}>
-              <Text style={styles.anatomyChipText}>{p}</Text>
-            </View>
-          ))}
+        <View style={styles.bodyBox}>
+          <Image source={{ uri: asrc(6473) }} style={styles.bodyBase} resizeMode="contain" />
+          {shown.map((k) => {
+            const o = ORGAN[k];
+            if (seen.has(o.id)) return null;
+            seen.add(o.id);
+            return (
+              <Image
+                key={k}
+                source={{ uri: asrc(o.id) }}
+                resizeMode="contain"
+                style={{
+                  position: "absolute",
+                  width: `${o.s * 100}%`,
+                  height: `${o.s * 100}%`,
+                  left: `${(o.x - o.s / 2) * 100}%`,
+                  top: `${(o.y - o.s / 2) * 100}%`,
+                }}
+              />
+            );
+          })}
         </View>
-        <Text style={styles.anatomyHint}>Say “add heart”, “add lungs”… to build the diagram.</Text>
+        {!parts.length && <Text style={styles.anatomyHint}>Say “heart”, “add lungs”, “add stomach”… to build the body.</Text>}
       </View>
     );
   }
@@ -125,9 +164,7 @@ const styles = StyleSheet.create({
     color: colors.textLight,
     fontSize: 12.5,
   },
-  anatomyTitle: { fontSize: 14, fontWeight: "800", color: colors.textDark, marginBottom: 10, textAlign: "center" },
-  anatomyRow: { flexDirection: "row", flexWrap: "wrap", gap: 8, justifyContent: "center", paddingHorizontal: 16 },
-  anatomyChip: { backgroundColor: colors.forestLight, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 999 },
-  anatomyChipText: { color: colors.forestDark, fontWeight: "800", fontSize: 12 },
-  anatomyHint: { marginTop: 12, fontSize: 11, color: colors.textLight, textAlign: "center" },
+  anatomyHint: { position: "absolute", left: 20, right: 20, top: "44%", fontSize: 12, color: colors.textLight, textAlign: "center" },
+  bodyBox: { height: "94%", aspectRatio: 0.62, position: "relative" },
+  bodyBase: { position: "absolute", width: "100%", height: "100%", opacity: 0.5 },
 });
