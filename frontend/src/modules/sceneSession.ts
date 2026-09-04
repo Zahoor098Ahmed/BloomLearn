@@ -482,7 +482,9 @@ export function sessionPrompt(s: SceneSession): string {
  * state changes.
  */
 export function searchPhrase(i: SceneItem): string {
-  return i.action ? `${i.action} ${i.type}` : i.type;
+  // Always look up the object itself so a boy stays a boy and a girl stays a
+  // girl; the action is shown as a badge over the picture, not by swapping it.
+  return i.type;
 }
 
 export function sessionChips(s: SceneSession): string[] {

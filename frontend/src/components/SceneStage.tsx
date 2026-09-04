@@ -4,6 +4,20 @@ import { searchPhrase } from "../modules/sceneSession";
 import { ACTIONS } from "../modules/sentenceScene";
 import { colors } from "../theme";
 
+// action -> a clear badge emoji, trying the common word forms
+function actionEmoji(a: string | null): string | null {
+  if (!a) return null;
+  const k = a.toLowerCase().replace(/^is /, "").trim();
+  return (
+    ACTIONS[k] ??
+    ACTIONS[`${k}ing`] ??
+    ACTIONS[k.replace(/ing$/, "")] ??
+    ACTIONS[`${k.replace(/e$/, "")}ing`] ??
+    { cry: "😢", crying: "😢", sad: "😢", happy: "😄", smile: "😄", laugh: "😄", pray: "🙏", praying: "🙏", wave: "👋", sing: "🎤" }[k] ??
+    null
+  );
+}
+
 /**
  * The built scene, positioned: "cat above the table" draws the cat above the
  * table. Items keep their own place and state (eyes, expression, count, colour).
@@ -20,6 +34,7 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
   const size = BASE * SIZE_SCALE[item.size] * crowd;
   const n = Math.max(1, Math.min(5, item.count));
   const pic = size * 2.3;
+  const emoji = actionEmoji(item.action);
   return (
     <View
       style={{
@@ -41,15 +56,21 @@ function Item({ item, uri, crowd = 1 }: { item: SceneItem; uri?: string; crowd?:
             ) : (
               <Text style={{ fontSize: size * (n > 2 ? 0.8 : 1) }}>{item.glyph}</Text>
             )}
-            {i === 0 && !uri && item.action && ACTIONS[item.action] && (
-              <Text style={{ fontSize: size * 0.34, marginTop: -size * 0.1 }}>{ACTIONS[item.action]}</Text>
-            )}
           </View>
         ))}
       </View>
-      {item.colorHex && (
-        <View style={[styles.dot, { backgroundColor: item.colorHex }]} />
+
+      {emoji && (
+        <View style={[styles.actionBadge, { width: size * 0.7, height: size * 0.7, borderRadius: size }]}>
+          <Text style={{ fontSize: size * 0.42 }}>{emoji}</Text>
+        </View>
       )}
+      {item.eyes === "closed" && !emoji && (
+        <View style={[styles.actionBadge, { width: size * 0.7, height: size * 0.7, borderRadius: size }]}>
+          <Text style={{ fontSize: size * 0.42 }}>😴</Text>
+        </View>
+      )}
+      {item.colorHex && <View style={[styles.dot, { backgroundColor: item.colorHex }]} />}
     </View>
   );
 }
@@ -110,6 +131,16 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.06)",
   },
   dot: { width: 12, height: 12, borderRadius: 6, marginTop: 3, borderWidth: 1.5, borderColor: "rgba(0,0,0,0.15)" },
+  actionBadge: {
+    position: "absolute",
+    right: "18%",
+    bottom: "22%",
+    backgroundColor: "#ffffff",
+    borderWidth: 1.5,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   empty: {
     position: "absolute",
     left: 24,
