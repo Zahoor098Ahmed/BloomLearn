@@ -32,6 +32,7 @@ export function extractPageCandidates(page, book) {
       kind,
       triggers: variations(t),
       image: page.images[0], // step 4: page-level pairing; multi-image pages need the manual review pass
+      imagePath: `${book.slug}/images/${page.images[0]}`, // relative to content-source/gdl/
       page: page.page,
       pageText: page.text,
       book: book.title,

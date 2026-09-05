@@ -8,6 +8,7 @@ import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from ".
 import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
 import { sceneImageUrl, composeSceneUrl, aiSceneEnabled } from "../modules/aiScene";
 import { lookupImage, saveImage, libraryCount, prewarmLibrary, dictionaryWords } from "../modules/imageLibrary";
+import { bookVocabSize } from "../modules/bookVocab";
 import {
   type SceneSession,
   newSession,
@@ -298,7 +299,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
             <Text style={styles.headerTitle}>Picture Talk</Text>
             <Text style={styles.headerSub}>
               {wordsN > 0
-                ? `Picture library: ${wordsN.toLocaleString()} words${libN > 0 ? ` · ${libN} saved` : ""}`
+                ? `Picture library: ${wordsN.toLocaleString()} words · ${bookVocabSize()} from books${libN > 0 ? ` · ${libN} saved` : ""}`
                 : "Say or type a sentence — the picture builds as you talk"}
             </Text>
           </View>

@@ -70,6 +70,24 @@ should reach the child-facing app until a human has approved it — see
    cat"). Pairs each candidate with the image(s) on that page. This is
    intentionally simple keyword matching, not an NLP model, per the spec.
 
+## Step 4: wired into the live app (real-time lookup)
+
+```
+node src/exportToApp.js
+```
+
+Copies one image per unique phrase into `frontend/assets/bookVocab/`,
+generates `frontend/src/modules/bookVocab.generated.ts` (a `require()` map —
+Metro needs static imports, so this is regenerated as source, not read at
+runtime) and `bookVocab.meta.json` (book/level/license per phrase, for a
+future review screen).
+
+`frontend/src/modules/imageLibrary.ts`'s `lookupImage()` checks this bundled
+book vocabulary **first**, before ARASAAC — so in Picture Talk, the instant a
+child's spoken sentence contains a word from an ingested book, that book's
+real illustration shows up, offline, with no extra step. Re-run `run.js` then
+`exportToApp.js` any time the source batch changes.
+
 ## What's still missing (needs a decision, not just code)
 
 **KiddoCare's existing app has no Admin screen and no `PhraseMatch` system —**

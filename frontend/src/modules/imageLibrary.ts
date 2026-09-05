@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system/legacy";
 import type { SceneGraph } from "../types";
+import { lookupBookPhrase } from "./bookVocab";
 
 /**
  * The learning picture library.
@@ -21,7 +22,7 @@ import type { SceneGraph } from "../types";
 const INDEX_KEY = "kiddocare_library_index";
 const DIR = `${FileSystem.documentDirectory}library/`;
 
-export type LibrarySource = "arasaac" | "ai" | "photo" | "manual";
+export type LibrarySource = "arasaac" | "ai" | "photo" | "manual" | "book";
 
 export interface LibraryEntry {
   key: string;
@@ -255,6 +256,14 @@ export interface LibraryHit {
 export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<LibraryHit | null> {
   await ensureLoaded();
   const keys = candidateKeys(phrase, graph);
+
+  // 0. a real picture-book illustration (content-pipeline/, bundled, instant,
+  // no network) beats a generic pictogram when a word actually appears in one
+  // of the ingested books — only when no colour is asked for, same as ARASAAC.
+  if (!graph?.subject?.color) {
+    const bookHit = lookupBookPhrase(phrase);
+    if (bookHit) return { uri: bookHit.uri, source: "book", fromLibrary: true };
+  }
 
   // 1. already in the library?
   for (const k of keys) {
