@@ -1,0 +1,16 @@
+{
+  "name": "kiddocare-content-pipeline",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Standalone tool: ingest CC-licensed early-reader books (GDL API) into draft PhraseMatch entries for review.",
+  "type": "module",
+  "scripts": {
+    "fetch": "node src/fetchBooks.js",
+    "ingest": "node src/ingestBook.js",
+    "run": "node src/run.js"
+  },
+  "dependencies": {
+    "adm-zip": "^0.5.16",
+    "cheerio": "^1.0.0"
+  }
+}

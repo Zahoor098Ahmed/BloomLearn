@@ -53,35 +53,15 @@ automated pipeline until individually confirmed in writing.
 - Repo: `github.com/GlobalDigitalLibraryio/book-api` — "API for fetching
   books from the Global Digital Library."
 
-### API verification status (checked before building against it)
+### API verification status — RESOLVED, see `gdl-api-findings.md`
 
-Tried to confirm current endpoints before wiring the pipeline to them, per
-the plan's own instruction that API details may have drifted:
-
-- The `book-api` repo's README has no endpoint list, base URL, auth, or
-  example request/response — just the one-line description above.
-- The historical public API hosts (`api.digitallibrary.io`,
-  `gdl-api.digitallibrary.io`) **don't resolve (DNS failure)** from here —
-  the API has likely moved or is no longer public at those addresses.
-- `digitallibrary.io` itself is a JS-rendered single-page app; its book
-  catalogue and search results load via client-side calls this tool can't
-  execute, so the current live API base couldn't be observed that way either.
-- The site's footer does link to `/about/developer/`, which is the right
-  place to find the current endpoint — but its content is also behind the
-  same JS rendering.
-
-**Net result: could not confirm a working public API endpoint from this
-session.** Before step 2 (API integration) starts, someone needs to either:
-  - open `digitallibrary.io/about/developer/` in an actual browser and copy
-    the current base URL / auth notes, or
-  - open a network tab while browsing digitallibrary.io and note the XHR/
-    fetch calls it makes, or
-  - open an issue / check recent commits on the `book-api` repo for a
-    working example.
-
-**Fallback that works today without any of that:** GDL books can be read and
-downloaded directly from digitallibrary.io per book (same as StoryWeaver
-below) — usable as manual File Ingestion input immediately, API or not.
+The old `book-api` repo is confirmed abandoned (last commit 2020, an
+unanswered "please document this" issue from 2022, no successor mentioned).
+**The user supplied the current, working API** — a WordPress-based backend
+at `content.digitallibrary.io`, unrelated to the old Scala service. Verified
+live and built against: full details, endpoints, and the first pipeline test
+run are in `docs/gdl-api-findings.md`. The `content-pipeline/` tool uses this
+API directly; the manual-download fallback below is no longer needed for GDL.
 
 ## Secondary source: StoryWeaver (Pratham Books)
 
@@ -113,20 +93,23 @@ below) — usable as manual File Ingestion input immediately, API or not.
 
 ## Delivery order
 
-1. ~~Review the GDL `book-api` repo for current endpoints/auth/format~~ — done
-   above; **inconclusive**, needs a live-browser check to actually confirm.
-2. Build the GDL API integration into File Ingestion — **blocked** until (1)
-   is resolved, OR start with the direct-download fallback (works now) and
-   swap in the API later.
-3. Run 5–10 GDL books through the full pipeline end-to-end (extraction →
-   phrase generation → Admin review → publish) to validate the approach.
+1. ~~Review the GDL `book-api` repo for current endpoints/auth/format~~ — done;
+   confirmed abandoned. ~~Confirm the actual live API~~ — done, see
+   `gdl-api-findings.md`.
+2. ~~Build the GDL API integration into File Ingestion~~ — done:
+   `content-pipeline/` (`fetchBooks.js`, `ingestBook.js`).
+3. ~~Run 5–10 GDL books through the full pipeline end-to-end~~ — done: 7/8
+   books, 162 draft entries, see `gdl-api-findings.md` for the run table and
+   issues found.
 4. Add StoryWeaver + the other direct-download sources as a secondary
-   ingestion path.
-5. Confirm license metadata is captured and stored per entry throughout.
+   ingestion path — not started.
+5. License metadata is captured per entry (`licenseRef`) — done for GDL.
 
 ## Blocked on
 
-- Confirming GDL's current live API base URL / auth (or deciding to start
-  with direct-download only and add the API later).
-- Which languages/levels to prioritize first from GDL's catalogue (default:
-  English, early-grade level, unless told otherwise).
+- No Admin/PhraseMatch review screen exists in KiddoCare yet to approve the
+  162 draft entries into — see `content-pipeline/README.md`, "What's still
+  missing," for the two options.
+- Which languages/levels to prioritize first from GDL's catalogue beyond the
+  first English test batch (default: English, early-grade level, unless told
+  otherwise).
