@@ -21,12 +21,28 @@ export interface BookVocabHit {
   source: "book";
 }
 
+/**
+ * On native, a required image resolves to a numeric asset id that
+ * Image.resolveAssetSource() turns into a uri. On web, Metro/webpack resolve
+ * the same import straight to a usable string URL (no asset registry) — so
+ * accept either, and never let a bundler quirk here throw and break the
+ * caller's lookup chain.
+ */
+function assetUri(asset: number | string): string | null {
+  if (typeof asset === "string") return asset;
+  try {
+    return Image.resolveAssetSource(asset)?.uri ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Look a single word up. Returns null if it isn't in the extracted set. */
 export function lookupBookWord(word: string): BookVocabHit | null {
   const key = norm(word);
   const asset = BOOK_VOCAB_ASSETS[key];
   if (asset == null) return null;
-  const uri = Image.resolveAssetSource(asset)?.uri;
+  const uri = assetUri(asset);
   return uri ? { uri, source: "book" } : null;
 }
 

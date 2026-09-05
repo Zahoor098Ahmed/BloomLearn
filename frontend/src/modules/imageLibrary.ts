@@ -261,8 +261,12 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
   // no network) beats a generic pictogram when a word actually appears in one
   // of the ingested books — only when no colour is asked for, same as ARASAAC.
   if (!graph?.subject?.color) {
-    const bookHit = lookupBookPhrase(phrase);
-    if (bookHit) return { uri: bookHit.uri, source: "book", fromLibrary: true };
+    try {
+      const bookHit = lookupBookPhrase(phrase);
+      if (bookHit) return { uri: bookHit.uri, source: "book", fromLibrary: true };
+    } catch {
+      /* a bundler quirk here should never break the rest of the lookup */
+    }
   }
 
   // 1. already in the library?
