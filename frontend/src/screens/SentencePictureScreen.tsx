@@ -129,9 +129,13 @@ export default function SentencePictureScreen({ onBack }: Props) {
     if (!buildMode) return;
     for (const it of session.items) {
       const key = searchPhrase(it);
-      if (!itemUrisRef.current[key]) {
-        lookupImage(key).then((h) => {
-          if (h) setItemUris((m) => ({ ...m, [key]: h.uri }));
+      if (!(key in itemUrisRef.current)) {
+        itemUrisRef.current = { ...itemUrisRef.current, [key]: "" }; // claim it so we don't fire twice
+        // a stalled lookup must never leave the symbol stuck on its loading
+        // placeholder forever — fall back to the emoji glyph after 7s
+        const timeout = new Promise<null>((resolve) => setTimeout(() => resolve(null), 7000));
+        Promise.race([lookupImage(key), timeout]).then((h) => {
+          setItemUris((m) => ({ ...m, [key]: h?.uri ?? "" }));
         });
       }
     }

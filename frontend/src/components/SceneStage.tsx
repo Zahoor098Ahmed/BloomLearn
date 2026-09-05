@@ -90,6 +90,10 @@ function Item({ p, uri }: { p: Placed; uri?: string }) {
               <Image source={{ uri }} style={styles.pic} resizeMode="contain" />
               {col && <Image source={{ uri }} style={[styles.pic, styles.glaze, { tintColor: col }]} resizeMode="contain" />}
             </>
+          ) : uri === "" ? (
+            // looked up and found nothing — a permanent grey box would look
+            // broken; the emoji glyph is always there as a graceful fallback
+            <Text style={styles.fallbackGlyph}>{it.glyph}</Text>
           ) : (
             <View style={styles.loading} />
           )}
@@ -283,6 +287,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  fallbackGlyph: { fontSize: 46, textAlign: "center", width: "100%" },
   empty: {
     position: "absolute",
     left: 24,

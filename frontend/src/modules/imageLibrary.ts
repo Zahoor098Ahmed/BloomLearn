@@ -214,10 +214,25 @@ function headNoun(phrase: string): string {
 
 interface ArasaacItem { _id: number; keywords?: { keyword?: string }[] }
 
+/** A stalled network request must never hang lookupImage forever — a picture
+ * slot in the scene builder has nothing else to fall back to and would be
+ * stuck on its loading placeholder indefinitely otherwise. */
+async function fetchWithTimeout(url: string, ms = 6000): Promise<Response | null> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    return await fetch(url, { signal: ctrl.signal });
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 async function arasaacFirst(term: string): Promise<string | null> {
   try {
-    const res = await fetch(`https://api.arasaac.org/api/pictograms/en/search/${encodeURIComponent(term)}`);
-    if (!res.ok) return null;
+    const res = await fetchWithTimeout(`https://api.arasaac.org/api/pictograms/en/search/${encodeURIComponent(term)}`);
+    if (!res || !res.ok) return null;
     const json = (await res.json()) as ArasaacItem[];
     if (!Array.isArray(json) || !json.length) return null;
     const want = norm(term).trim();
