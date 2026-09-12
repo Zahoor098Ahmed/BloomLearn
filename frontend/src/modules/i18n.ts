@@ -75,6 +75,7 @@ export type TKey =
   | 'metricTotalWordTaps' | 'metricVocabDiversity' | 'metricSentencesSpoken' | 'metricRoutineAdherence'
   | 'speechSentenceFormationTitle' | 'longestVerbalCompositionSub' | 'wordsConstructedPrefix' | 'noFullSentenceLogged'
   | 'sevenDayVolumeTitle' | 'topCommunicatedVocabTitle' | 'tapsUnit' | 'noVocabTapsYet'
+  | 'iMadeMistake' | 'undoOrClearMsg' | 'closeBtn' | 'undoLastWordBtn' | 'clearAllBtn' | 'oopsBtn'
   // --- parent hub screen ---
   | 'registeredChildProfilesCount' | 'addBtnShort' | 'childrenCareDirectoryTitle' | 'childrenCareDirectoryDesc'
   | 'enrollFirstChildHint' | 'removeChildTitle' | 'removeChildMsg' | 'removeBtnShort'
@@ -649,6 +650,7 @@ const T: AllTranslations = {
     metricTotalWordTaps: 'Total Word Taps', metricVocabDiversity: 'Vocabulary Diversity', metricSentencesSpoken: 'Sentences Spoken', metricRoutineAdherence: 'Routine Adherence',
     speechSentenceFormationTitle: 'Speech & Sentence Formation', longestVerbalCompositionSub: 'Longest verbal composition constructed by {name}:', wordsConstructedPrefix: '{n} words constructed:', noFullSentenceLogged: 'No full sentence logged yet.',
     sevenDayVolumeTitle: '7-Day Communicative Volume', topCommunicatedVocabTitle: 'Top Communicated Vocabulary', tapsUnit: 'taps', noVocabTapsYet: 'No vocabulary taps recorded yet.',
+    iMadeMistake: 'I made a mistake', undoOrClearMsg: 'Undo the last word or clear all?', closeBtn: 'Close', undoLastWordBtn: 'Undo last word', clearAllBtn: 'Clear all', oopsBtn: 'Oops',
     registeredChildProfilesCount: '{n} registered child profile{s} · {stars} ⭐ earned', addBtnShort: 'Add',
     childrenCareDirectoryTitle: 'Children Care Directory', childrenCareDirectoryDesc: 'Select a child profile to activate their AAC communication board, edit therapy targets, or inspect emergency passcards.',
     enrollFirstChildHint: 'Tap the button below to enroll your first child with face recognition or photo.',
@@ -1327,6 +1329,7 @@ const T: AllTranslations = {
     metricTotalWordTaps: 'إجمالي نقرات الكلمات', metricVocabDiversity: 'تنوع المفردات', metricSentencesSpoken: 'الجمل المنطوقة', metricRoutineAdherence: 'الالتزام بالروتين',
     speechSentenceFormationTitle: 'الكلام وتكوين الجمل', longestVerbalCompositionSub: 'أطول تركيب لفظي كوّنه {name}:', wordsConstructedPrefix: 'تم تكوين {n} كلمة:', noFullSentenceLogged: 'لم يتم تسجيل أي جملة كاملة بعد.',
     sevenDayVolumeTitle: 'حجم التواصل خلال 7 أيام', topCommunicatedVocabTitle: 'أكثر المفردات استخداماً', tapsUnit: 'نقرة', noVocabTapsYet: 'لا توجد نقرات مفردات مسجلة بعد.',
+    iMadeMistake: 'أخطأت', undoOrClearMsg: 'تراجع عن آخر كلمة أم مسح الكل؟', closeBtn: 'إغلاق', undoLastWordBtn: 'تراجع عن آخر كلمة', clearAllBtn: 'مسح الكل', oopsBtn: 'عفواً',
     registeredChildProfilesCount: '{n} ملف طفل مسجل · {stars} ⭐ مكتسبة', addBtnShort: 'إضافة',
     childrenCareDirectoryTitle: 'دليل رعاية الأطفال', childrenCareDirectoryDesc: 'اختر ملف طفل لتفعيل لوحة التواصل الخاصة به، تعديل أهداف العلاج، أو مراجعة بطاقات الطوارئ.',
     enrollFirstChildHint: 'اضغط الزر أدناه لتسجيل طفلك الأول باستخدام التعرف على الوجه أو صورة.',
@@ -2228,6 +2231,15 @@ const WORD_AR: Record<string, string> = {
   'Read Storybook': 'اقرأ قصة', 'Lights Out & Sleep': 'أطفئ الأنوار ونم',
   'Sensory Warmup': 'إحماء حسي', 'Speech AAC Practice': 'تمرين تواصل بالصور', 'Fine Motor Skills': 'مهارات حركية دقيقة',
   'Star Reward & Free Play': 'مكافأة نجمة ولعب حر',
+  // "Say It For Me" board — full modeled sentences with pronouns, for children
+  // who cannot speak but can understand and hear spoken language.
+  'I want to eat': 'أريد أن آكل', 'I want to drink': 'أريد أن أشرب', 'I need the bathroom': 'أحتاج إلى الحمام',
+  'I am happy': 'أنا سعيد', 'I am sad': 'أنا حزين', 'I am in pain': 'أشعر بألم',
+  'I want to play': 'أريد أن ألعب', 'I am sleepy': 'أنا نعسان', 'I need help': 'أحتاج المساعدة', 'I want to go outside': 'أريد أن أخرج',
+  'I love you': 'أحبك', 'I am hungry': 'أنا جائع', 'I am thirsty': 'أنا عطشان',
+  'Thank you very much': 'شكراً جزيلاً', 'Please help me': 'من فضلك ساعدني', "I don't feel well": 'لا أشعر أنني بخير',
+  'I want my mom': 'أريد أمي', 'I want my dad': 'أريد أبي', 'Can we go home': 'هل يمكننا الذهاب إلى المنزل',
+  'I am scared': 'أنا خائف',
 };
 const WORD_UR: Record<string, string> = {
   Monday: 'پیر', Tuesday: 'منگل', Wednesday: 'بدھ', Thursday: 'جمعرات', Friday: 'جمعہ', Saturday: 'ہفتہ', Sunday: 'اتوار',
@@ -2289,6 +2301,14 @@ const WORD_UR: Record<string, string> = {
   'Read Storybook': 'کہانی پڑھیں', 'Lights Out & Sleep': 'لائٹ بند کریں اور سو جائیں',
   'Sensory Warmup': 'حسی وارم اپ', 'Speech AAC Practice': 'تصویری بات چیت کی مشق', 'Fine Motor Skills': 'باریک حرکاتی مہارت',
   'Star Reward & Free Play': 'ستارہ انعام اور آزاد کھیل',
+  // "Say It For Me" board — full modeled sentences with pronouns
+  'I want to eat': 'میں کھانا چاہتا ہوں', 'I want to drink': 'میں پینا چاہتا ہوں', 'I need the bathroom': 'مجھے باتھ روم جانا ہے',
+  'I am happy': 'میں خوش ہوں', 'I am sad': 'میں اداس ہوں', 'I am in pain': 'مجھے تکلیف ہو رہی ہے',
+  'I want to play': 'میں کھیلنا چاہتا ہوں', 'I am sleepy': 'مجھے نیند آ رہی ہے', 'I need help': 'مجھے مدد چاہیے', 'I want to go outside': 'میں باہر جانا چاہتا ہوں',
+  'I love you': 'میں آپ سے پیار کرتا ہوں', 'I am hungry': 'مجھے بھوک لگی ہے', 'I am thirsty': 'مجھے پیاس لگی ہے',
+  'Thank you very much': 'بہت شکریہ', 'Please help me': 'براہ کرم میری مدد کریں', "I don't feel well": 'میری طبیعت ٹھیک نہیں ہے',
+  'I want my mom': 'مجھے اپنی امی چاہیے', 'I want my dad': 'مجھے اپنے ابو چاہیے', 'Can we go home': 'کیا ہم گھر جا سکتے ہیں',
+  'I am scared': 'میں ڈرا ہوا ہوں',
 };
 
 // Reverse lookups (Arabic/Urdu text -> English) so a word already translated

@@ -60,6 +60,34 @@ export async function ensureCategoriesLoaded(): Promise<void> {
   } else {
     ensureAllStandardCategories();
     retranslateSeedBoard(seedLang);
+    refreshSayItForMeImages();
+  }
+}
+
+/**
+ * One-time repair for installs that seeded the "Say It For Me" board before
+ * its per-sentence pictogram map existed (they got the generic word-split
+ * fallback image, e.g. every card showing the same "want"/"help" hand icon).
+ * Recomputes each word's image from its English source text and only writes
+ * if it actually changed, so it's cheap to call on every load.
+ */
+function refreshSayItForMeImages() {
+  const enWords = STARTER.find((s) => s.name === "Say It For Me")?.words.map(([label]) => label);
+  if (!enWords) return;
+  const cat = cache.find((c) => (FOLDER_EN_BY_LANG[c.name.toLowerCase()] ?? c.name) === "Say It For Me");
+  if (!cat) return;
+  let changed = false;
+  cat.words.forEach((w, i) => {
+    const en = enWords[i];
+    const correctUri = en ? getPictogramUrl(en) : null;
+    if (correctUri && w.imageUri !== correctUri) {
+      w.imageUri = correctUri;
+      changed = true;
+    }
+  });
+  if (changed) {
+    cache = [...cache];
+    persist();
   }
 }
 
@@ -123,6 +151,33 @@ const STARTER: { name: string; icon: string; color?: string; words: [string, str
       ["I Like", "👍"],
       ["I Don't Like", "👎"],
       ["All Done", "🏁"],
+    ],
+  },
+  {
+    name: "Say It For Me",
+    icon: "🗨️",
+    color: "#d9534f",
+    words: [
+      ["I want to eat", "🍽️"],
+      ["I want to drink", "🥤"],
+      ["I need the bathroom", "🚻"],
+      ["I am happy", "😊"],
+      ["I am sad", "😢"],
+      ["I am in pain", "😣"],
+      ["I want to play", "🎈"],
+      ["I am sleepy", "😴"],
+      ["I need help", "🙋"],
+      ["I want to go outside", "🌳"],
+      ["I love you", "❤️"],
+      ["I am hungry", "🍎"],
+      ["I am thirsty", "💧"],
+      ["Thank you very much", "🙏"],
+      ["Please help me", "🙏"],
+      ["I don't feel well", "🤒"],
+      ["I want my mom", "👩"],
+      ["I want my dad", "👨"],
+      ["Can we go home", "🏠"],
+      ["I am scared", "😨"],
     ],
   },
   {
@@ -290,7 +345,7 @@ const FOLDER_NAMES: Partial<Record<LanguageCode, Record<string, string>>> = {
   "ar-SA": {
     Core: "أساسي", Food: "طعام", Feelings: "مشاعر", People: "أشخاص", Actions: "أفعال",
     Schools: "مدرسة", Sentences: "جمل", Tools: "أدوات", Emotion: "مشاعر", Attributes: "صفات",
-    Sports: "رياضة", Hygiene: "نظافة", Music: "موسيقى",
+    Sports: "رياضة", Hygiene: "نظافة", Music: "موسيقى", "Say It For Me": "قلها لي",
     "My Words": "كلماتي", "New Folder": "مجلد جديد",
     Animals: "حيوانات", Fruits: "فواكه", Vegetables: "خضروات", Colors: "ألوان", Shapes: "أشكال",
     Vehicles: "مركبات", "Body Parts": "أجزاء الجسم", Clothes: "ملابس", Weather: "الطقس", Family: "العائلة",
@@ -300,7 +355,7 @@ const FOLDER_NAMES: Partial<Record<LanguageCode, Record<string, string>>> = {
   "ur-PK": {
     Core: "بنیادی", Food: "کھانا", Feelings: "احساسات", People: "لوگ", Actions: "کام",
     Schools: "اسکول", Sentences: "جملے", Tools: "اوزار", Emotion: "جذبات", Attributes: "خصوصیات",
-    Sports: "کھیل", Hygiene: "صفائی", Music: "موسیقی",
+    Sports: "کھیل", Hygiene: "صفائی", Music: "موسیقی", "Say It For Me": "میرے لیے کہو",
     "My Words": "میرے الفاظ", "New Folder": "نیا فولڈر",
     Animals: "جانور", Fruits: "پھل", Vegetables: "سبزیاں", Colors: "رنگ", Shapes: "شکلیں",
     Vehicles: "گاڑیاں", "Body Parts": "جسم کے حصے", Clothes: "کپڑے", Weather: "موسم", Family: "خاندان",
@@ -323,25 +378,35 @@ const FOLDER_EN_BY_LANG: Record<string, string> = (() => {
 
 /**
  * Re-translate the built-in vocabulary (starter board + bulk-generated
- * categories) into the given language. Words come from a fixed dictionary, so
- * a caregiver's own custom word (not in the dictionary) is left untouched.
+ * categories, PLUS the individual words inside any user-created category)
+ * into the given language. Words come from a fixed dictionary, so a
+ * caregiver's own genuinely custom word (not in the dictionary) is left
+ * untouched — only text that matches a known AAC word/phrase translates.
  * Call this whenever the language changes.
  */
 export function retranslateSeedBoard(lang: LanguageCode) {
   let changed = false;
   for (const cat of cache) {
-    if (!["seed", "generated", "list", "voice"].includes(cat.source)) continue;
+    const isSeedFamily = ["seed", "generated", "list", "voice"].includes(cat.source);
 
-    // folder name
-    const enName = FOLDER_EN_BY_LANG[cat.name.toLowerCase()] ?? cat.name;
-    const newName = FOLDER_NAMES[lang]?.[enName] ?? (lang === "en-US" ? enName : cat.name);
-    if (newName !== cat.name) {
-      cat.name = newName;
-      changed = true;
+    // folder name — only rename folders we generated ourselves; a caregiver's
+    // own custom folder name (e.g. "Zahoor's Favorites") is left alone.
+    if (isSeedFamily) {
+      const enName = FOLDER_EN_BY_LANG[cat.name.toLowerCase()] ?? cat.name;
+      const newName = FOLDER_NAMES[lang]?.[enName] ?? (lang === "en-US" ? enName : cat.name);
+      if (newName !== cat.name) {
+        cat.name = newName;
+        changed = true;
+      }
     }
 
-    // words — seed folders map by position; everything else by dictionary lookup
-    const enWords = SEED_WORD_EN[enName];
+    // words — always attempt translation. Seed folders map by position for
+    // perfect accuracy; any other category (including a "manual" folder
+    // built via quick-start templates, pasted lists, or voice-add) falls
+    // back to dictionary lookup, which is a safe no-op for genuinely
+    // custom text that isn't recognized AAC vocabulary.
+    const enName2 = isSeedFamily ? (FOLDER_EN_BY_LANG[cat.name.toLowerCase()] ?? cat.name) : null;
+    const enWords = enName2 ? SEED_WORD_EN[enName2] : undefined;
     cat.words.forEach((w, i) => {
       const en = enWords?.[i];
       const localized = en ? starterLabel(en, lang) : wordLabel(w.label, lang);
@@ -698,6 +763,7 @@ export const BOTTOM_CATEGORIES: { key: string; icon: string; label: string; enFa
   { key: "Emotion", icon: "😀", label: "Emotion", enFallback: "Emotion", color: "#c98a3d" },
   { key: "Attributes", icon: "🟢🔵", label: "Attributes", enFallback: "Attributes", color: "#5c9a58" },
   { key: "Sentences", icon: "🙋", label: "Sentences", enFallback: "Sentences", color: "#4a7fe6" },
+  { key: "Say It For Me", icon: "🗨️", label: "Say It For Me", enFallback: "Say It For Me", color: "#d9534f" },
   { key: "Schools", icon: "🏫", label: "Schools", enFallback: "Schools", color: "#2f6d62" },
   { key: "Sports", icon: "⚽", label: "Sports", enFallback: "Sports", color: "#c96b6b" },
   { key: "Hygiene", icon: "🛁", label: "Hygiene", enFallback: "Hygiene", color: "#8a6bc9" },

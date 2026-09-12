@@ -220,6 +220,29 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   sandwich: arasaac(2281),
   fries: arasaac(2505),
   fruit: arasaac(4653),
+  // "Say It For Me" full-sentence cards — explicit direct matches so the
+  // sentence's core meaning wins instead of an unrelated filler word
+  // (e.g. "I want to eat" would otherwise match generic "want" before "eat").
+  "i want to eat": arasaac(4610), // food tray
+  "i want to drink": arasaac(2248), // water/drink
+  "i need the bathroom": arasaac(2430), // toilet
+  "i am happy": arasaac(3250),
+  "i am sad": arasaac(2606),
+  "i am in pain": arasaac(2367), // hurt
+  "i want to play": arasaac(2859), // playground/recess
+  "i am sleepy": arasaac(2314), // tired
+  "i want to go outside": arasaac(2859), // playground/recess
+  "i love you": arasaac(4558), // loved
+  "i am hungry": arasaac(4695), // snack
+  "i am thirsty": arasaac(2248), // water/drink
+  "thank you very much": arasaac(4740), // thank you
+  "please help me": arasaac(4570), // help
+  "i don't feel well": arasaac(3308), // sick
+  "i want my mom": dictUrl("mother") || arasaac(2392),
+  "i want my dad": dictUrl("father") || arasaac(2392),
+  "can we go home": arasaac(2317), // house
+  "i am scared": arasaac(2261),
+
   girl: arasaac(2484),
   boy: arasaac(2485),
   cat: arasaac(2406),

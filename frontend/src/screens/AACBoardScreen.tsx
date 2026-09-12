@@ -32,7 +32,7 @@ import { dictUrl } from "../modules/imageLibrary";
 import { getPictogramUrl } from "../modules/aacPictograms";
 import { recordWordUsage, recordSentencePlayed, recordCorrectionUsed } from "../modules/storage";
 import { tapFeedback, selectFeedback } from "../modules/haptics";
-import { t } from "../modules/i18n";
+import { t, wordLabel } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import AddByVoiceScreen from "./AddByVoiceScreen";
@@ -103,6 +103,11 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
     return Math.min(5, Math.max(3, settings.boardColumns || 4));
   }, [width, settings.boardColumns, child.buttonDensity]);
 
+  // Scale the picture to the tile's actual box size instead of a fixed
+  // constant — on wide screens with few columns a hardcoded small icon was
+  // left floating in a mostly-empty card.
+  const cardPicSize = Math.round(Math.min(130, Math.max(36, (width / cols) * 0.5)));
+
   const [ready, setReady] = useState(false);
   const [path, setPath] = useState<string[]>([]); // category id stack
   const [sentence, setSentence] = useState<Chip[]>([]);
@@ -138,6 +143,12 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
     if (!ready) return;
     setSeedLanguage(lang);
     retranslateSeedBoard(lang);
+    // The sentence-building strip holds its own frozen copy of each tapped
+    // word's text, so it doesn't pick up retranslateSeedBoard's changes to
+    // the underlying category data — re-translate the chips in place too,
+    // otherwise a phrase spoken in one language stays stuck in it even
+    // after the whole rest of the board has switched.
+    setSentence((prev) => prev.map((c) => ({ ...c, label: wordLabel(c.label, lang) })));
     setTick((n) => n + 1);
   }, [ready, lang]);
 
@@ -229,13 +240,13 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
   function attentionMistake() {
     selectFeedback();
     recordCorrectionUsed(child.id);
-    const msg = "I made a mistake";
+    const msg = t("iMadeMistake", lang);
     Speech.stop();
     Speech.speak(msg, { language: lang, rate: settings.speechRate, pitch: 1 });
-    Alert.alert("I made a mistake", "Undo the last word or clear all?", [
-      { text: "Close", style: "cancel" },
-      { text: "Undo last word", style: "default", onPress: () => undoLastChip() },
-      { text: "Clear all", style: "destructive", onPress: () => setSentence([]) },
+    Alert.alert(t("iMadeMistake", lang), t("undoOrClearMsg", lang), [
+      { text: t("closeBtn", lang), style: "cancel" },
+      { text: t("undoLastWordBtn", lang), style: "default", onPress: () => undoLastChip() },
+      { text: t("clearAllBtn", lang), style: "destructive", onPress: () => setSentence([]) },
     ]);
   }
 
@@ -340,10 +351,10 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
           <Pressable
             onPress={attentionMistake}
             style={styles.mistakeHeaderBtn}
-            accessibilityLabel="I made a mistake"
+            accessibilityLabel={t("iMadeMistake", lang)}
           >
             <Ionicons name="alert-circle-outline" size={15} color="#ffffff" />
-            <Text style={styles.mistakeHeaderBtnText}>Oops</Text>
+            <Text style={styles.mistakeHeaderBtnText}>{t("oopsBtn", lang)}</Text>
           </Pressable>
 
           {/* Voice Add button */}
@@ -472,7 +483,7 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
                         label={w.label}
                         imageUri={w.imageUri}
                         emoji={w.emoji}
-                        size={cols >= 7 ? 40 : cols >= 5 ? 46 : 52}
+                        size={cardPicSize}
                       />
                     </View>
                     <View style={styles.wordLabelBar}>
