@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "KiddoCare",
-    "slug": "kiddocare",
+    "slug": "zahoor",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
@@ -19,7 +19,7 @@
     },
     "android": {
       "package": "com.timeglobaltech.kiddocare",
-      "versionCode": 19,
+      "versionCode": 20,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
@@ -50,9 +50,8 @@
     ],
     "extra": {
       "eas": {
-        "projectId": "8045b28f-8703-402a-a17e-5f5de3dd4fe0"
+        "projectId": "c114b8be-9fa8-433b-b965-9d5c46951b79"
       }
-    },
-    "owner": "developer_32"
+    }
   }
 }

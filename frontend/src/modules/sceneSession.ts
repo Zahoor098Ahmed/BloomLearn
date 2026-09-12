@@ -15,7 +15,7 @@
  * Rendering is done by <SceneStage> from these items — offline, free, no keys.
  */
 
-import { parseSceneGraph, SUBJECTS, REFERENCES, ACTIONS, colorHex } from "./sentenceScene";
+import { parseSceneGraph, SUBJECTS, REFERENCES, ACTIONS, ADVERBS, colorHex, ALL_VOCAB_GLYPHS, findWordEmoji } from "./sentenceScene";
 import type { SceneSize } from "../types";
 
 // Islamic education assets (respectful — objects, places and prayer poses only;
@@ -37,7 +37,11 @@ const EXTRA_GLYPHS: Record<string, string> = {
   computermouse: "🖱️", keyboard: "⌨️", camera: "📷", clockwall: "🕰️",
 };
 
-const GLYPHS: Record<string, string> = { ...REFERENCES, ...SUBJECTS, ...EXTRA_GLYPHS, ...RELIGION_GLYPHS };
+const GLYPHS: Record<string, string> = {
+  ...ALL_VOCAB_GLYPHS,
+  ...EXTRA_GLYPHS,
+  ...RELIGION_GLYPHS,
+};
 
 const REFERENCE_TYPES = new Set([...Object.keys(REFERENCES), ...Object.keys(EXTRA_GLYPHS)]);
 
@@ -52,6 +56,7 @@ export interface SceneItem {
   size: SceneSize;
   count: number;
   action: string | null; // running / crying / praying …
+  adverb?: string | null; // quickly / slowly / happily …
   eyes: "open" | "closed" | null;
   relation: Rel | null; // how this item relates to the first item ("under", "behind"…)
   reference: string | null; // the item it is placed relative to
@@ -183,7 +188,8 @@ const OFFSET: Record<Rel, { dx: number; dy: number; behind: boolean }> = {
 };
 
 function glyphFor(type: string): string {
-  return GLYPHS[norm(type).trim()] ?? GLYPHS[type] ?? "🔹";
+  const clean = norm(type).trim();
+  return GLYPHS[clean] ?? GLYPHS[type] ?? findWordEmoji(clean) ?? "🔹";
 }
 
 function makeItem(type: string, opts: Partial<SceneItem> = {}): SceneItem {
@@ -196,6 +202,7 @@ function makeItem(type: string, opts: Partial<SceneItem> = {}): SceneItem {
     size: "normal",
     count: 1,
     action: null,
+    adverb: null,
     eyes: null,
     relation: null,
     reference: null,
@@ -328,9 +335,10 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
     // no such character yet — fall through and create it below
   }
 
-  // 3. expression / action word ("crying", "sleeping", "running")
+  // 3. expression / action word ("crying", "sleeping", "running") and adverb ("quickly", "slowly", "happily")
   const exprWord = tokens.map((w) => EXPRESSIONS[w]).find(Boolean) ?? null;
   const actionWord = g.subject?.action ?? null;
+  const adverbWord = tokens.find((w) => ADVERBS[w]) ?? null;
 
   // 4. relational placement — needs a reference object
   const rel = detectRel(text);
@@ -381,6 +389,7 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
       size: g.subject?.size ?? "normal",
       count: g.subject?.count ?? 1,
       action: actionWord,
+      adverb: adverbWord,
       eyes: eyesOpen ? "open" : eyesClose ? "closed" : null,
       relation: rel,
       reference: ref?.type ?? refType ?? null,
@@ -393,12 +402,21 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
   }
 
   // 5. a plain subject / object — add it, or update it if already there
+  const STOP_TOKENS = new Set([
+    "the", "a", "an", "is", "are", "was", "were", "to", "of", "and", "in", "on", "at",
+    "with", "his", "her", "its", "this", "that", "some", "there", "then", "very",
+    "please", "thanks", "thank", "you", "sorry", "excuse", "me", "hello", "hi", "bye",
+    "what", "why", "how", "who", "when", "where", "can", "could", "will", "would",
+    "i", "my", "we", "our", "he", "she", "it", "they", "them", "for", "from",
+    "yes", "no", "not", "too", "also", "just", "now", "here",
+  ]);
+
   const type =
     g.subject?.type ||
     g.reference?.type ||
     tokens.find((w) => GLYPHS[w]) ||
-    tokens.filter((w) => w.length > 2)[0];
-  if (type && GLYPHS[type]) {
+    tokens.filter((w) => w.length > 2 && !STOP_TOKENS.has(w))[0];
+  if (type && !STOP_TOKENS.has(type)) {
     const color = g.subject?.color ?? null;
     const action = actionWord ?? exprWord ?? null;
     const eyes = eyesOpen ? "open" : eyesClose ? "closed" : null;
@@ -412,6 +430,7 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
       if (g.subject?.size && g.subject.size !== "normal") existing.size = g.subject.size;
       if (g.subject && g.subject.count > 1) existing.count = g.subject.count;
       if (action) existing.action = action;
+      if (adverbWord) existing.adverb = adverbWord;
       if (eyes) existing.eyes = eyes;
       s.note = `updated ${type}`;
     } else {
@@ -421,6 +440,7 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
         size: g.subject?.size ?? "normal",
         count: g.subject?.count ?? 1,
         action,
+        adverb: adverbWord,
         eyes,
       };
       const slot = s.items.length;
@@ -436,13 +456,14 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
     return s;
   }
 
-  // 6. expression only, no subject named — apply to the last character
-  if ((exprWord || eyesOpen || eyesClose) && s.items.length) {
+  // 6. expression or adverb only, no subject named — apply to the last character
+  if ((exprWord || adverbWord || eyesOpen || eyesClose) && s.items.length) {
     const last = s.items[s.items.length - 1];
     if (exprWord) last.action = exprWord;
+    if (adverbWord) last.adverb = adverbWord;
     if (eyesOpen) last.eyes = "open";
     if (eyesClose) last.eyes = "closed";
-    s.note = `${last.type}: ${exprWord ?? `eyes ${last.eyes}`}`;
+    s.note = `${last.type}: ${[exprWord, adverbWord, eyesOpen ? "eyes open" : eyesClose ? "eyes closed" : null].filter(Boolean).join(" ")}`;
     return s;
   }
 
@@ -677,16 +698,40 @@ export function searchPhrase(i: SceneItem): string {
   return i.action ? i.action : i.type;
 }
 
-export function sessionChips(s: SceneSession): string[] {
-  if (s.anatomy) return ["human", ...s.anatomyParts, "labelled"];
-  const out: string[] = [];
+export interface SessionChipEntry {
+  key: string;
+  text: string;
+  itemId: string;
+  partName?: string;
+}
+
+export function sessionChipEntries(s: SceneSession): SessionChipEntry[] {
+  if (s.anatomy) {
+    const out: SessionChipEntry[] = [{ key: "anatomy_human", text: "human", itemId: "human" }];
+    for (let idx = 0; idx < s.anatomyParts.length; idx++) {
+      const p = s.anatomyParts[idx];
+      out.push({ key: `anatomy_${p}_${idx}`, text: p, itemId: p, partName: p });
+    }
+    out.push({ key: "anatomy_labelled", text: "labelled", itemId: "labelled" });
+    return out;
+  }
+
+  const out: SessionChipEntry[] = [];
   for (const i of s.items) {
-    let label = i.type;
-    if (i.color) label = `${i.color} ${label}`;
-    if (i.count > 1) label = `${i.count} ${label}`;
-    if (i.eyes) label += ` · eyes ${i.eyes}`;
-    if (i.action && ACTIONS[i.action]) label += ` · ${i.action}`;
-    out.push(label);
+    let main = i.type;
+    if (i.color) main = `${i.color} ${main}`;
+    if (i.count > 1) main = `${i.count} ${main}`;
+    out.push({ key: `${i.id}_main`, text: main, itemId: i.id });
+    if (i.action) out.push({ key: `${i.id}_action`, text: i.action, itemId: i.id });
+    if (i.adverb) out.push({ key: `${i.id}_adverb`, text: i.adverb, itemId: i.id });
+    if (i.eyes) out.push({ key: `${i.id}_eyes`, text: `eyes ${i.eyes}`, itemId: i.id });
+    if (i.relation && i.reference) {
+      out.push({ key: `${i.id}_rel`, text: `${i.relation} ${i.reference}`, itemId: i.id });
+    }
   }
   return out;
+}
+
+export function sessionChips(s: SceneSession): string[] {
+  return sessionChipEntries(s).map((e) => e.text);
 }

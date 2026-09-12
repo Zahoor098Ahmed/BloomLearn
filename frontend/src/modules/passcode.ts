@@ -69,3 +69,5 @@ export function checkPasscode(pin: string): boolean {
   if (!hasPasscode()) return true;
   return pin === cached;
 }
+
+export const verifyPasscode = checkPasscode;

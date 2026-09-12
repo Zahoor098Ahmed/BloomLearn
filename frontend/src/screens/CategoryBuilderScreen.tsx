@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
 import { speak } from "../modules/tts";
+import { t, TKey } from "../modules/i18n";
 import { parseCategoryCommand, resolveItems, seedKeys, SEED_LISTS } from "../modules/commandParser";
 import { resolveEmoji, nextEmojiVariant, generateImageForWord, hasImageProvider } from "../modules/wordImage";
 import { createCategory } from "../modules/customCategories";
@@ -24,6 +25,7 @@ interface Draft {
 export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
+  const tt = (k: TKey) => t(k, lang);
 
   const [command, setCommand] = useState("");
   const [listBlock, setListBlock] = useState("");
@@ -39,14 +41,14 @@ export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
     const parsed = parseCategoryCommand(command, listBlock);
     const { items, note } = resolveItems(parsed);
     if (items.length === 0) {
-      Alert.alert("Nothing to add", note ?? "Try a built-in category or paste a word list.");
+      Alert.alert(tt("cbNothingToAddTitle"), note ?? tt("cbTryBuiltIn"));
       return;
     }
     const built: Draft[] = items.map((label, i) => ({ label, phrase: label, emoji: resolveEmoji(label, i) }));
     setCatName(parsed.categoryName);
     setDrafts(built);
     setStep("review");
-    if (note) setTimeout(() => Alert.alert("Heads up", note), 200);
+    if (note) setTimeout(() => Alert.alert(tt("cbHeadsUpTitle"), note), 200);
     if (hasImageProvider()) void hydrateImages(built);
   }
 
@@ -85,7 +87,7 @@ export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
 
   function save() {
     if (drafts.length === 0) {
-      Alert.alert("Add at least one word first.");
+      Alert.alert(tt("cbAddWordFirst"));
       return;
     }
     const cat = createCategory({
@@ -93,7 +95,11 @@ export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
       source: listBlock.trim() ? "list" : "generated",
       words: drafts.map((d) => ({ label: d.label, phrase: d.phrase, emoji: d.emoji, imageUri: d.imageUri })),
     });
-    speak(`${cat.name} category created with ${cat.words.length} words`, lang, settings.soundEnabled);
+    speak(
+      tt("cbCategoryCreatedSpeech").replace("{name}", cat.name).replace("{count}", String(cat.words.length)),
+      lang,
+      settings.soundEnabled,
+    );
     onSaved(cat.id);
   }
 
@@ -105,36 +111,38 @@ export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
             <Ionicons name="arrow-back" size={18} color="white" />
           </Pressable>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>{step === "input" ? "Category Builder" : "Review & Save"}</Text>
+            <Text style={styles.headerTitle}>{step === "input" ? tt("cbHeaderTitle") : tt("cbReviewTitle")}</Text>
             <Text style={styles.headerSub}>
-              {step === "input" ? "Create a whole category at once" : `${catName} · ${drafts.length} words`}
+              {step === "input"
+                ? tt("cbHeaderSubInput")
+                : tt("cbHeaderSubReview").replace("{name}", catName).replace("{count}", String(drafts.length))}
             </Text>
           </View>
         </View>
 
         {step === "input" ? (
           <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-            <Text style={styles.label}>Command</Text>
+            <Text style={styles.label}>{tt("cbCommandLabel")}</Text>
             <TextInput
               value={command}
               onChangeText={setCommand}
-              placeholder={'e.g. "Make a category of animals with 40 animals"'}
+              placeholder={tt("cbCommandPlaceholder")}
               placeholderTextColor={colors.textLight}
               style={styles.input}
               multiline
             />
 
-            <Text style={styles.label}>Or paste a word list (optional)</Text>
+            <Text style={styles.label}>{tt("cbListLabel")}</Text>
             <TextInput
               value={listBlock}
               onChangeText={setListBlock}
-              placeholder={"Cat\nDog\nRabbit\nHorse ..."}
+              placeholder={tt("cbListPlaceholder")}
               placeholderTextColor={colors.textLight}
               style={[styles.input, { minHeight: 120 }]}
               multiline
             />
 
-            <Text style={styles.label}>Quick start</Text>
+            <Text style={styles.label}>{tt("cbQuickStart")}</Text>
             <View style={styles.seedWrap}>
               {seeds.map((s) => (
                 <Pressable key={s.key} onPress={() => useSeed(s.key)} style={styles.seedChip}>
@@ -147,20 +155,17 @@ export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
 
             <Pressable onPress={generate} style={styles.primaryBtn}>
               <Ionicons name="sparkles" size={18} color="white" />
-              <Text style={styles.primaryBtnText}>Generate category</Text>
+              <Text style={styles.primaryBtnText}>{tt("cbGenerateBtn")}</Text>
             </Pressable>
 
-            <Text style={styles.hint}>
-              Images use built-in picture icons and work fully offline. Real illustrated images turn on automatically once an image
-              provider is configured.
-            </Text>
+            <Text style={styles.hint}>{tt("cbHint")}</Text>
           </ScrollView>
         ) : (
           <ScrollView contentContainerStyle={styles.body}>
-            <Text style={styles.label}>Category name</Text>
+            <Text style={styles.label}>{tt("cbCategoryNameLabel")}</Text>
             <TextInput value={catName} onChangeText={setCatName} style={styles.input} />
 
-            {busy && <Text style={styles.hint}>Generating images…</Text>}
+            {busy && <Text style={styles.hint}>{tt("cbGeneratingImages")}</Text>}
 
             <View style={styles.grid}>
               {drafts.map((d, i) => (
@@ -188,7 +193,7 @@ export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
 
             <Pressable onPress={save} style={styles.primaryBtn}>
               <Ionicons name="checkmark" size={18} color="white" />
-              <Text style={styles.primaryBtnText}>Approve & save {drafts.length} words</Text>
+              <Text style={styles.primaryBtnText}>{tt("cbApproveSaveBtn").replace("{count}", String(drafts.length))}</Text>
             </Pressable>
           </ScrollView>
         )}
@@ -199,6 +204,7 @@ export default function CategoryBuilderScreen({ onBack, onSaved }: Props) {
         draft={editIdx !== null ? drafts[editIdx] : null}
         onCancel={() => setEditIdx(null)}
         onSave={(label, phrase) => editIdx !== null && applyEdit(editIdx, label, phrase)}
+        lang={lang}
       />
     </View>
   );
@@ -209,14 +215,17 @@ function EditModal({
   draft,
   onCancel,
   onSave,
+  lang,
 }: {
   visible: boolean;
   draft: Draft | null;
   onCancel: () => void;
   onSave: (label: string, phrase: string) => void;
+  lang: Parameters<typeof t>[1];
 }) {
   const [label, setLabel] = useState("");
   const [phrase, setPhrase] = useState("");
+  const tt = (k: TKey) => t(k, lang);
 
   return (
     <Modal
@@ -230,17 +239,17 @@ function EditModal({
     >
       <View style={styles.modalBackdrop}>
         <View style={styles.modalCard}>
-          <Text style={styles.modalTitle}>Edit word</Text>
-          <Text style={styles.label}>Label</Text>
+          <Text style={styles.modalTitle}>{tt("cbEditWordTitle")}</Text>
+          <Text style={styles.label}>{tt("cbLabelField")}</Text>
           <TextInput value={label} onChangeText={setLabel} style={styles.input} />
-          <Text style={styles.label}>Spoken phrase</Text>
+          <Text style={styles.label}>{tt("cbSpokenPhraseField")}</Text>
           <TextInput value={phrase} onChangeText={setPhrase} style={styles.input} />
           <View style={styles.modalRow}>
             <Pressable onPress={onCancel} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-              <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+              <Text style={{ color: colors.textMid, fontWeight: "700" }}>{tt("cancel")}</Text>
             </Pressable>
             <Pressable onPress={() => onSave(label, phrase)} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-              <Text style={{ color: "white", fontWeight: "700" }}>Save</Text>
+              <Text style={{ color: "white", fontWeight: "700" }}>{tt("save")}</Text>
             </Pressable>
           </View>
         </View>

@@ -136,16 +136,16 @@ export default function CalmDownScreen({ onBack }: Props) {
 
         {phase === "idle" || phase === "done" ? (
           <BigButton variant="mint" onPress={start} style={{ width: "100%", maxWidth: 320, paddingVertical: 18 }}>
-            {phase === "done" ? "🔄 Again" : "▶ Begin"}
+            {phase === "done" ? t("cdAgain", lang) : t("cdBegin", lang)}
           </BigButton>
         ) : (
           <BigButton variant="ghost" onPress={stop} style={{ width: "100%", maxWidth: 320 }}>
-            ■ Stop
+            {t("cdStop", lang)}
           </BigButton>
         )}
 
         <View style={styles.tipBox}>
-          <Text style={styles.tipText}>💡 Breathe in through your nose… hold gently… breathe out slowly through your mouth</Text>
+          <Text style={styles.tipText}>{t("cdTip", lang)}</Text>
         </View>
       </SafeAreaView>
     </View>

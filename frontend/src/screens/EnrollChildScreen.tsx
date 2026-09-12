@@ -66,7 +66,8 @@ export default function EnrollChildScreen({ onDone, onBack }: Props) {
         setCaptureError(true);
         return;
       }
-      const emb = await captureEmbedding(photo.uri);
+      const dims = photo.width && photo.height ? { width: photo.width, height: photo.height } : undefined;
+      const emb = await captureEmbedding(photo.uri, dims);
       if (emb.length === 0) {
         setCaptureError(true);
         return;
@@ -87,6 +88,7 @@ export default function EnrollChildScreen({ onDone, onBack }: Props) {
           diagnoses,
           allowedTags,
           embedding: finalEmb,
+          photoUrl: photo.uri,
           enrolledAt: Date.now(),
           stars: 0,
           badges: [],
@@ -125,7 +127,7 @@ export default function EnrollChildScreen({ onDone, onBack }: Props) {
             <View style={styles.form}>
               <View>
                 <Text style={styles.label}>{t("childName", lang)}</Text>
-                <TextInput value={name} onChangeText={setName} placeholder="e.g. Ali, Sara, Ahmed" style={styles.input} />
+                <TextInput value={name} onChangeText={setName} placeholder={t("namePlaceholder", lang)} style={styles.input} />
               </View>
               <View>
                 <Text style={styles.label}>{t("childAge", lang)}</Text>
@@ -133,12 +135,12 @@ export default function EnrollChildScreen({ onDone, onBack }: Props) {
                   value={age}
                   onChangeText={setAge}
                   keyboardType="number-pad"
-                  placeholder="e.g. 5"
+                  placeholder={t("agePlaceholder", lang)}
                   style={styles.input}
                 />
               </View>
               <View>
-                <Text style={[styles.label, { marginBottom: 10 }]}>{t("diagnosis", lang)} (select all that apply)</Text>
+                <Text style={[styles.label, { marginBottom: 10 }]}>{t("diagnosis", lang)} {t("selectAllThatApply", lang)}</Text>
                 <View style={styles.tagWrap}>
                   {ALL_DIAGNOSES.map((d) => {
                     const active = diagnoses.includes(d);
@@ -177,10 +179,10 @@ export default function EnrollChildScreen({ onDone, onBack }: Props) {
                 ) : null}
               </View>
 
-              {captureError && <Text style={styles.errorText}>Couldn't capture your face. Try again.</Text>}
+              {captureError && <Text style={styles.errorText}>{t("faceCaptureFailed", lang)}</Text>}
 
               <BigButton variant="primary" onPress={capture} disabled={!streaming || isCapturing} style={{ width: "100%" }}>
-                📸 {isCapturing ? "Capturing…" : capturePhase < 2 ? "Capture" : "Finish!"}
+                📸 {isCapturing ? t("capturingEllipsis", lang) : capturePhase < 2 ? t("captureBtn", lang) : t("finishBtn", lang)}
               </BigButton>
             </View>
           )}
@@ -189,14 +191,14 @@ export default function EnrollChildScreen({ onDone, onBack }: Props) {
             <View style={styles.doneStep}>
               <Text style={{ fontSize: 56 }}>🎉</Text>
               <Text style={styles.doneText}>
-                <Text style={{ fontWeight: "800" }}>{name}</Text> has been added!
+                <Text style={{ fontWeight: "800" }}>{name}</Text> {t("hasBeenAdded", lang)}
               </Text>
-              <Text style={styles.doneSub}>They can now unlock the app with face recognition.</Text>
+              <Text style={styles.doneSub}>{t("faceUnlockHint", lang)}</Text>
               <BigButton variant="mint" onPress={() => onDone(newChild ?? undefined)} style={{ width: "100%", maxWidth: 320 }}>
-                {newChild ? `Start with ${newChild.name} →` : "✓ Done"}
+                {newChild ? `${t("startWithChild", lang)} ${newChild.name} →` : t("doneCheck", lang)}
               </BigButton>
               <Pressable onPress={() => onDone()} style={{ paddingVertical: 10 }}>
-                <Text style={{ color: colors.textMid, fontSize: 14 }}>Add another child</Text>
+                <Text style={{ color: colors.textMid, fontSize: 14 }}>{t("addAnotherChild", lang)}</Text>
               </Pressable>
             </View>
           )}

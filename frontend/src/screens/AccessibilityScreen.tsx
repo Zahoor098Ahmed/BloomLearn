@@ -59,7 +59,7 @@ export default function AccessibilityScreen({ onBack }: Props) {
       return;
     }
     const ok = await setPasscode(pinValue);
-    if (!ok) return Alert.alert("Passcode must be exactly 4 digits.");
+    if (!ok) return Alert.alert(t("accPasscodeInvalid", lang));
     setPinSet(true);
     setPinModal(false);
     setPinValue("");
@@ -74,7 +74,7 @@ export default function AccessibilityScreen({ onBack }: Props) {
 
   async function exportBoard() {
     const b = buildBackup();
-    if (b.categoryCount === 0) return Alert.alert("Nothing to back up yet.");
+    if (b.categoryCount === 0) return Alert.alert(t("accNothingToBackup", lang));
     try {
       await Share.share({ title: "KiddoCare board backup", message: JSON.stringify(b) });
     } catch {
@@ -87,14 +87,17 @@ export default function AccessibilityScreen({ onBack }: Props) {
     try {
       parsed = JSON.parse(importText);
     } catch {
-      return Alert.alert("That is not valid backup text.");
+      return Alert.alert(t("accInvalidBackupText", lang));
     }
     const r = restoreBackup(parsed, "replace");
     setImportModal(false);
     setImportText("");
     Alert.alert(
-      r.ok ? "Restore complete" : "Restored with warnings",
-      `${r.restoredCategories} folders · ${r.restoredWords} words · ${r.restoredImages} pictures` +
+      r.ok ? t("accRestoreCompleteTitle", lang) : t("accRestoreWarningsTitle", lang),
+      t("accRestoreSummary", lang)
+        .replace("{cats}", String(r.restoredCategories))
+        .replace("{words}", String(r.restoredWords))
+        .replace("{images}", String(r.restoredImages)) +
         (r.issues.length ? `\n\n${r.issues.join("\n")}` : ""),
     );
   }
@@ -157,6 +160,34 @@ export default function AccessibilityScreen({ onBack }: Props) {
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>{t("setKioskInfo", lang)}</Text>
           </View>
+          <View style={[styles.infoBox, { borderColor: colors.forest + "60", backgroundColor: colors.forest + "0f" }]}>
+            <Text style={[styles.sectionTitle, { marginTop: 0, marginBottom: 8 }]}>{t("accKioskOption2Title", lang)}</Text>
+            <Text style={[styles.infoText, { fontWeight: "700", color: colors.textDark, marginBottom: 6 }]}>{t("accBestEffortLock", lang)}</Text>
+            <Text style={styles.infoBullet}>{t("accBackDisabled", lang)}</Text>
+            <Text style={styles.infoBullet}>{t("accScreenAwake", lang)}</Text>
+            <Text style={styles.infoBullet}>
+              {t("accExitTempBullet", lang)}
+            </Text>
+            <Text style={[styles.infoText, { fontWeight: "700", color: colors.textDark, marginTop: 12, marginBottom: 6 }]}>
+              {t("accAndroidHardenedTitle", lang)}
+            </Text>
+            <Text style={styles.infoBullet}>
+              {t("accInstallApkBullet", lang)}
+            </Text>
+            <Text style={[styles.infoBullet, { fontFamily: "monospace", fontSize: 12 }]}>
+              adb shell dpm set-device-owner com.kiddocare.app/.DeviceAdminReceiver
+            </Text>
+            <Text style={styles.infoBullet}>
+              {t("accToggleKioskBullet", lang)}
+            </Text>
+            <Text style={styles.infoBullet}>{t("accFactoryResetBullet", lang)}</Text>
+            <Text style={[styles.infoText, { fontWeight: "700", color: colors.textDark, marginTop: 12, marginBottom: 6 }]}>{t("accIosGuidedTitle", lang)}</Text>
+            <Text style={styles.infoBullet}>{t("accIosSettingsBullet", lang)}</Text>
+            <Text style={styles.infoBullet}>{t("accIosPasscodeBullet", lang)}</Text>
+            <Text style={styles.infoBullet}>{t("accIosLaunchBullet", lang)}</Text>
+            <Text style={styles.infoBullet}>{t("accIosExitBullet", lang)}</Text>
+          </View>
+          <View style={{ height: 2 }} />
 
           {/* ---- admin ---- */}
           <Text style={styles.sectionTitle}>{t("setParentControls", lang)}</Text>
@@ -216,23 +247,23 @@ export default function AccessibilityScreen({ onBack }: Props) {
       <Modal visible={pinModal} transparent animationType="fade" onRequestClose={() => setPinModal(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Admin passcode</Text>
-            <Text style={styles.modalBody}>4 digits. Leave blank and save to remove the passcode.</Text>
+            <Text style={styles.modalTitle}>{t("accPasscodeModalTitle", lang)}</Text>
+            <Text style={styles.modalBody}>{t("accPasscodeModalBody", lang)}</Text>
             <TextInput
               value={pinValue}
               onChangeText={(v) => setPinValue(v.replace(/\D/g, "").slice(0, 4))}
               keyboardType="number-pad"
               secureTextEntry
-              placeholder="••••"
+              placeholder={t("accPasscodePlaceholder", lang)}
               placeholderTextColor={colors.textLight}
               style={styles.modalInput}
             />
             <View style={styles.modalRow}>
               <Pressable onPress={() => setPinModal(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+                <Text style={{ color: colors.textMid, fontWeight: "700" }}>{t("cancel", lang)}</Text>
               </Pressable>
               <Pressable onPress={savePin} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                <Text style={{ color: "white", fontWeight: "700" }}>Save</Text>
+                <Text style={{ color: "white", fontWeight: "700" }}>{t("save", lang)}</Text>
               </Pressable>
             </View>
           </View>
@@ -243,24 +274,24 @@ export default function AccessibilityScreen({ onBack }: Props) {
       <Modal visible={keyModal} transparent animationType="fade" onRequestClose={() => setKeyModal(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Pixabay API key</Text>
+            <Text style={styles.modalTitle}>{t("accPixabayModalTitle", lang)}</Text>
             <Text style={styles.modalBody}>
-              Free key from pixabay.com/api/docs. Enables photo search in the word editor. AAC symbol search works without it.
+              {t("accPixabayModalBody", lang)}
             </Text>
             <TextInput
               value={keyValue}
               onChangeText={setKeyValue}
               autoCapitalize="none"
-              placeholder="paste key…"
+              placeholder={t("accPixabayPlaceholder", lang)}
               placeholderTextColor={colors.textLight}
               style={styles.modalInput}
             />
             <View style={styles.modalRow}>
               <Pressable onPress={() => setKeyModal(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+                <Text style={{ color: colors.textMid, fontWeight: "700" }}>{t("cancel", lang)}</Text>
               </Pressable>
               <Pressable onPress={saveKey} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                <Text style={{ color: "white", fontWeight: "700" }}>Save</Text>
+                <Text style={{ color: "white", fontWeight: "700" }}>{t("save", lang)}</Text>
               </Pressable>
             </View>
           </View>
@@ -271,22 +302,22 @@ export default function AccessibilityScreen({ onBack }: Props) {
       <Modal visible={importModal} transparent animationType="fade" onRequestClose={() => setImportModal(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Restore from backup</Text>
-            <Text style={styles.modalBody}>Paste the backup text. This replaces the current board.</Text>
+            <Text style={styles.modalTitle}>{t("accRestoreModalTitle", lang)}</Text>
+            <Text style={styles.modalBody}>{t("accRestoreModalBody", lang)}</Text>
             <TextInput
               value={importText}
               onChangeText={setImportText}
               multiline
-              placeholder="{ ... }"
+              placeholder={t("accRestorePlaceholder", lang)}
               placeholderTextColor={colors.textLight}
               style={[styles.modalInput, { minHeight: 120, textAlignVertical: "top", fontSize: 12 }]}
             />
             <View style={styles.modalRow}>
               <Pressable onPress={() => setImportModal(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+                <Text style={{ color: colors.textMid, fontWeight: "700" }}>{t("cancel", lang)}</Text>
               </Pressable>
               <Pressable onPress={runImport} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                <Text style={{ color: "white", fontWeight: "700" }}>Restore</Text>
+                <Text style={{ color: "white", fontWeight: "700" }}>{t("accRestoreBtn", lang)}</Text>
               </Pressable>
             </View>
           </View>
@@ -315,8 +346,9 @@ const styles = StyleSheet.create({
   actionRow: { flexDirection: "row", alignItems: "center", gap: 14, backgroundColor: colors.card, borderRadius: radius, paddingVertical: 15, paddingHorizontal: 18, borderWidth: 1, borderColor: colors.border },
   actionLabel: { flex: 1, fontWeight: "600", fontSize: 15, color: colors.textDark },
   actionState: { fontSize: 12, fontWeight: "700", color: colors.forest },
-  infoBox: { backgroundColor: colors.forestLight, borderRadius: radius, paddingVertical: 12, paddingHorizontal: 16 },
+  infoBox: { backgroundColor: colors.forestLight, borderRadius: radius, paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, borderColor: "transparent" },
   infoText: { color: colors.forestDark, fontSize: 12.5, lineHeight: 19 },
+  infoBullet: { color: colors.forestDark, fontSize: 12.5, lineHeight: 19, marginBottom: 4 },
   langGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   langBtn: { width: "47%", paddingVertical: 12, paddingHorizontal: 10, borderRadius: radius, borderWidth: 1, flexDirection: "row", alignItems: "center", gap: 10 },
   langBtnActive: { borderColor: colors.forest, backgroundColor: colors.forestLight },

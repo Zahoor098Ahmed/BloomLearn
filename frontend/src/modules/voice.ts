@@ -1,19 +1,19 @@
 import { Platform } from "react-native";
+import { startRecording, stopRecordingTemp } from "./audio";
+import { transcribeAudio } from "./aiImage";
 
 /**
- * Free live voice input for the Hybrid engine — no API key, no cost.
+ * Universal voice input module:
  *
- *  - Web (Chrome / Edge): the browser Web Speech API. Real-time, works now.
- *  - Native (Expo Go / current builds): not available here — the caller falls
- *    back to record→Whisper (needs a key) or the keyboard microphone.
- *    On-device native STT can be added later with a maintained library + a
- *    dev build.
+ * - Web (Chrome / Edge): Real-time Web Speech API with streaming partials.
+ * - Native (Android / iOS / Expo): Captures high-clarity voice via expo-audio
+ *   and transcribes with Whisper (via local proxy or OpenAI key).
  *
- * Partial results stream in so the picture builds up word by word.
+ * Provides a unified startListening / stopListening interface across platforms.
  */
 
 export interface VoiceHandlers {
-  lang?: string; // BCP-47, e.g. "en-US", "ar-SA"
+  lang?: string; // BCP-47, e.g. "en-US", "ar-SA", "ur-PK"
   onPartial?: (text: string) => void;
   onFinal?: (text: string) => void;
   onError?: (message: string) => void;
@@ -43,13 +43,19 @@ function webRecognition(): (new () => WSRecognition) | null {
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
-/** true when live voice input can run in this environment (web browsers). */
+/** true when voice input can run in this environment (web or native recording). */
 export function voiceAvailable(): boolean {
-  return !!webRecognition();
+  if (Platform.OS === "web") {
+    return !!webRecognition();
+  }
+  // Native recording via expo-audio is available on mobile devices
+  return true;
 }
 
 let webInstance: WSRecognition | null = null;
 let listening = false;
+let nativeRecording = false;
+let activeHandlers: VoiceHandlers | null = null;
 
 export function isListening() {
   return listening;
@@ -57,8 +63,9 @@ export function isListening() {
 
 export async function startListening(h: VoiceHandlers): Promise<boolean> {
   const lang = h.lang || "en-US";
+  activeHandlers = h;
 
-  // --- web ---
+  // 1. Web Speech Recognition (Chrome/Edge/Web)
   const Rec = webRecognition();
   if (Rec) {
     try {
@@ -77,7 +84,9 @@ export async function startListening(h: VoiceHandlers): Promise<boolean> {
         if (interim) h.onPartial?.(interim.trim());
         if (final) h.onFinal?.(final.trim());
       };
-      webInstance.onerror = (e: unknown) => h.onError?.(String((e as { error?: string })?.error ?? "voice error"));
+      webInstance.onerror = (e: unknown) => {
+        h.onError?.(String((e as { error?: string })?.error ?? "voice error"));
+      };
       webInstance.onend = () => {
         listening = false;
         h.onEnd?.();
@@ -87,22 +96,63 @@ export async function startListening(h: VoiceHandlers): Promise<boolean> {
       return true;
     } catch {
       webInstance = null;
-      return false;
     }
   }
 
-  void lang;
+  // 2. Native Mobile Audio Recording (Expo Audio -> Whisper STT)
+  try {
+    const ok = await startRecording();
+    if (ok) {
+      nativeRecording = true;
+      listening = true;
+      h.onPartial?.("Listening… 🎙️");
+      return true;
+    }
+  } catch (err: any) {
+    console.warn("[voice] native recording error:", err);
+  }
+
+  activeHandlers = null;
+  listening = false;
   return false;
 }
 
 export async function stopListening(): Promise<void> {
   listening = false;
-  try {
-    if (webInstance) {
+  const handlers = activeHandlers;
+  activeHandlers = null;
+
+  // Stop web recognition
+  if (webInstance) {
+    try {
       webInstance.stop();
       webInstance = null;
+    } catch {
+      /* ignore */
     }
-  } catch {
-    /* ignore */
+  }
+
+  // Stop native recording and transcribe
+  if (nativeRecording) {
+    nativeRecording = false;
+    try {
+      const uri = await stopRecordingTemp();
+      if (uri && handlers) {
+        handlers.onPartial?.("Processing speech… ⏳");
+        const langHint = (handlers.lang || "en").split("-")[0];
+        const res = await transcribeAudio(uri, langHint);
+        if (res.text) {
+          handlers.onFinal?.(res.text.trim());
+        } else if (res.error) {
+          handlers.onError?.(res.error);
+        } else {
+          handlers.onError?.("No speech detected. Please try again.");
+        }
+      }
+    } catch (err: any) {
+      handlers?.onError?.(err?.message || "Failed to process audio.");
+    } finally {
+      handlers?.onEnd?.();
+    }
   }
 }

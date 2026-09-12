@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as FileSystem from "expo-file-system/legacy";
 import type { SceneGraph } from "../types";
-import { lookupBookPhrase } from "./bookVocab";
 
 /**
  * The learning picture library.
@@ -22,7 +21,7 @@ import { lookupBookPhrase } from "./bookVocab";
 const INDEX_KEY = "kiddocare_library_index";
 const DIR = `${FileSystem.documentDirectory}library/`;
 
-export type LibrarySource = "arasaac" | "ai" | "photo" | "manual" | "book";
+export type LibrarySource = "arasaac" | "opensymbols" | "mulberry" | "ai" | "photo" | "manual" | "book";
 
 export interface LibraryEntry {
   key: string;
@@ -141,6 +140,18 @@ const SYNONYMS: Record<string, string> = {
   telephone: "phone", mobile: "phone", laptop: "computer", pc: "computer",
   footy: "football",
   doggo: "dog", birdy: "bird", fishy: "fish", froggy: "frog",
+  larki: "girl", larka: "boy", bacha: "child", bache: "children",
+  billi: "cat", billa: "cat", kutta: "dog", kuttay: "dog",
+  pani: "water", doodh: "milk", roti: "bread", chawal: "rice",
+  seb: "apple", kela: "banana", aam: "mango",
+  gari: "car", kitab: "book", qalam: "pencil",
+  ghar: "house", kursi: "chair", mez: "table",
+  hathi: "elephant", sher: "lion", ghora: "horse",
+  gaind: "ball", parinda: "bird", machli: "fish",
+  suraj: "sun", chand: "moon", sitara: "star",
+  darakht: "tree", phool: "flower",
+  masjid: "mosque", madrasa: "school", basta: "backpack",
+  joote: "shoes", kapre: "clothes",
 };
 
 /** Try a word, its singular, and common verb forms. */
@@ -175,7 +186,7 @@ function idUrl(id: number): string {
   return `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 }
 
-function dictUrl(term: string): string | null {
+export function dictUrl(term: string): string | null {
   const id = dictId(term);
   return id ? idUrl(id) : null;
 }
@@ -254,6 +265,26 @@ async function arasaacFirst(term: string): Promise<string | null> {
   }
 }
 
+/** OpenSymbols fallback: 59,000+ open-license symbols (Mulberry, Sclera, ARASAAC, Twemoji) */
+export async function openSymbolsFirst(term: string, onlyCommercial = false): Promise<string | null> {
+  try {
+    const res = await fetchWithTimeout(`https://www.opensymbols.org/api/v1/symbols/search?q=${encodeURIComponent(term)}`);
+    if (!res || !res.ok) return null;
+    const json = (await res.json()) as { id: number; name: string; image_url: string; license?: string }[];
+    if (!Array.isArray(json) || !json.length) return null;
+    let items = json;
+    if (onlyCommercial) {
+      items = items.filter((it) => {
+        const lic = (it.license || "").toUpperCase();
+        return !lic.includes("-NC") && !lic.includes("NC");
+      });
+    }
+    return items[0]?.image_url ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // --- public API -----------------------------------------------------
 
 export interface LibraryHit {
@@ -272,21 +303,11 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
   await ensureLoaded();
   const keys = candidateKeys(phrase, graph);
 
-  // 0. a real picture-book illustration (content-pipeline/, bundled, instant,
-  // no network) beats a generic pictogram when a word actually appears in one
-  // of the ingested books — only when no colour is asked for, same as ARASAAC.
-  if (!graph?.subject?.color) {
-    try {
-      const bookHit = lookupBookPhrase(phrase);
-      if (bookHit) return { uri: bookHit.uri, source: "book", fromLibrary: true };
-    } catch {
-      /* a bundler quirk here should never break the rest of the lookup */
-    }
-  }
-
-  // 1. already in the library?
+  // 1. already in the library? (skip any legacy "book" / StoryWeaver cache)
   for (const k of keys) {
-    if (index[k]) return { uri: index[k].uri, source: index[k].source, fromLibrary: true };
+    if (index[k] && index[k].source !== "book") {
+      return { uri: index[k].uri, source: index[k].source, fromLibrary: true };
+    }
   }
 
   // ARASAAC pictograms are fixed-colour line art, so "blue dog" would come back
@@ -296,10 +317,10 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
 
   const phraseNorm = norm(phrase);
   const tokens = phraseNorm.split(" ").filter((w) => w.length > 1 && !STOP.has(w));
-  const hit = async (via: string, term: string, url: string): Promise<LibraryHit> => {
+  const hit = async (via: string, term: string, url: string, source: LibrarySource = "arasaac"): Promise<LibraryHit> => {
     console.log(`[library] "${phrase}" -> ${via} ("${term}") ${url}`);
-    const saved = await saveImage(keys[0] || term, url, { source: "arasaac", tags: keys });
-    return { uri: saved?.uri ?? url, source: "arasaac", fromLibrary: false };
+    const saved = await saveImage(keys[0] || term, url, { source, tags: keys });
+    return { uri: saved?.uri ?? url, source, fromLibrary: false };
   };
 
   // 2. a pinned variant ("office chair" -> swivel chair), then an exact
@@ -324,10 +345,22 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
     if (url) return hit("word", term, url);
   }
 
-  // 5. last resort: live ARASAAC search for the subject / first key
+  // 5. live ARASAAC search for the subject / first key
   for (const term of [graph?.subject?.type, keys[0]].filter((t): t is string => !!t)) {
     const remote = await arasaacFirst(term);
     if (remote) return hit("search", term, remote);
+  }
+
+  // 6. OpenSymbols search across 59,000+ symbols (Mulberry, Sclera, Twemoji, etc.)
+  for (const term of [phraseNorm, graph?.subject?.type, keys[0]].filter((t): t is string => !!t)) {
+    const remote = await openSymbolsFirst(term);
+    if (remote) return hit("opensymbols", term, remote, "opensymbols");
+  }
+
+  // 7. Clean educational AI illustration fallback for any rare / creative word
+  if (phraseNorm && phraseNorm.length >= 2) {
+    const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(phraseNorm + ", single educational object, pure plain white background, simple flat outline, no text")}?width=512&height=512&nologo=true`;
+    return hit("ai", phraseNorm, aiUrl, "ai");
   }
 
   console.log(`[library] "${phrase}" -> no match`);

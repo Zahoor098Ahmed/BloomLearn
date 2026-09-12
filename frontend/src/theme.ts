@@ -35,6 +35,7 @@ export const colors = {
   indigo: "#2d5f4f",
   indigoDeep: "#1f4437",
   indigoLight: "#e3ede8",
+  indigoAccent: "#2d5f4f",
   blueAccent: "#2d5f4f",
 
   white: "#ffffff",

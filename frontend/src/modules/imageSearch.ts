@@ -39,26 +39,94 @@ export function hasPixabayKey() {
   return !!pixabayKey || !!process.env.EXPO_PUBLIC_AI_PROXY_URL;
 }
 
-export type ImageSource = "arasaac" | "pixabay";
+export type ImageSource = "arasaac" | "opensymbols" | "mulberry" | "pixabay";
 
 export interface ImageHit {
   id: string;
   thumb: string;
   full: string;
   source: ImageSource;
+  name?: string;
+  license?: string;
+  repo?: string;
 }
 
 async function searchArasaac(term: string): Promise<ImageHit[]> {
   const q = encodeURIComponent(term.trim());
   const res = await fetch(`https://api.arasaac.org/api/pictograms/en/search/${q}`);
   if (!res.ok) return [];
-  const json = (await res.json()) as { _id: number }[];
-  return json.slice(0, 24).map((p) => ({
+  const json = (await res.json()) as { _id: number; keywords?: { keyword?: string }[] }[];
+  return (Array.isArray(json) ? json : []).slice(0, 24).map((p) => ({
     id: `ara_${p._id}`,
     thumb: `https://static.arasaac.org/pictograms/${p._id}/${p._id}_300.png`,
     full: `https://static.arasaac.org/pictograms/${p._id}/${p._id}_500.png`,
     source: "arasaac" as const,
+    name: p.keywords?.[0]?.keyword || term,
+    license: "CC BY-NC-SA",
+    repo: "arasaac",
   }));
+}
+
+async function searchOpenSymbols(term: string, onlyCommercial = false): Promise<ImageHit[]> {
+  const q = encodeURIComponent(term.trim());
+  try {
+    const res = await fetch(`https://www.opensymbols.org/api/v1/symbols/search?q=${q}`);
+    if (!res.ok) return [];
+    const json = (await res.json()) as {
+      id: number;
+      name: string;
+      image_url: string;
+      license: string;
+      repo_key: string;
+    }[];
+    let items = Array.isArray(json) ? json : [];
+    if (onlyCommercial) {
+      items = items.filter((it) => {
+        const lic = (it.license || "").toUpperCase();
+        return !lic.includes("-NC") && !lic.includes("NC");
+      });
+    }
+    return items.slice(0, 30).map((s) => ({
+      id: `os_${s.id}`,
+      thumb: s.image_url,
+      full: s.image_url,
+      source: "opensymbols" as const,
+      name: s.name,
+      license: s.license,
+      repo: s.repo_key,
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function searchMulberry(term: string): Promise<ImageHit[]> {
+  const q = encodeURIComponent(term.trim());
+  try {
+    const res = await fetch(`https://www.opensymbols.org/api/v1/symbols/search?q=${q}`);
+    if (!res.ok) return [];
+    const json = (await res.json()) as {
+      id: number;
+      name: string;
+      image_url: string;
+      license: string;
+      repo_key: string;
+    }[];
+    const items = (Array.isArray(json) ? json : []).filter((it) =>
+      (it.repo_key || "").toLowerCase().includes("mulberry")
+    );
+    return items.slice(0, 30).map((s) => ({
+      id: `mul_${s.id}`,
+      thumb: s.image_url,
+      full: s.image_url,
+      source: "mulberry" as const,
+      name: s.name,
+      license: s.license,
+      repo: "mulberry",
+    }));
+  } catch {
+    return [];
+  }
 }
 
 async function searchPixabay(term: string): Promise<ImageHit[]> {
@@ -96,7 +164,11 @@ async function searchViaProxy(term: string, source: ImageSource): Promise<ImageH
   }
 }
 
-export async function searchImages(term: string, source: ImageSource): Promise<{ hits: ImageHit[]; error?: string }> {
+export async function searchImages(
+  term: string,
+  source: ImageSource,
+  onlyCommercial = false
+): Promise<{ hits: ImageHit[]; error?: string }> {
   if (!term.trim()) return { hits: [] };
   try {
     const viaProxy = await searchViaProxy(term, source);
@@ -104,7 +176,13 @@ export async function searchImages(term: string, source: ImageSource): Promise<{
       return viaProxy.length ? { hits: viaProxy } : { hits: [], error: "No pictures found. Try a simpler word." };
     }
     if (source === "pixabay" && !pixabayKey) return { hits: [], error: "Add a Pixabay key in Settings or .env, or connect the backend." };
-    const hits = source === "arasaac" ? await searchArasaac(term) : await searchPixabay(term);
+    
+    let hits: ImageHit[] = [];
+    if (source === "arasaac") hits = await searchArasaac(term);
+    else if (source === "opensymbols") hits = await searchOpenSymbols(term, onlyCommercial);
+    else if (source === "mulberry") hits = await searchMulberry(term);
+    else hits = await searchPixabay(term);
+
     if (hits.length === 0) return { hits: [], error: "No pictures found. Try a simpler word." };
     return { hits };
   } catch {

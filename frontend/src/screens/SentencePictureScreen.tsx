@@ -3,8 +3,11 @@ import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, Activi
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
+import { useResponsive } from "../modules/responsive";
 import { speak } from "../modules/tts";
-import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES } from "../modules/sentenceScene";
+import { t, TKey } from "../modules/i18n";
+import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES, findWordEmoji } from "../modules/sentenceScene";
+import { getPictogramUrl } from "../modules/aacPictograms";
 import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
 import { sceneImageUrl, composeSceneUrl, aiSceneEnabled } from "../modules/aiScene";
 import { lookupImage, saveImage, libraryCount, prewarmLibrary, dictionaryWords } from "../modules/imageLibrary";
@@ -18,6 +21,7 @@ import {
   isFreshScene,
   sessionPrompt,
   sessionChips,
+  sessionChipEntries,
   searchPhrase,
 } from "../modules/sceneSession";
 import { agentEnabled, agentName, parseUtteranceLLM, describeScene } from "../modules/sceneAgent";
@@ -31,20 +35,16 @@ interface Props {
   onBack: () => void;
 }
 
-const EXAMPLES = [
-  "The black cat is under the table",
-  "A small brown dog is behind the big tree",
-  "Three red apples are in the basket",
-  "The blue bird is above the house",
-  "The girl is sitting on the chair",
-];
+const EXAMPLE_KEYS: TKey[] = ["spExample1", "spExample2", "spExample3", "spExample4", "spExample5"];
 
 type ImgSource = "library" | "library-new" | "ai-saved";
 
 export default function SentencePictureScreen({ onBack }: Props) {
+  const { isTablet } = useResponsive();
   const { settings } = useSettings();
   const lang = settings.language;
-  const [text, setText] = useState("A small black cat is behind the big tree");
+  const tt = (k: TKey) => t(k, lang);
+  const [text, setText] = useState("");
 
   const [img, setImg] = useState<{ uri: string; source: ImgSource } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -56,7 +56,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const [sttBusy, setSttBusy] = useState(false);
   const [libN, setLibN] = useState(0);
   const [wordsN, setWordsN] = useState(0);
-  const [buildMode, setBuildMode] = useState(false);
+  const [buildMode, setBuildMode] = useState(true);
   const [session, setSession] = useState<SceneSession>(() => newSession());
   const [itemUris, setItemUris] = useState<Record<string, string>>({});
   const itemUrisRef = useRef<Record<string, string>>({});
@@ -65,6 +65,38 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const sessionRef = useRef(session);
   sessionRef.current = session;
   const [agentThinking, setAgentThinking] = useState(false);
+  const [hiddenChipKeys, setHiddenChipKeys] = useState<Record<string, boolean>>({});
+
+  function toggleKeyword(key: string) {
+    setHiddenChipKeys((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+    if (img) setImg(null);
+  }
+
+  const displaySession = useMemo(() => {
+    if (Object.keys(hiddenChipKeys).length === 0) return session;
+
+    const visibleItems = session.items.filter((it) => {
+      if (hiddenChipKeys[`${it.id}_main`]) return false;
+      if (hiddenChipKeys[`${it.id}_action`]) return false;
+      if (hiddenChipKeys[`${it.id}_adverb`]) return false;
+      if (hiddenChipKeys[`${it.id}_eyes`]) return false;
+      if (hiddenChipKeys[`${it.id}_rel`]) return false;
+      return true;
+    });
+
+    const visibleAnatomyParts = session.anatomyParts.filter(
+      (p, idx) => !hiddenChipKeys[`anatomy_${p}_${idx}`]
+    );
+
+    return {
+      ...session,
+      items: visibleItems,
+      anatomyParts: visibleAnatomyParts,
+    };
+  }, [session, hiddenChipKeys]);
 
   const graph = useMemo(() => parseSceneGraph(text), [text]);
   const concept = conceptByKey(graph.conceptKey);
@@ -144,7 +176,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
   // Turn the built scene into one real picture (needs a Pollinations token).
   async function drawSceneWithAi(scene = session) {
     if (!aiSceneEnabled) {
-      setAiError("Real pictures need a free Pollinations token (auth.pollinations.ai) in .env — the built scene is shown for now.");
+      setAiError(tt("spNoPollinationsToken"));
       return;
     }
     setAiLoading(true);
@@ -158,7 +190,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
     aiTimer.current = setTimeout(() => {
       setAiLoading(false);
       setImg(null);
-      setAiError("The picture engine is slow — the built scene is still shown.");
+      setAiError(tt("spEngineSlow"));
     }, 18000);
   }
 
@@ -207,14 +239,12 @@ export default function SentencePictureScreen({ onBack }: Props) {
       generated = sceneImageUrl(text, graph); // Pollinations with token
     } else {
       setAiLoading(false);
-      setAiError(
-        "Live AI drawing needs a free Pollinations token (auth.pollinations.ai) in .env, or an OpenAI key. The instant scene and 14,800-word library still work.",
-      );
+      setAiError(tt("spNoAiEngine"));
       return;
     }
     if (!generated) {
       setAiLoading(false);
-      setAiError("Could not make the picture.");
+      setAiError(tt("spCouldNotMake"));
       return;
     }
 
@@ -227,13 +257,13 @@ export default function SentencePictureScreen({ onBack }: Props) {
     aiTimer.current = setTimeout(() => {
       setAiLoading(false);
       setImg(null);
-      setAiError("The picture engine is taking too long. Showing the instant scene — tap AI to try again.");
+      setAiError(tt("spEngineTooLong"));
     }, 20000);
     libraryCount().then(setLibN);
   }
 
   function keyboardMicHint() {
-    Alert.alert("Speak with the keyboard", "Tap the text box and use the microphone on your keyboard — the picture updates as you talk.");
+    Alert.alert(tt("spSpeakKeyboardTitle"), tt("spSpeakKeyboardMsg"));
   }
 
   async function toggleMic() {
@@ -250,7 +280,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
       setSttBusy(false);
       if (res.text) setText(res.text);
       else if (res.unavailable) keyboardMicHint();
-      else Alert.alert("Didn't catch that", res.error ?? "Try again or type it.");
+      else Alert.alert(tt("spDidntCatchTitle"), res.error ?? tt("spTryAgainType"));
       return;
     }
 
@@ -285,35 +315,40 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const pct = Math.round(graph.confidence * 100);
   const badgeLabel =
     img?.source === "library"
-      ? "Library"
+      ? tt("spBadgeLibrary")
       : img?.source === "library-new"
-        ? "Library · new"
+        ? tt("spBadgeLibraryNew")
         : img?.source === "ai-saved"
-          ? "Library · AI"
-          : "Instant";
+          ? tt("spBadgeLibraryAi")
+          : tt("spBadgeInstant");
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <View style={styles.header}>
-          <Pressable onPress={onBack} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={18} color="white" />
-          </Pressable>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>Picture Talk</Text>
-            <Text style={styles.headerSub}>
-              {wordsN > 0
-                ? `Picture library: ${wordsN.toLocaleString()} words · ${bookVocabSize()} from books${libN > 0 ? ` · ${libN} saved` : ""}`
-                : "Say or type a sentence — the picture builds as you talk"}
-            </Text>
+          <View style={[styles.headerInner, isTablet && styles.headerInnerTablet]}>
+            <Pressable onPress={onBack} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={18} color="white" />
+            </Pressable>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.headerTitle}>{tt("spHeaderTitle")}</Text>
+              <Text style={styles.headerSub}>
+                {wordsN > 0
+                  ? tt("spHeaderSubWithLib")
+                      .replace("{words}", wordsN.toLocaleString())
+                      .replace("{books}", String(bookVocabSize()))
+                      .replace("{saved}", libN > 0 ? tt("spHeaderSubSavedSuffix").replace("{n}", String(libN)) : "")
+                  : tt("spHeaderSubDefault")}
+              </Text>
+            </View>
+            <Pressable onPress={() => setKeyModal(true)} style={styles.backBtn}>
+              <Ionicons name={openaiReady ? "sparkles" : "sparkles-outline"} size={18} color="white" />
+            </Pressable>
           </View>
-          <Pressable onPress={() => setKeyModal(true)} style={styles.backBtn}>
-            <Ionicons name={openaiReady ? "sparkles" : "sparkles-outline"} size={18} color="white" />
-          </Pressable>
         </View>
 
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-          <View style={styles.stageWrap}>
+        <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} keyboardShouldPersistTaps="handled">
+          <View style={[styles.stageWrap, isTablet && styles.stageWrapTablet]}>
             {img ? (
               <Image
                 source={{ uri: img.uri }}
@@ -327,20 +362,20 @@ export default function SentencePictureScreen({ onBack }: Props) {
                   if (aiTimer.current) clearTimeout(aiTimer.current);
                   setAiLoading(false);
                   setImg(null);
-                  setAiError("The picture engine did not respond. Tap AI to try again.");
+                  setAiError(tt("spEngineNoResponse"));
                 }}
               />
             ) : buildMode ? (
-              <SceneStage session={session} uris={itemUris} />
+              <SceneStage session={displaySession} uris={itemUris} />
             ) : concept ? (
-              <View style={styles.stageWhite}><ConceptView concept={concept} /></View>
+              <View style={styles.stageWhite}><ConceptView concept={concept} lang={lang} /></View>
             ) : (
               <SceneComposer graph={graph} />
             )}
             {(aiLoading || agentThinking) && (
               <View style={styles.stageOverlay}>
                 <ActivityIndicator color="white" />
-                <Text style={styles.stageOverlayText}>{agentThinking ? "Understanding…" : "Making the picture…"}</Text>
+                <Text style={styles.stageOverlayText}>{agentThinking ? tt("spUnderstanding") : tt("spMakingPicture")}</Text>
               </View>
             )}
             <View style={[styles.sourceBadge, img ? styles.sourceAi : styles.sourceInstant]}>
@@ -352,53 +387,38 @@ export default function SentencePictureScreen({ onBack }: Props) {
           {aiError && <Text style={styles.aiError}>{aiError}</Text>}
 
           <View style={styles.buildRow}>
+            <View style={[styles.buildToggle, styles.buildToggleOn]}>
+              <Ionicons name="color-wand" size={15} color="white" />
+              <Text style={[styles.buildToggleText, { color: "white" }]}>
+                {tt("spKeepTalkingOn")}
+              </Text>
+            </View>
             <Pressable
               onPress={() => {
-                const on = !buildMode;
-                setBuildMode(on);
+                setSession(newSession());
+                setItemUris({});
+                setImg(null);
                 mergedRef.current = "";
-                setAiError(null);
-                if (on) {
-                  setSession(newSession());
-                  setItemUris({});
-                  setImg(null);
-                  setText("");
-                }
+                setText("");
+                setHiddenChipKeys({});
               }}
-              style={[styles.buildToggle, buildMode && styles.buildToggleOn]}
+              style={styles.buildReset}
             >
-              <Ionicons name="color-wand" size={15} color={buildMode ? "white" : colors.forestDark} />
-              <Text style={[styles.buildToggleText, buildMode && { color: "white" }]}>
-                {buildMode ? "Keep-talking mode ON" : "Keep-talking mode"}
-              </Text>
+              <Ionicons name="refresh" size={15} color={colors.forestDark} />
+              <Text style={styles.buildToggleText}>{tt("spStartOver")}</Text>
             </Pressable>
-            {buildMode && (
-              <Pressable
-                onPress={() => {
-                  setSession(newSession());
-                  setItemUris({});
-                  setImg(null);
-                  mergedRef.current = "";
-                  setText("");
-                }}
-                style={styles.buildReset}
-              >
-                <Ionicons name="refresh" size={15} color={colors.forestDark} />
-                <Text style={styles.buildToggleText}>Start over</Text>
-              </Pressable>
-            )}
             {buildMode && !!session.items.length && (
               <Pressable onPress={() => drawSceneWithAi()} disabled={aiLoading} style={styles.buildReset}>
                 <Ionicons name="sparkles" size={15} color={colors.forestDark} />
-                <Text style={styles.buildToggleText}>{aiSceneEnabled ? "Redraw" : "Real picture"}</Text>
+                <Text style={styles.buildToggleText}>{aiSceneEnabled ? tt("spRedraw") : tt("spRealPicture")}</Text>
               </Pressable>
             )}
           </View>
           {buildMode && (
             <Text style={styles.micHint}>
               {agentEnabled
-                ? `Speak naturally — the ${agentName} agent understands full sentences. "cat under the table", "a girl is crying next to the mosque", "move the book behind the chair", "remove the cat". "Real picture" turns the whole scene into one AI drawing.`
-                : 'One change at a time: "table" · "cat under the table" · "open the cat\'s eyes" · "a girl is crying". Add EXPO_PUBLIC_GROQ_API_KEY for free-speech understanding.'}
+                ? tt("spMicHintAgent").replace("{agent}", agentName)
+                : tt("spMicHintNoAgent")}
             </Text>
           )}
 
@@ -408,7 +428,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
                 <>
                   <Pressable onPress={() => setImg(null)} style={[styles.aiBtn, { backgroundColor: colors.cardMuted }]}>
                     <Ionicons name="flash" size={15} color={colors.textMid} />
-                    <Text style={[styles.aiBtnText, { color: colors.textMid }]}>Instant scene</Text>
+                    <Text style={[styles.aiBtnText, { color: colors.textMid }]}>{tt("spInstantScene")}</Text>
                   </Pressable>
                   <Pressable onPress={makeAiPicture} disabled={aiLoading} style={styles.aiRegenBtn}>
                     <Ionicons name="refresh" size={16} color={colors.forestDark} />
@@ -417,7 +437,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
               ) : (
                 <Pressable onPress={makeAiPicture} disabled={aiLoading} style={[styles.aiBtn, aiLoading && { opacity: 0.5 }]}>
                   <Ionicons name="sparkles" size={16} color="white" />
-                  <Text style={styles.aiBtnText}>Make full picture with AI</Text>
+                  <Text style={styles.aiBtnText}>{tt("spMakeFullPicture")}</Text>
                 </Pressable>
               )}
             </View>
@@ -426,9 +446,17 @@ export default function SentencePictureScreen({ onBack }: Props) {
           {/* what the engine understood */}
           {buildMode ? (
             <View style={styles.chips}>
-              {sessionChips(session).map((c, i) => (
-                <Chip key={`${c}-${i}`} on text={c} />
-              ))}
+              {sessionChipEntries(session).map((chip) => {
+                const isHidden = !!hiddenChipKeys[chip.key];
+                return (
+                  <Chip
+                    key={chip.key}
+                    on={!isHidden}
+                    text={chip.text}
+                    onPress={() => toggleKeyword(chip.key)}
+                  />
+                );
+              })}
             </View>
           ) : !concept ? (
             <View style={styles.chips}>
@@ -443,7 +471,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
           ) : null}
           {!concept && !buildMode && graph.subject && (
             <Text style={styles.understood}>
-              {pct >= 60 ? "Understood well" : "Partly understood"} · {pct}% — tap "AI" for anything the instant scene can't draw.
+              {pct >= 60 ? tt("spUnderstoodWell") : tt("spPartlyUnderstood")} {tt("spUnderstoodSuffix").replace("{pct}", String(pct))}
             </Text>
           )}
 
@@ -457,37 +485,40 @@ export default function SentencePictureScreen({ onBack }: Props) {
           <TextInput
             value={text}
             onChangeText={setText}
-            placeholder="Type a sentence, or tap the mic on your keyboard…"
+            placeholder={tt("spTypeSentencePlaceholder")}
             placeholderTextColor={colors.textLight}
             style={styles.input}
             multiline
           />
           <Pressable onPress={toggleMic} disabled={sttBusy} style={[styles.micRow, recording && styles.micRowOn]}>
             {sttBusy ? <ActivityIndicator color="white" /> : <Ionicons name={recording ? "stop" : "mic"} size={20} color="white" />}
-            <Text style={styles.micRowText}>{recording ? "Listening… tap to stop" : sttBusy ? "Turning speech into text…" : "Speak a sentence"}</Text>
+            <Text style={styles.micRowText}>{recording ? tt("spListeningTapStop") : sttBusy ? tt("spTurningSpeechToText") : tt("spSpeakSentence")}</Text>
           </Pressable>
-          <Text style={styles.micHint}>Or tap the text box and use your keyboard's microphone — the picture updates word by word.</Text>
+          <Text style={styles.micHint}>{tt("spKeyboardMicHint2")}</Text>
 
           <View style={styles.actionRow}>
             <Pressable onPress={() => speak(text, lang, settings.soundEnabled)} style={styles.speakBtn}>
               <Ionicons name="volume-medium" size={16} color="white" />
-              <Text style={styles.speakBtnText}>Read aloud</Text>
+              <Text style={styles.speakBtnText}>{tt("spReadAloud")}</Text>
             </Pressable>
             <Pressable onPress={() => setText("")} style={styles.clearBtn}>
-              <Text style={styles.clearBtnText}>Clear</Text>
+              <Text style={styles.clearBtnText}>{tt("spClear")}</Text>
             </Pressable>
           </View>
 
-          <Text style={styles.sectionLabel}>Try a sentence</Text>
+          <Text style={styles.sectionLabel}>{tt("spTrySentence")}</Text>
           <View style={styles.exampleWrap}>
-            {EXAMPLES.map((e) => (
-              <Pressable key={e} onPress={() => setText(e)} style={styles.example}>
-                <Text style={styles.exampleText}>{e}</Text>
-              </Pressable>
-            ))}
+            {EXAMPLE_KEYS.map((ek) => {
+              const e = tt(ek);
+              return (
+                <Pressable key={ek} onPress={() => setText(e)} style={styles.example}>
+                  <Text style={styles.exampleText}>{e}</Text>
+                </Pressable>
+              );
+            })}
           </View>
 
-          <Text style={styles.sectionLabel}>Science concepts</Text>
+          <Text style={styles.sectionLabel}>{tt("spScienceConcepts")}</Text>
           <View style={styles.exampleWrap}>
             {CONCEPTS.map((c) => (
               <Pressable key={c.key} onPress={() => setText(c.title)} style={[styles.example, { backgroundColor: colors.forestLight }]}>
@@ -497,26 +528,24 @@ export default function SentencePictureScreen({ onBack }: Props) {
           </View>
 
           <Text style={styles.hint}>
-            The instant scene works offline and is always the base. "AI" uses a free image engine (no key needed); a sharper
-            engine turns on if you connect an OpenAI key with ✨. Understood: colours, sizes (small / big), counts, things
-            ({Object.keys(SUBJECTS).slice(0, 5).join(", ")}…), actions (running, sitting…), positions (under, on, above, behind,
-            in front of, beside, inside), objects ({Object.keys(REFERENCES).slice(0, 5).join(", ")}…).
+            {tt("spBigHint")
+              .replace("{things}", Object.keys(SUBJECTS).slice(0, 5).join(", "))
+              .replace("{objects}", Object.keys(REFERENCES).slice(0, 5).join(", "))}
           </Text>
         </ScrollView>
       </SafeAreaView>
 
       <Modal visible={keyModal} transparent animationType="fade" onRequestClose={() => setKeyModal(false)}>
         <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Sharper AI pictures (optional)</Text>
+          <View style={[styles.modalCard, isTablet && styles.modalCardTablet]}>
+            <Text style={styles.modalTitle}>{tt("spModalTitle")}</Text>
             <Text style={styles.modalBody}>
-              The free AI engine already works with no key. Paste an OpenAI API key here for higher-quality illustrations. It is
-              stored only on this device. Leave blank and save to disconnect.
+              {tt("spModalBody")}
             </Text>
             <TextInput
               value={keyInput}
               onChangeText={setKeyInput}
-              placeholder="sk-…"
+              placeholder={tt("spKeyPlaceholder")}
               placeholderTextColor={colors.textLight}
               autoCapitalize="none"
               secureTextEntry
@@ -524,10 +553,10 @@ export default function SentencePictureScreen({ onBack }: Props) {
             />
             <View style={styles.modalRow}>
               <Pressable onPress={() => setKeyModal(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+                <Text style={{ color: colors.textMid, fontWeight: "700" }}>{t("cancel", lang)}</Text>
               </Pressable>
               <Pressable onPress={saveKey} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                <Text style={{ color: "white", fontWeight: "700" }}>Save</Text>
+                <Text style={{ color: "white", fontWeight: "700" }}>{t("save", lang)}</Text>
               </Pressable>
             </View>
           </View>
@@ -537,23 +566,50 @@ export default function SentencePictureScreen({ onBack }: Props) {
   );
 }
 
-function Chip({ on, text }: { on: boolean; text: string }) {
+function Chip({ on, text, onPress }: { on: boolean; text: string; onPress?: () => void }) {
+  const pic = getPictogramUrl(text);
+  const emoji = findWordEmoji(text);
   return (
-    <View style={[styles.chip, on ? styles.chipOn : styles.chipOff]}>
-      <Text style={[styles.chipText, on ? { color: "white" } : { color: colors.textLight }]}>{text}</Text>
-    </View>
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      style={({ pressed }) => [
+        styles.chip,
+        on ? styles.chipOn : styles.chipOff,
+        pressed && { opacity: 0.7 },
+      ]}
+      hitSlop={6}
+    >
+      {pic ? (
+        <Image
+          source={{ uri: pic }}
+          style={{ width: 16, height: 16, marginRight: 4, opacity: on ? 1 : 0.4 }}
+          resizeMode="contain"
+        />
+      ) : emoji ? (
+        <Text style={[styles.chipEmoji, !on && { opacity: 0.4 }]}>{emoji} </Text>
+      ) : null}
+      <Text
+        style={[
+          styles.chipText,
+          on ? { color: "white" } : { color: colors.textLight, textDecorationLine: "line-through" },
+        ]}
+      >
+        {text}
+      </Text>
+    </Pressable>
   );
 }
 
-function ConceptView({ concept }: { concept: (typeof CONCEPTS)[number] }) {
+function ConceptView({ concept, lang }: { concept: (typeof CONCEPTS)[number]; lang: Parameters<typeof t>[1] }) {
   const r = concept.render;
   if (r.kind === "plant") {
     return (
       <View style={styles.concept}>
         <Text style={{ fontSize: 64 }}>{r.flowers ? "🌷" : "🌿"}</Text>
         <View style={styles.conceptRow}>
-          <Feature label="Flower" present={!!r.flowers} glyph="🌸" />
-          <Feature label="Seeds" present={!!r.seeds} glyph="🌰" />
+          <Feature label={t("spFlowerLabel", lang)} absentLabel={t("spFlowerAbsent", lang)} present={!!r.flowers} glyph="🌸" />
+          <Feature label={t("spSeedsLabel", lang)} absentLabel={t("spSeedsAbsent", lang)} present={!!r.seeds} glyph="🌰" />
         </View>
       </View>
     );
@@ -568,17 +624,17 @@ function ConceptView({ concept }: { concept: (typeof CONCEPTS)[number] }) {
           </View>
         ))}
       </View>
-      <Text style={styles.conceptNote}>{r.backbone ? "Backbone highlighted" : "No backbone"}</Text>
+      <Text style={styles.conceptNote}>{r.backbone ? t("spBackboneHighlighted", lang) : t("spNoBackbone", lang)}</Text>
     </View>
   );
 }
 
-function Feature({ label, present, glyph }: { label: string; present: boolean; glyph: string }) {
+function Feature({ label, absentLabel, present, glyph }: { label: string; absentLabel: string; present: boolean; glyph: string }) {
   return (
     <View style={styles.feature}>
       <Text style={{ fontSize: 26, opacity: present ? 1 : 0.2 }}>{glyph}</Text>
       <Text style={[styles.featureLabel, { color: present ? colors.forestDark : colors.textLight }]}>
-        {present ? label : `no ${label.toLowerCase()}`}
+        {present ? label : absentLabel}
       </Text>
     </View>
   );
@@ -590,17 +646,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 20,
+    borderBottomLeftRadius: 28,
+    borderBottomRightRadius: 28,
+  },
+  headerInner: {
+    width: "100%",
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+  },
+  headerInnerTablet: {
+    maxWidth: 820,
+    alignSelf: "center",
   },
   backBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
   headerTitle: { color: "white", fontSize: 20, fontWeight: "800" },
   headerSub: { color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 2 },
   body: { padding: 20, gap: 14, paddingBottom: 40 },
+  bodyTablet: {
+    maxWidth: 820,
+    alignSelf: "center",
+    width: "100%",
+    paddingHorizontal: 28,
+  },
   stageWrap: { position: "relative" },
+  stageWrapTablet: {
+    minHeight: 320,
+  },
   stageWhite: {
     width: "100%",
     aspectRatio: 320 / 236,
@@ -683,7 +755,15 @@ const styles = StyleSheet.create({
   aiBtnText: { color: "white", fontWeight: "800", fontSize: 14 },
   aiRegenBtn: { width: 48, backgroundColor: colors.forestLight, borderRadius: radius, alignItems: "center", justifyContent: "center" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  chip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 14 },
+  chip: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  chipEmoji: { fontSize: 13 },
   chipOn: { backgroundColor: colors.forest },
   chipOff: { backgroundColor: colors.cardMuted },
   chipText: { fontSize: 12, fontWeight: "700" },
@@ -744,6 +824,10 @@ const styles = StyleSheet.create({
   conceptNote: { fontSize: 12, color: colors.textMid, fontWeight: "600" },
   modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", alignItems: "center", justifyContent: "center", padding: 24 },
   modalCard: { width: "100%", backgroundColor: colors.bg, borderRadius: radius, padding: 20 },
+  modalCardTablet: {
+    maxWidth: 540,
+    padding: 24,
+  },
   modalTitle: { fontSize: 17, fontWeight: "800", color: colors.textDark, marginBottom: 8 },
   modalBody: { fontSize: 12.5, color: colors.textMid, lineHeight: 18, marginBottom: 12 },
   keyInput: {

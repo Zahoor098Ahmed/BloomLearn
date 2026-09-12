@@ -3,6 +3,8 @@ import { View, Text, Pressable, StyleSheet, Dimensions, ScrollView, NativeScroll
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
+import { applyLanguageDirection } from "../modules/i18n";
+import { retranslateSeedBoard, setSeedLanguage } from "../modules/customCategories";
 import Logo from "../components/Logo";
 import { colors, radius } from "../theme";
 
@@ -81,7 +83,11 @@ export default function LandingScreen({ onGetStarted }: Props) {
   }
 
   function selectLanguage(en: boolean) {
-    update({ language: en ? "en-US" : "ar-SA" });
+    const nextLang = en ? "en-US" : "ar-SA";
+    update({ language: nextLang });
+    setSeedLanguage(nextLang);
+    retranslateSeedBoard(nextLang);
+    applyLanguageDirection(nextLang);
   }
 
   function getStarted() {

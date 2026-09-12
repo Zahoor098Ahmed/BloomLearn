@@ -71,14 +71,113 @@ export const ACTIONS: Record<string, string> = {
   running: "🏃", walking: "🚶", sitting: "🪑", standing: "🧍", sleeping: "😴", eating: "🍽️",
   drinking: "🥤", jumping: "🤸", flying: "🕊️", swimming: "🏊", reading: "📖", playing: "🎈",
   crying: "😢", laughing: "😄", dancing: "💃", climbing: "🧗", hiding: "🫣", looking: "👀",
+  writing: "✍️", drawing: "🎨", painting: "🖌️", singing: "🎤", listening: "👂", speaking: "🗣️",
+  talking: "💬", shouting: "📢", washing: "🧼", brushing: "🪥", cleaning: "🧹", cooking: "🍳",
+  helping: "🤝", hugging: "🫂", smiling: "😊", praying: "🤲", studying: "📚", learning: "💡",
+  driving: "🚗", riding: "🚲", catching: "⚾", kicking: "⚽", clapping: "👏", waving: "👋",
+  thinking: "💭", waiting: "⏳", cutting: "✂️", opening: "🚪", closing: "🔒",
 };
+
+export const ADVERBS: Record<string, string> = {
+  quickly: "⚡", fast: "🏎️", rapidly: "⚡", swiftly: "💨", jaldi: "⚡",
+  slowly: "🐢", slow: "🐢", aahista: "🐢",
+  happily: "😄", joyfully: "🥳", cheerfully: "😊", khushi: "😄", khush: "😄",
+  sadly: "😢", sorrowfully: "😭", udaas: "😢",
+  loudly: "📢", noisily: "🔊", zor: "📢",
+  quietly: "🤫", silently: "🔇", softly: "🪶", gently: "🤲",
+  carefully: "👀", cautiously: "⚠️", dehan: "👀",
+  wildly: "🌪️", bravely: "🦁", sweetly: "🍯", beautifully: "✨",
+  calmly: "😌", peacefully: "🕊️", easily: "🟢", asani: "🟢",
+  well: "👍", badly: "👎", together: "🧑‍🤝‍🧑", alone: "🧍", sath: "🧑‍🤝‍🧑", akela: "🧍",
+  outside: "🌳", inside: "🏠", up: "⬆️", down: "⬇️", bahar: "🌳", andar: "🏠", upar: "⬆️", neeche: "⬇️",
+  high: "🌤️", low: "🌱", far: "🔭", near: "📍", door: "🔭", qareeb: "📍",
+  always: "🔄", never: "🚫", again: "🔁", now: "⏱️", soon: "⏳", abhi: "⏱️",
+  angrily: "😠", gusse: "😠", excitedly: "🤩", josh: "🤩",
+  nicely: "😊", politely: "🙏", brightly: "🌟", strongly: "💪", taqat: "💪",
+  safely: "🛡️", warmly: "☀️", proudly: "🦚", shyly: "🙈",
+  early: "🌅", late: "🌙", here: "📍", there: "👉", yahan: "📍", wahan: "👉",
+  hard: "🔨", tightly: "🫂", freely: "🕊️",
+  please: "🙏", thanks: "🤝", "thank you": "🤝", sorry: "🙇", "excuse me": "🙋",
+  shukriya: "🤝", madad: "🤝", maaf: "🙇",
+};
+
+export const EXTRA_ABWAAB: Record<string, string> = {
+  // School & Classroom
+  classroom: "🏫", student: "🧑‍🎓", blackboard: "📋", whiteboard: "📋",
+  crayon: "🖍️", crayons: "🖍️", pen: "🖊️", pens: "🖊️", eraser: "🧽",
+  sharpener: "✏️", ruler: "📏", scissors: "✂️", glue: "🧴", backpack: "🎒",
+  notebook: "📓", paper: "📄", bookshelf: "📚", cafeteria: "🍽️",
+  recess: "🛝", slide: "🛝", swing: "🪵", blocks: "🧱", "fire drill": "🚨",
+  clock: "⏰", bell: "🔔", crafts: "✂️", "pencil sharpener": "✏️",
+  "colored pencils": "🎨", "coloured pencils": "🎨",
+
+  // Food & Kitchen
+  water: "💧", milk: "🥛", juice: "🧃", tea: "🍵", apple: "🍎", banana: "🍌",
+  orange: "🍊", bread: "🍞", cookie: "🍪", biscuit: "🍪", rice: "🍚",
+  chicken: "🍗", meat: "🥩", egg: "🥚", pizza: "🍕", sandwich: "🥪",
+  burger: "🍔", fries: "🍟", salad: "🥗", soup: "🥣", cake: "🍰",
+  chocolate: "🍫", "ice cream": "🍦", candy: "🍬", fruit: "🍓",
+  vegetable: "🥕", carrot: "🥕", potato: "🥔", tomato: "🍅", cheese: "🧀",
+  plate: "🍽️", cup: "🥤", spoon: "🥄", fork: "🍴", glass: "🥛",
+
+  // Emotions & Feelings
+  happy: "😀", sad: "😢", angry: "😠", scared: "😨", excited: "🤩",
+  tired: "😴", sleepy: "🥱", sick: "🤢", hurt: "🤕", calm: "😌",
+  proud: "😎", silly: "🤪", frustrated: "😤", loved: "🥰",
+  surprised: "😲", confused: "🤔", shy: "🙈", nervous: "😰", bored: "😑",
+
+  // Home & Daily
+  bed: "🛏️", table: "🪑", sofa: "🛋️", couch: "🛋️", lamp: "💡",
+  light: "💡", door: "🚪", window: "🪟", mirror: "🪞", pillow: "🛏️",
+  blanket: "🟫", tv: "📺", computer: "💻", laptop: "💻", phone: "📱",
+  fridge: "🧊", kitchen: "🍳", bathroom: "🛁", toilet: "🚽", shower: "🚿",
+
+  // Nature & Weather
+  sun: "☀️", moon: "🌙", star: "⭐", cloud: "☁️", rain: "🌧️",
+  snow: "❄️", rainbow: "🌈", tree: "🌳", flower: "🌸", grass: "🌱",
+  river: "🌊", mountain: "⛰️", sea: "🌊", ocean: "🌊", forest: "🌲",
+
+  // Clothes & Gear
+  shirt: "👕", pants: "👖", dress: "👗", jacket: "🧥", coat: "🧥",
+  shoes: "👟", socks: "🧦", hat: "🧢", cap: "🧢", glasses: "👓", watch: "⌚",
+
+  // Animals
+  horse: "🐴", cow: "🐮", sheep: "🐑", goat: "🐐", giraffe: "🦒",
+  zebra: "🦓", camel: "🐪", dolphin: "🐬", whale: "🐋",
+
+  // Adaab & Manners
+  please: "🙏", thanks: "🤝", "thank you": "🤝", sorry: "🙇",
+  hello: "👋", hi: "👋", goodbye: "👋", bye: "👋", salam: "🤝",
+};
+
+export const ALL_VOCAB_GLYPHS: Record<string, string> = {
+  ...REFERENCES,
+  ...SUBJECTS,
+  ...ACTIONS,
+  ...ADVERBS,
+  ...EXTRA_ABWAAB,
+};
+
+export function findWordEmoji(text: string): string | null {
+  if (!text) return null;
+  const lower = text.toLowerCase().trim();
+  if (ALL_VOCAB_GLYPHS[lower]) return ALL_VOCAB_GLYPHS[lower];
+  const words = lower.split(/[\s,·\-_]+/);
+  for (const w of words) {
+    if (ALL_VOCAB_GLYPHS[w]) return ALL_VOCAB_GLYPHS[w];
+  }
+  return null;
+}
+
 const ACTION_WORDS = Object.keys(ACTIONS).concat(
-  ["run", "walk", "sit", "stand", "sleep", "eat", "drink", "jump", "fly", "swim", "read", "play", "cry", "laugh", "dance", "climb", "hide", "look"],
+  ["run", "walk", "sit", "stand", "sleep", "eat", "drink", "jump", "fly", "swim", "read", "play", "cry", "laugh", "dance", "climb", "hide", "look", "write", "draw", "paint", "sing", "listen", "talk", "wash", "cook", "smile", "pray", "clean"],
 );
 const ACTION_STEM: Record<string, string> = {
   run: "running", walk: "walking", sit: "sitting", stand: "standing", sleep: "sleeping", eat: "eating",
   drink: "drinking", jump: "jumping", fly: "flying", swim: "swimming", read: "reading", play: "playing",
   cry: "crying", laugh: "laughing", dance: "dancing", climb: "climbing", hide: "hiding", look: "looking",
+  write: "writing", draw: "drawing", paint: "painting", sing: "singing", listen: "listening", talk: "talking",
+  wash: "washing", cook: "cooking", smile: "smiling", pray: "praying", clean: "cleaning",
 };
 
 // --- science-concept presets -----------------------------------------
@@ -217,7 +316,7 @@ export function parseSceneGraph(raw: string): SceneGraph {
     rightWin = ` ${(parts.slice(1).join(` ${relationRaw} `)).trim()} `;
   }
 
-  const subjectKey = findIn(SUBJECTS, leftWin.trim().split(" "));
+  const subjectKey = findIn(ALL_VOCAB_GLYPHS, leftWin.trim().split(" ")) || findIn(SUBJECTS, leftWin.trim().split(" "));
   const refKey = relationRaw
     ? findIn(REFERENCES, rightWin.trim().split(" "), subjectKey)
     : findIn(REFERENCES, tokens, subjectKey);
@@ -225,8 +324,31 @@ export function parseSceneGraph(raw: string): SceneGraph {
   const subjectPlural = subjectKey ? leftWin.includes(` ${subjectKey}s `) : false;
   const refPlural = refKey ? rightWin.includes(` ${refKey}s `) : false;
 
-  const subject: SceneEntity | null = subjectKey
-    ? entity(subjectKey, SUBJECTS[subjectKey], leftWin, clean, subjectPlural)
+  const STOP_NOUNS = new Set([
+    "the", "a", "an", "is", "are", "was", "were", "to", "of", "and", "in", "on", "at",
+    "with", "his", "her", "its", "this", "that", "some", "there", "then", "very",
+    "please", "thanks", "thank", "you", "sorry", "excuse", "me", "hello", "hi", "bye",
+    "what", "why", "how", "who", "when", "where", "can", "could", "will", "would",
+    "i", "my", "we", "our", "he", "she", "it", "they", "them", "for", "from",
+    "yes", "no", "not", "too", "also", "just", "now", "here",
+  ]);
+
+  let resolvedSubj = subjectKey;
+  if (!resolvedSubj) {
+    const words = leftWin.trim().split(" ").filter((w) => w.length > 2 && !STOP_NOUNS.has(w) && !COLORS.includes(w));
+    if (words.length > 0) {
+      resolvedSubj = words[words.length - 1];
+    }
+  }
+
+  const subject: SceneEntity | null = resolvedSubj
+    ? entity(
+        resolvedSubj,
+        ALL_VOCAB_GLYPHS[resolvedSubj] ?? SUBJECTS[resolvedSubj] ?? findWordEmoji(resolvedSubj) ?? "✨",
+        leftWin,
+        clean,
+        subjectPlural,
+      )
     : null;
   const reference: SceneEntity | null = refKey
     ? entity(refKey, REFERENCES[refKey], relationRaw ? rightWin : clean, clean, refPlural)

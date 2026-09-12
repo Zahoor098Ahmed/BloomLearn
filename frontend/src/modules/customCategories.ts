@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { CustomCategory, CustomWord, TileSize, LanguageCode } from "../types";
 import { starterLabel, wordLabel } from "./i18n";
+import { getPictogramUrl } from "./aacPictograms";
 
 // English anchors for the seed content, so re-translation can map back.
 const SEED_WORD_EN: Record<string, string[]> = {
@@ -31,11 +32,13 @@ function migrate(list: CustomCategory[]): CustomCategory[] {
     ...c,
     color: c.color ?? FOLDER_COLORS[i % FOLDER_COLORS.length],
     icon: c.icon ?? "📁",
+    hidden: c.hidden ?? false,
     parentCategoryId: c.parentCategoryId ?? null,
     order: typeof c.order === "number" ? c.order : i,
     source: c.source ?? "manual",
     words: (c.words ?? []).map((w, wi) => ({
       ...w,
+      imageUri: w.imageUri || getPictogramUrl(w.label) || undefined,
       size: w.size ?? "md",
       useTextToSpeech: w.useTextToSpeech ?? !w.audioUri,
       order: typeof w.order === "number" ? w.order : wi,
@@ -52,51 +55,232 @@ export async function ensureCategoriesLoaded(): Promise<void> {
     cache = [];
   }
   loaded = true;
-  if (cache.length === 0) seedStarterBoard();
-  else retranslateSeedBoard(seedLang);
+  if (cache.length === 0) {
+    seedStarterBoard();
+  } else {
+    ensureAllStandardCategories();
+    retranslateSeedBoard(seedLang);
+  }
 }
 
 // --- starter board -------------------------------------------------------
 
-const STARTER: { name: string; icon: string; words: [string, string][] }[] = [
+const STARTER: { name: string; icon: string; color?: string; words: [string, string][] }[] = [
+  {
+    name: "Schools",
+    icon: "🏫",
+    color: "#2f6d62",
+    words: [
+      ["School", "🏫"],
+      ["Teacher", "👩‍🏫"],
+      ["Class", "🧑‍🤝‍🧑"],
+      ["Chair", "🪑"],
+      ["Desk", "🛋️"],
+      ["Recess", "🛝"],
+      ["Crayons", "🖍️"],
+      ["Blocks", "🧱"],
+      ["Fire Drill", "🚨"],
+      ["Bulletin Board", "📌"],
+      ["Pencil Sharpener", "✏️"],
+      ["Slide", "🛝"],
+      ["Swing", "🪵"],
+      ["Sensory Table", "🌊"],
+      ["Pens", "🖊️"],
+      ["Coloured Pencils", "🎨"],
+      ["Bookshelf", "📚"],
+      ["Cafeteria", "🍽️"],
+      ["Main Hall", "🏛️"],
+      ["Reception", "🛎️"],
+      ["School Store", "🏪"],
+      ["Counting", "🖐️"],
+      ["Book", "📖"],
+      ["Learn", "💡"],
+      ["Numbers", "🔢"],
+      ["Flash Cards", "🃏"],
+      ["Crafts", "✂️"],
+    ],
+  },
+  {
+    name: "Sentences",
+    icon: "💬",
+    color: "#4a7fe6",
+    words: [
+      ["I Need Help", "🙋"],
+      ["In", "📦"],
+      ["I Want", "🤲"],
+      ["I Feel", "💭"],
+      ["Can I Have", "🙏"],
+      ["Look At This", "👀"],
+      ["More Please", "➕"],
+      ["Stop Please", "🛑"],
+      ["Go To", "🚶"],
+      ["Thank You", "🙏"],
+      ["Yes", "✅"],
+      ["No", "❌"],
+      ["I Am", "🧒"],
+      ["Where Is", "🔍"],
+      ["What Is That", "❓"],
+      ["I Like", "👍"],
+      ["I Don't Like", "👎"],
+      ["All Done", "🏁"],
+    ],
+  },
+  {
+    name: "Tools",
+    icon: "🔧",
+    color: "#4A4A4A",
+    words: [
+      ["Hammer", "🔨"],
+      ["Scissors", "✂️"],
+      ["Glue", "🧴"],
+      ["Pencil", "✏️"],
+      ["Ruler", "📏"],
+      ["Calculator", "🔢"],
+      ["Tape", "🩹"],
+      ["Eraser", "🧽"],
+      ["Sharpener", "✏️"],
+      ["Paperclip", "📎"],
+      ["Backpack", "🎒"],
+      ["Notebook", "📓"],
+      ["Folder", "📁"],
+      ["Tablet", "📱"],
+      ["Paintbrush", "🖌️"],
+      ["Clock", "⏰"],
+    ],
+  },
+  {
+    name: "Emotion",
+    icon: "🙂",
+    color: "#c98a3d",
+    words: [
+      ["Happy", "😀"],
+      ["Sad", "😢"],
+      ["Angry", "😠"],
+      ["Excited", "🤩"],
+      ["Tired", "😴"],
+      ["Scared", "😨"],
+      ["Calm", "😌"],
+      ["Proud", "😎"],
+      ["Silly", "🤪"],
+      ["Frustrated", "😤"],
+      ["Loved", "🥰"],
+      ["Sick", "🤢"],
+      ["Surprised", "😲"],
+      ["Confused", "🤔"],
+      ["Shy", "🙈"],
+      ["Hurt", "🤕"],
+    ],
+  },
+  {
+    name: "Attributes",
+    icon: "🟢🔵",
+    color: "#5c9a58",
+    words: [
+      ["Big", "🐘"],
+      ["Small", "🐜"],
+      ["Hot", "🔥"],
+      ["Cold", "❄️"],
+      ["Fast", "⚡"],
+      ["Slow", "🐢"],
+      ["Good", "👍"],
+      ["Bad", "👎"],
+      ["Clean", "✨"],
+      ["Dirty", "💩"],
+      ["Loud", "📢"],
+      ["Quiet", "🤫"],
+      ["Soft", "🧸"],
+      ["Hard", "🪨"],
+      ["Open", "🚪"],
+      ["Closed", "🔒"],
+      ["Up", "⬆️"],
+      ["Down", "⬇️"],
+      ["In", "📥"],
+      ["Out", "📤"],
+      ["Same", "🟰"],
+      ["Different", "🔀"],
+    ],
+  },
+  {
+    name: "Sports",
+    icon: "⚽",
+    color: "#c96b6b",
+    words: [
+      ["Soccer", "⚽"],
+      ["Basketball", "🏀"],
+      ["Running", "🏃"],
+      ["Swimming", "🏊"],
+      ["Baseball", "⚾"],
+      ["Tennis", "🎾"],
+      ["Jump Rope", "🪢"],
+      ["Dancing", "💃"],
+      ["Playground", "🛝"],
+      ["Catch", "⚾"],
+      ["Ride Bike", "🚲"],
+      ["Gymnastics", "🤸"],
+      ["Skateboard", "🛹"],
+      ["Yoga", "🧘"],
+    ],
+  },
+  {
+    name: "Hygiene",
+    icon: "🛁",
+    color: "#8a6bc9",
+    words: [
+      ["Wash Hands", "🧼"],
+      ["Brush Teeth", "🪥"],
+      ["Toilet", "🚽"],
+      ["Shower", "🚿"],
+      ["Comb Hair", "🪮"],
+      ["Wash Face", "🧖"],
+      ["Blow Nose", "🤧"],
+      ["Put On Clothes", "👕"],
+      ["Drink Water", "💧"],
+      ["Sleep", "🛏️"],
+      ["Clean Up", "🧹"],
+      ["Bandage", "🩹"],
+    ],
+  },
+  {
+    name: "Music",
+    icon: "🎸",
+    color: "#d46cae",
+    words: [
+      ["Sing", "🎤"],
+      ["Dance", "💃"],
+      ["Guitar", "🎸"],
+      ["Piano", "🎹"],
+      ["Drums", "🥁"],
+      ["Listen", "👂"],
+      ["Song", "🎵"],
+      ["Music", "🎶"],
+      ["Loud", "🔊"],
+      ["Quiet", "🔉"],
+      ["Fast", "⏩"],
+      ["Slow", "⏪"],
+      ["Bell", "🔔"],
+      ["Trumpet", "🎺"],
+      ["Violin", "🎻"],
+      ["Headphones", "🎧"],
+    ],
+  },
   {
     name: "Core",
     icon: "💬",
+    color: "#3a86ff",
     words: [
-      ["I", "☝️"], ["you", "👉"], ["want", "🙏"], ["more", "➕"], ["stop", "✋"],
-      ["go", "🚶"], ["like", "❤️"], ["help", "🆘"], ["yes", "✅"], ["no", "❌"],
+      ["I", "☝️"], ["You", "👉"], ["Want", "🙏"], ["More", "➕"], ["Stop", "✋"],
+      ["Go", "🚶"], ["Like", "❤️"], ["Help", "🆘"], ["Yes", "✅"], ["No", "❌"],
+      ["Please", "🤲"], ["Thank You", "🙏"], ["Look", "👀"], ["Come", "👋"], ["Here", "📍"], ["Where", "❓"],
     ],
   },
   {
     name: "Food",
     icon: "🍎",
+    color: "#c98a3d",
     words: [
-      ["water", "💧"], ["milk", "🥛"], ["juice", "🧃"], ["apple", "🍎"], ["banana", "🍌"],
-      ["bread", "🍞"], ["cookie", "🍪"], ["rice", "🍚"], ["chicken", "🍗"], ["snack", "🥨"],
-    ],
-  },
-  {
-    name: "Feelings",
-    icon: "🙂",
-    words: [
-      ["happy", "😀"], ["sad", "😢"], ["angry", "😠"], ["scared", "😨"], ["tired", "😴"],
-      ["hurt", "🤕"], ["sick", "🤢"], ["excited", "🤩"], ["calm", "😌"], ["love", "🥰"],
-    ],
-  },
-  {
-    name: "People",
-    icon: "👪",
-    words: [
-      ["mom", "👩"], ["dad", "👨"], ["me", "🧒"], ["teacher", "🧑‍🏫"], ["friend", "🧑‍🤝‍🧑"],
-      ["baby", "👶"], ["doctor", "🧑‍⚕️"], ["grandma", "👵"], ["grandpa", "👴"], ["sister", "👧"],
-    ],
-  },
-  {
-    name: "Actions",
-    icon: "🏃",
-    words: [
-      ["eat", "🍽️"], ["drink", "🥤"], ["play", "🧩"], ["sleep", "🛏️"], ["read", "📖"],
-      ["walk", "🚶"], ["run", "🏃"], ["sit", "🪑"], ["wash", "🧼"], ["open", "🚪"],
+      ["Water", "💧"], ["Milk", "🥛"], ["Juice", "🧃"], ["Apple", "🍎"], ["Banana", "🍌"],
+      ["Bread", "🍞"], ["Cookie", "🍪"], ["Rice", "🍚"], ["Chicken", "🍗"], ["Snack", "🥨"],
+      ["Pizza", "🍕"], ["Sandwich", "🥪"], ["Fries", "🍟"], ["Fruit", "🍓"],
     ],
   },
 ];
@@ -105,18 +289,22 @@ const STARTER: { name: string; icon: string; words: [string, string][] }[] = [
 const FOLDER_NAMES: Partial<Record<LanguageCode, Record<string, string>>> = {
   "ar-SA": {
     Core: "أساسي", Food: "طعام", Feelings: "مشاعر", People: "أشخاص", Actions: "أفعال",
+    Schools: "مدرسة", Sentences: "جمل", Tools: "أدوات", Emotion: "مشاعر", Attributes: "صفات",
+    Sports: "رياضة", Hygiene: "نظافة", Music: "موسيقى",
     "My Words": "كلماتي", "New Folder": "مجلد جديد",
     Animals: "حيوانات", Fruits: "فواكه", Vegetables: "خضروات", Colors: "ألوان", Shapes: "أشكال",
     Vehicles: "مركبات", "Body Parts": "أجزاء الجسم", Clothes: "ملابس", Weather: "الطقس", Family: "العائلة",
-    Jobs: "وظائف", Sports: "رياضة", Instruments: "آلات موسيقية", "School Supplies": "أدوات مدرسية",
+    Jobs: "وظائف", Instruments: "آلات موسيقية", "School Supplies": "أدوات مدرسية",
     Furniture: "أثاث", Feelings2: "مشاعر", "Days of the Week": "أيام الأسبوع", Months: "الشهور", Numbers: "أرقام", Letters: "حروف",
   },
   "ur-PK": {
     Core: "بنیادی", Food: "کھانا", Feelings: "احساسات", People: "لوگ", Actions: "کام",
+    Schools: "اسکول", Sentences: "جملے", Tools: "اوزار", Emotion: "جذبات", Attributes: "خصوصیات",
+    Sports: "کھیل", Hygiene: "صفائی", Music: "موسیقی",
     "My Words": "میرے الفاظ", "New Folder": "نیا فولڈر",
     Animals: "جانور", Fruits: "پھل", Vegetables: "سبزیاں", Colors: "رنگ", Shapes: "شکلیں",
     Vehicles: "گاڑیاں", "Body Parts": "جسم کے حصے", Clothes: "کپڑے", Weather: "موسم", Family: "خاندان",
-    Jobs: "پیشے", Sports: "کھیل", "School Supplies": "اسکول کا سامان", "Days of the Week": "ہفتے کے دن", Months: "مہینے",
+    Jobs: "پیشے", "School Supplies": "اسکول کا سامان", "Days of the Week": "ہفتے کے دن", Months: "مہینے",
   },
 };
 function folderName(en: string) {
@@ -170,6 +358,49 @@ export function retranslateSeedBoard(lang: LanguageCode) {
   }
 }
 
+function ensureAllStandardCategories() {
+  let changed = false;
+  const existingNames = new Set(cache.map((c) => c.name.toLowerCase()));
+  const now = Date.now();
+
+  STARTER.forEach((s, idx) => {
+    const sName = s.name.toLowerCase();
+    const localizedName = folderName(s.name).toLowerCase();
+    if (!existingNames.has(sName) && !existingNames.has(localizedName)) {
+      cache.push({
+        id: uid("cat"),
+        name: folderName(s.name),
+        createdAt: now,
+        updatedAt: now,
+        source: "seed",
+        grouping: "none",
+        color: s.color || FOLDER_COLORS[idx % FOLDER_COLORS.length],
+        icon: s.icon,
+        parentCategoryId: null,
+        order: cache.length,
+        words: s.words.map(([label, emoji], wi) => {
+          const localized = starterLabel(label, seedLang) || label;
+          return {
+            id: uid("w"),
+            label: localized,
+            phrase: localized,
+            emoji,
+            imageUri: getPictogramUrl(label) || undefined,
+            useTextToSpeech: true,
+            size: "md" as TileSize,
+            order: wi,
+          };
+        }),
+      });
+      changed = true;
+    }
+  });
+
+  if (changed) {
+    persist();
+  }
+}
+
 function seedStarterBoard() {
   const now = Date.now();
   cache = STARTER.map((s, i) => ({
@@ -179,17 +410,18 @@ function seedStarterBoard() {
     updatedAt: now,
     source: "seed",
     grouping: "none",
-    color: FOLDER_COLORS[i % FOLDER_COLORS.length],
+    color: s.color || FOLDER_COLORS[i % FOLDER_COLORS.length],
     icon: s.icon,
     parentCategoryId: null,
     order: i,
     words: s.words.map(([label, emoji], wi) => {
-      const localized = starterLabel(label, seedLang);
+      const localized = starterLabel(label, seedLang) || label;
       return {
         id: uid("w"),
         label: localized,
         phrase: localized,
         emoji,
+        imageUri: getPictogramUrl(label) || undefined,
         useTextToSpeech: true,
         size: "md" as TileSize,
         order: wi,
@@ -204,7 +436,7 @@ function persist(): void {
 }
 
 export function listCategories(): CustomCategory[] {
-  return [...cache].sort((a, b) => b.updatedAt - a.updatedAt);
+  return [...cache].sort(byOrder);
 }
 
 export function getCategory(id: string): CustomCategory | undefined {
@@ -336,6 +568,17 @@ export function childCategories(parentId: string): CustomCategory[] {
   return cache.filter((c) => c.parentCategoryId === parentId).sort(byOrder);
 }
 
+/** Same as topLevelCategories()/childCategories(), but with parent-hidden
+ * folders removed — what the child-facing Talk board should actually render.
+ * Parent-facing screens (My Categories, admin) keep using the un-filtered
+ * versions above so a hidden folder can still be found and un-hidden. */
+export function visibleTopLevelCategories(): CustomCategory[] {
+  return topLevelCategories().filter((c) => !c.hidden);
+}
+export function visibleChildCategories(parentId: string): CustomCategory[] {
+  return childCategories(parentId).filter((c) => !c.hidden);
+}
+
 export function createBlankCategory(input: {
   name: string;
   color?: string;
@@ -364,6 +607,13 @@ export function createBlankCategory(input: {
 
 export function updateCategoryMeta(id: string, patch: Partial<Pick<CustomCategory, "name" | "color" | "icon">>) {
   return mutate(id, (c) => Object.assign(c, patch));
+}
+
+/** Parent control: show/hide a whole folder on the child-facing Talk board. */
+export function setCategoryHidden(id: string, hidden: boolean) {
+  return mutate(id, (c) => {
+    c.hidden = hidden;
+  });
 }
 
 /** Delete a category and any sub-folders under it. */
@@ -439,6 +689,58 @@ export function groupIntoAlphaRanges(words: CustomWord[], bucketSize = 5): { lab
   });
   if (other.length) buckets.push({ label: "#", words: other });
   return buckets;
+}
+
+// --- board helpers (feature-additive) ------------------------------------
+
+export const BOTTOM_CATEGORIES: { key: string; icon: string; label: string; enFallback: string; color: string }[] = [
+  { key: "Tools", icon: "🔨", label: "Tools", enFallback: "Tools", color: "#4A4A4A" },
+  { key: "Emotion", icon: "😀", label: "Emotion", enFallback: "Emotion", color: "#c98a3d" },
+  { key: "Attributes", icon: "🟢🔵", label: "Attributes", enFallback: "Attributes", color: "#5c9a58" },
+  { key: "Sentences", icon: "🙋", label: "Sentences", enFallback: "Sentences", color: "#4a7fe6" },
+  { key: "Schools", icon: "🏫", label: "Schools", enFallback: "Schools", color: "#2f6d62" },
+  { key: "Sports", icon: "⚽", label: "Sports", enFallback: "Sports", color: "#c96b6b" },
+  { key: "Hygiene", icon: "🛁", label: "Hygiene", enFallback: "Hygiene", color: "#8a6bc9" },
+  { key: "Music", icon: "🎸", label: "Music", enFallback: "Music", color: "#d46cae" },
+  { key: "Core", icon: "💬", label: "Core", enFallback: "Core", color: "#3a86ff" },
+  { key: "Food", icon: "🍎", label: "Food", enFallback: "Food", color: "#e67e22" },
+];
+
+export function bottomTabCategories(): { id: string | null; name: string; icon: string; color: string }[] {
+  const top = topLevelCategories();
+  const out: { id: string | null; name: string; icon: string; color: string }[] = [];
+  for (const tab of BOTTOM_CATEGORIES) {
+    const hit = top.find(
+      (c) =>
+        c.name.toLowerCase() === tab.key.toLowerCase() ||
+        c.name.toLowerCase() === tab.label.toLowerCase() ||
+        c.name.toLowerCase() === tab.enFallback.toLowerCase() ||
+        c.name.toLowerCase() === folderName(tab.key).toLowerCase()
+    );
+    if (hit?.hidden) continue; // parent hid this folder from the child board
+    if (hit) {
+      out.push({ id: hit.id, name: hit.name, icon: hit.icon || tab.icon, color: hit.color || tab.color });
+    } else {
+      out.push({ id: null, name: tab.label, icon: tab.icon, color: tab.color });
+    }
+  }
+  return out;
+}
+
+export function coreWords(): CustomWord[] {
+  const coreCat = topLevelCategories().find((c) => (c.name || "").toLowerCase() === "core");
+  if (!coreCat) return [];
+  const priority = ["I", "you", "want", "more", "stop", "help", "yes", "no", "go", "like"];
+  const sorted = [...coreCat.words].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  const p = [...sorted].sort((a, b) => {
+    const ai = priority.indexOf(a.label);
+    const bi = priority.indexOf(b.label);
+    if (ai === -1 && bi === -1) return 0;
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+  return p.slice(0, 7);
 }
 
 // --- Backup / export -------------------------------------------------------

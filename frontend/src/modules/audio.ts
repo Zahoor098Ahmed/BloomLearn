@@ -144,14 +144,43 @@ function playClip(uri: string): Promise<void> {
 
 function speakWord(text: string, lang: LanguageCode, rate: number): Promise<void> {
   return new Promise((resolve) => {
-    Speech.speak(text, {
-      language: lang,
-      rate,
-      pitch: 1.05,
-      onDone: () => resolve(),
-      onStopped: () => resolve(),
-      onError: () => resolve(),
-    });
+    let resolved = false;
+    const finish = () => {
+      if (!resolved) {
+        resolved = true;
+        resolve();
+      }
+    };
+    // safety timeout so a stuck speech engine never hangs playback
+    const timer = setTimeout(finish, 5000);
+
+    // Language safety: If text is pure ASCII/Latin and language is set to Arabic/Urdu,
+    // fallback to English voice so Android Google TTS doesn't crash or go completely silent.
+    const isAscii = /^[\x00-\x7F\s.,!?'"-]+$/.test(text);
+    const speechLang = isAscii && (lang === "ur-PK" || lang === "ar-SA") ? "en-US" : lang;
+
+    try {
+      Speech.speak(text, {
+        language: speechLang,
+        rate,
+        pitch: 1.05,
+        onDone: () => {
+          clearTimeout(timer);
+          finish();
+        },
+        onStopped: () => {
+          clearTimeout(timer);
+          finish();
+        },
+        onError: () => {
+          clearTimeout(timer);
+          finish();
+        },
+      });
+    } catch {
+      clearTimeout(timer);
+      finish();
+    }
   });
 }
 
@@ -163,6 +192,7 @@ export interface SpokenWord {
 
 /** Play one word: its clip if present and allowed, otherwise TTS. */
 export async function playWord(word: SpokenWord, lang: LanguageCode, rate = 0.9): Promise<void> {
+  Speech.stop();
   if (word.audioUri && word.useTextToSpeech !== true) {
     await playClip(word.audioUri);
   } else {
@@ -170,15 +200,54 @@ export async function playWord(word: SpokenWord, lang: LanguageCode, rate = 0.9)
   }
 }
 
-/** Play a whole sentence, word by word, in order. */
+/** Stop any speech currently playing. */
+export function stopSentence(): void {
+  try {
+    Speech.stop();
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Play a whole sentence: natural coherent speech if text-to-speech, or sequenced clips. */
 export async function playSentence(words: SpokenWord[], lang: LanguageCode, rate = 0.9): Promise<void> {
-  Speech.stop();
+  stopSentence();
+  if (!words || words.length === 0) return;
+
+  const hasCustomAudio = words.some((w) => w.audioUri && w.useTextToSpeech !== true);
+  if (!hasCustomAudio) {
+    // Speak continuous natural sentence
+    const fullText = words.map((w) => w.label.trim()).filter(Boolean).join(" ");
+    if (fullText) {
+      await speakWord(fullText, lang, rate);
+    }
+    return;
+  }
+
+  // Sequenced fallback for custom recorded parent voice clips
   for (const w of words) {
     await playWord(w, lang, rate);
-    await new Promise((r) => setTimeout(r, 120));
+    await new Promise((r) => setTimeout(r, 100));
   }
 }
 
 export function previewClip(uri: string): Promise<void> {
   return playClip(uri);
+}
+
+/**
+ * Play a short, distinct, gentle tone/chime to alert a caregiver or therapist
+ * that the child needs attention, independent of the sentence building flow.
+ */
+export async function playAttentionChime(): Promise<void> {
+  Speech.stop();
+  try {
+    Speech.speak("Attention please", {
+      language: "en-US",
+      pitch: 1.4,
+      rate: 1.15,
+    });
+  } catch {
+    /* ignore */
+  }
 }

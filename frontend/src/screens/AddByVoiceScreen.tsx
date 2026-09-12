@@ -88,22 +88,22 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
 
   async function makeAiImage(force = false) {
     setImgError(null);
-    setThinking("Creating a picture…");
+    setThinking(tt("avThinkingCreatePic"));
     const res = await generateWordImage(word.trim(), force);
     setThinking(null);
     if (res.dataUri) {
       setAiPreview(res.dataUri);
       saveImage(word.trim(), res.dataUri, { source: "ai", tags: [] }).catch(() => {});
-    } else setImgError(res.error ?? "Could not create a picture.");
+    } else setImgError(res.error ?? tt("avCouldNotCreatePic"));
   }
 
   async function useAiImage() {
     if (!aiPreview) return;
-    setThinking("Saving picture…");
+    setThinking(tt("avThinkingSavePic"));
     const saved = await saveGeneratedImage(aiPreview, `voice_${Date.now()}`);
     setThinking(null);
     if (saved) finishImage(saved);
-    else Alert.alert("Could not save that picture.");
+    else Alert.alert(tt("avCouldNotSavePic"));
   }
 
   // --- step 1: speak ---
@@ -120,7 +120,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
         setStep("confirm");
         return;
       }
-      setThinking("Listening…");
+      setThinking(tt("avThinkingListening"));
       const res = await transcribeAudio(uri, langHint);
       setThinking(null);
       setWord(res.text ?? "");
@@ -145,7 +145,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
     }
 
     const ok = await startRecording();
-    if (!ok) return Alert.alert("Microphone permission is needed to speak a word.");
+    if (!ok) return Alert.alert(tt("avMicPermission"));
     setRecording(true);
   }
 
@@ -153,7 +153,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
   async function runSearch(src: ImageSource, term: string) {
     setImgSource(src);
     setImgError(null);
-    setThinking("Finding pictures…");
+    setThinking(tt("avThinkingFindPics"));
     const res = await searchImages(term, src);
     setThinking(null);
     setHits(res.hits.slice(0, 8));
@@ -161,19 +161,19 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
   }
 
   async function chooseHit(h: ImageHit) {
-    setThinking("Saving picture…");
+    setThinking(tt("avThinkingSavePic"));
     const saved = await downloadTileImage(h.full, `voice_${Date.now()}`);
     setThinking(null);
     if (saved) finishImage(saved);
-    else Alert.alert("Could not download that picture. Try another.");
+    else Alert.alert(tt("avCouldNotDownloadPic"));
   }
 
   async function useCamera() {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) return Alert.alert("Camera permission is needed.");
+    if (!perm.granted) return Alert.alert(tt("avCameraPermission"));
     const res = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] });
     if (res.canceled || !res.assets[0]) return;
-    setThinking("Saving photo…");
+    setThinking(tt("avThinkingSavePhoto"));
     const saved = await saveLocalTileImage(res.assets[0].uri, `voice_${Date.now()}`);
     setThinking(null);
     if (saved) finishImage(saved);
@@ -181,10 +181,10 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
 
   async function useGallery() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) return Alert.alert("Photo library permission is needed.");
+    if (!perm.granted) return Alert.alert(tt("avGalleryPermission"));
     const res = await ImagePicker.launchImageLibraryAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] });
     if (res.canceled || !res.assets[0]) return;
-    setThinking("Saving picture…");
+    setThinking(tt("avThinkingSavePic"));
     const saved = await saveLocalTileImage(res.assets[0].uri, `voice_${Date.now()}`);
     setThinking(null);
     if (saved) finishImage(saved);
@@ -199,7 +199,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
   }
 
   function createAndSave() {
-    const c = createBlankCategory({ name: newCatName.trim() || "New Category", icon: newCatIcon });
+    const c = createBlankCategory({ name: newCatName.trim() || tt("avDefaultCategoryName"), icon: newCatIcon });
     setNewCatOpen(false);
     saveToCategory(c.id);
   }
@@ -271,7 +271,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
                 </Pressable>
                 <Pressable
                   onPress={() => {
-                    if (!word.trim()) return Alert.alert("Type a word first.");
+                    if (!word.trim()) return Alert.alert(tt("avTypeWordFirst"));
                     setStep("image");
                     runSearch("arasaac", word.trim());
                   }}
@@ -316,7 +316,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
                         <Text style={styles.nextText}>{tt("useThisPicture")}</Text>
                       </Pressable>
                     </View>
-                    <Text style={styles.stepHint}>AI-made pictures use OpenAI. Add a key in Settings — the button is ready for it.</Text>
+                    <Text style={styles.stepHint}>{tt("avAiHint")}</Text>
                   </View>
                 ) : (
                   <>
@@ -396,7 +396,7 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
           <View style={styles.modalBackdrop}>
             <View style={styles.modalCard}>
               <Text style={styles.modalTitle}>{tt("newFolder")}</Text>
-              <TextInput value={newCatName} onChangeText={setNewCatName} placeholder="Folder name" placeholderTextColor={colors.textLight} style={styles.bigInput} />
+              <TextInput value={newCatName} onChangeText={setNewCatName} placeholder={tt("avFolderNamePlaceholder")} placeholderTextColor={colors.textLight} style={styles.bigInput} />
               <View style={styles.iconWrap}>
                 {CAT_ICONS.map((ic) => (
                   <Pressable key={ic} onPress={() => setNewCatIcon(ic)} style={[styles.iconBtn, newCatIcon === ic && styles.iconBtnOn]}>
@@ -406,10 +406,10 @@ export default function AddByVoiceScreen({ visible, onClose, onSaved, presetCate
               </View>
               <View style={styles.modalRow}>
                 <Pressable onPress={() => setNewCatOpen(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                  <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+                  <Text style={{ color: colors.textMid, fontWeight: "700" }}>{tt("cancel")}</Text>
                 </Pressable>
                 <Pressable onPress={createAndSave} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                  <Text style={{ color: "white", fontWeight: "700" }}>Create &amp; save</Text>
+                  <Text style={{ color: "white", fontWeight: "700" }}>{tt("createSave")}</Text>
                 </Pressable>
               </View>
             </View>

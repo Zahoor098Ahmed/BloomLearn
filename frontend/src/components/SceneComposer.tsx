@@ -2,6 +2,8 @@ import { View, Text, StyleSheet } from "react-native";
 import type { SceneGraph, SceneEntity, SceneSize } from "../types";
 import { ACTIONS } from "../modules/sentenceScene";
 import { colors } from "../theme";
+import { useSettings } from "../context/SettingsContext";
+import { t } from "../modules/i18n";
 
 /**
  * The instant, offline half of the Hybrid Smart Sentence-to-Scene engine.
@@ -85,6 +87,8 @@ function Glyph({ entity, size, faded }: { entity: SceneEntity; size: number; fad
 const SLOT = 180; // fixed-width centred slot so we can anchor by centre point
 
 export default function SceneComposer({ graph }: { graph: SceneGraph }) {
+  const { settings } = useSettings();
+  const lang = settings.language;
   const { subject, reference, relation } = graph;
   const refSize = reference ? BASE_REF * SIZE_SCALE[reference.size] : 0;
   const subjSize = subject ? BASE_SUBJECT * SIZE_SCALE[subject.size] : 0;
@@ -121,7 +125,7 @@ export default function SceneComposer({ graph }: { graph: SceneGraph }) {
       {!p.behind && subjectNode}
 
       {!subject && !reference && !graph.conceptKey && (
-        <Text style={styles.empty}>Say or type a sentence — the picture builds as you talk.</Text>
+        <Text style={styles.empty}>{t("scEmptyHint", lang)}</Text>
       )}
 
       {/* colour + relation cue strip */}

@@ -1,7 +1,11 @@
 import { View, Text, Image, StyleSheet } from "react-native";
 import type { SceneSession, SceneItem } from "../modules/sceneSession";
 import { searchPhrase } from "../modules/sceneSession";
+import { getPictogramUrl } from "../modules/aacPictograms";
+import { dictUrl } from "../modules/imageLibrary";
 import { colors } from "../theme";
+import { useSettings } from "../context/SettingsContext";
+import { t, wordLabel } from "../modules/i18n";
 
 /**
  * The built scene, positioned: "cat above the table" draws the cat above the
@@ -83,22 +87,23 @@ function Item({ p, uri }: { p: Placed; uri?: string }) {
         opacity: it.behind ? 0.7 : 1,
       }}
     >
-      {Array.from({ length: n }).map((_, i) => (
-        <View key={i} style={{ flex: 1, height: "100%", marginLeft: i === 0 ? 0 : "-10%" }}>
-          {uri ? (
-            <>
-              <Image source={{ uri }} style={styles.pic} resizeMode="contain" />
-              {col && <Image source={{ uri }} style={[styles.pic, styles.glaze, { tintColor: col }]} resizeMode="contain" />}
-            </>
-          ) : uri === "" ? (
-            // looked up and found nothing — a permanent grey box would look
-            // broken; the emoji glyph is always there as a graceful fallback
-            <Text style={styles.fallbackGlyph}>{it.glyph}</Text>
-          ) : (
-            <View style={styles.loading} />
-          )}
-        </View>
-      ))}
+      {Array.from({ length: n }).map((_, i) => {
+        const resolvedUri = uri || getPictogramUrl(it.type) || dictUrl(it.type);
+        return (
+          <View key={i} style={{ flex: 1, height: "100%", marginLeft: i === 0 ? 0 : "-10%" }}>
+            {resolvedUri ? (
+              <>
+                <Image source={{ uri: resolvedUri }} style={styles.pic} resizeMode="contain" />
+                {col && <Image source={{ uri: resolvedUri }} style={[styles.pic, styles.glaze, { tintColor: col }]} resizeMode="contain" />}
+              </>
+            ) : uri === "" ? (
+              <Text style={styles.fallbackGlyph}>{it.glyph}</Text>
+            ) : (
+              <View style={styles.loading} />
+            )}
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -182,6 +187,8 @@ function Connector({ from, to, color = "#3f8f86" }: { from: { x: number; y: numb
 }
 
 export default function SceneStage({ session, uris = {} }: { session: SceneSession; uris?: Record<string, string> }) {
+  const { settings } = useSettings();
+  const lang = settings.language;
   if (session.anatomy) {
     const seen = new Set<string>();
     const uniq = session.anatomyParts.filter((p) => {
@@ -195,7 +202,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
 
     return (
       <View style={styles.bodyStage}>
-        <Text style={styles.bodyTitle}>Parts of the body</Text>
+        <Text style={styles.bodyTitle}>{t("ssBodyTitle", lang)}</Text>
         <Image source={{ uri: asrc(6473) }} style={styles.bodyFigure} resizeMode="contain" />
 
         {organs.map((o, i) => {
@@ -207,7 +214,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
                 <Image source={{ uri: asrc(o.id) }} style={styles.badgeImg} resizeMode="contain" />
               </View>
               <Text style={[styles.badgeLabel, { left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }]} numberOfLines={1}>
-                {o.label}
+                {wordLabel(o.label, lang)}
               </Text>
             </View>
           );
@@ -227,13 +234,13 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
               style={[styles.organLabel, { top: `${p.y * 100}%` }, p.side === "L" ? { left: 0 } : { right: 0, textAlign: "right" }]}
               numberOfLines={1}
             >
-              {p.label}
+              {wordLabel(p.label, lang)}
             </Text>
           </View>
         ))}
 
         {!organs.length && !parts.length && (
-          <Text style={styles.anatomyHint}>Say “heart”, “add lungs”, “add stomach”… to build the diagram.</Text>
+          <Text style={styles.anatomyHint}>{t("ssAnatomyHint", lang)}</Text>
         )}
       </View>
     );
@@ -248,7 +255,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
         <Item key={p.it.id} p={p} uri={uris[searchPhrase(p.it)]} />
       ))}
       {!session.items.length && (
-        <Text style={styles.empty}>Say an object — “table”, then “cat above the table”, then “open the cat’s eyes”.</Text>
+        <Text style={styles.empty}>{t("ssEmptyHint", lang)}</Text>
       )}
     </View>
   );

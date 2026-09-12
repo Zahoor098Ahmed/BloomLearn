@@ -49,6 +49,73 @@ export const CONTENT_TAG_LABELS: Record<ContentTag, string> = {
   nature: '🌿 Nature',
 };
 
+export type TherapyCategory = 'speech' | 'occupational' | 'behavioral' | 'sensory';
+
+export interface TherapyGoal {
+  id: string;
+  title: string;
+  category: TherapyCategory;
+  targetCount: number;
+  currentCount: number;
+  unit: string;
+  completed: boolean;
+  prescribedBy?: string;
+  assignedDate: string;
+  notes?: string;
+}
+
+export interface DoctorContact {
+  doctorName: string;
+  speciality: string;
+  clinicName: string;
+  phone: string;
+  email: string;
+  notes?: string;
+}
+
+export interface ClinicalNote {
+  id: string;
+  date: string;
+  author: string;
+  title: string;
+  content: string;
+  recommendations: string[];
+}
+
+export type PageSetStyle = 'category-folders' | 'core-grid';
+
+export interface Supervisor {
+  id: string;
+  name: string;
+  role: 'SLP' | 'OT' | 'Parent' | 'Teacher';
+  email: string;
+  phone?: string;
+  permissions: 'read' | 'edit';
+}
+
+export interface CareLogEntry {
+  id: string;
+  date: string; // ISO string
+  mood: "happy" | "calm" | "frustrated" | "overwhelmed" | "tired";
+  sensoryTriggers?: string[];
+  meltdownDurationMin?: number;
+  communicationWins?: string;
+  notes?: string;
+}
+
+export interface CaregiverPasscard {
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  secondaryContactName?: string;
+  secondaryContactPhone?: string;
+  communicationStyle: string;
+  sensoryTriggers: string[];
+  calmingStrategies: string[];
+  allergies: string[];
+  dietaryRestrictions?: string;
+  specialInstructions?: string;
+}
+
 export interface ChildProfile {
   id: string;
   name: string;
@@ -62,6 +129,14 @@ export interface ChildProfile {
   photoUrl?: string;
   faceConsent?: boolean;
   generalConsent?: boolean;
+  therapyGoals?: TherapyGoal[];
+  doctorContact?: DoctorContact;
+  clinicalNotes?: ClinicalNote[];
+  pageSetStyle?: PageSetStyle;
+  buttonDensity?: number; // 1 (beginner) .. 35+ (dense)
+  supervisors?: Supervisor[];
+  careLogs?: CareLogEntry[];
+  passcard?: CaregiverPasscard;
 }
 
 export type LanguageCode = 'en-US' | 'ar-SA' | 'ur-PK' | 'hi-IN' | 'es-ES' | 'fr-FR';
@@ -106,7 +181,11 @@ export type AppScreen =
   | 'doctor-panel'
   | 'category-builder'
   | 'my-categories'
-  | 'sentence-picture';
+  | 'sentence-picture'
+  | 'phrase-library'
+  | 'review-queue'
+  | 'voice-command'
+  | 'admin-panel';
 
 export type TabScreen = 'home' | 'speak' | 'schedule' | 'games' | 'progress';
 
@@ -151,6 +230,8 @@ export interface CustomCategory {
   /** Folder colour + icon shown on the board. */
   color?: string;
   icon?: string;
+  /** Parent-only: hide this whole folder from the child-facing Talk board. */
+  hidden?: boolean;
   /** null / undefined = a top-level folder. Set = a sub-folder of that category. */
   parentCategoryId?: string | null;
   order?: number;
@@ -195,4 +276,66 @@ export interface SceneGraph {
   conceptKey: string | null;
   /** 0..1 — how well the on-device engine understood the sentence. */
   confidence: number;
+}
+
+// ---------------------------------------------------------------------------
+// Section 5 — New data model additions.
+// PhraseMatch: the library used by the Voice-Command Matching screen
+// (Section 3.4). A single entry matches multiple trigger-phrase variations to
+// one image + spoken label. Separate from the AAC tile vocabulary; stored
+// and managed independently.
+// ---------------------------------------------------------------------------
+
+export type PhraseLevel = 1 | 2 | 3 | 4 | 5;
+
+export interface PhraseMatch {
+  id: string;
+  /**
+   * All the different ways a child or therapist might say this item (lowercase,
+   * stemmed loosely — first match wins). e.g. ["on the table", "on top of table",
+   * book on table"].
+   */
+  triggerPhrases: string[];
+  /** Local image path (saved to the device document directory). */
+  imagePath: string;
+  /** Text spoken aloud on a match and shown under the image. */
+  label: string;
+  /** Human-facing category used for filtering/browsing in the admin library. */
+  category: string;
+  /** Difficulty / developmental level (1 = starter … 5 = advanced). */
+  level: PhraseLevel;
+  /** Optional provenance when this entry came from an imported book. */
+  bookSource?: string | null;
+  /** Optional license attribution (required for GDL / CC-BY imports). */
+  licenseRef?: string | null;
+  createdAt: number;
+  updatedAt: number;
+  /** Number of times this entry was matched successfully on the child screen. */
+  matchCount: number;
+}
+
+/**
+ * Admin Content Review Queue (Section 4.4). An item enters here from any
+ * auto-extracted content before it is approved and published as a PhraseMatch.
+ * Only approved entries are visible on the child-facing Voice-Command screen.
+ */
+export type ReviewStatus = "pending" | "approved" | "rejected";
+
+export interface ContentReviewEntry {
+  id: string;
+  phrase: string;
+  /** Optional alternate detected variations from the extraction step. */
+  suggestedVariations: string[];
+  imagePath: string;
+  suggestedLabel: string;
+  suggestedCategory: string;
+  suggestedLevel: PhraseLevel;
+  /** Human-readable source reference for the review context, e.g. the book page. */
+  source: string;
+  sourceLicense: string;
+  status: ReviewStatus;
+  /** Source attribution kept after being extracted (rejected reviews still hold. */
+  createdAt: number;
+  reviewedAt?: number | null;
+  reviewerNote?: string | null;
 }

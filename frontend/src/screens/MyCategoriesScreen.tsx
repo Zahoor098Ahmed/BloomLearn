@@ -4,6 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import type { CustomCategory, CustomWord } from "../types";
 import { useSettings } from "../context/SettingsContext";
+import { t, type TKey } from "../modules/i18n";
 import { playWord } from "../modules/audio";
 import {
   ensureCategoriesLoaded,
@@ -17,9 +18,12 @@ import {
   reorderCategory,
   createBlankCategory,
   updateCategoryMeta,
+  setCategoryHidden,
   groupIntoAlphaRanges,
   buildBackup,
   restoreBackup,
+  retranslateSeedBoard,
+  setSeedLanguage,
   type MoveKind,
 } from "../modules/customCategories";
 import WordEditor from "../components/WordEditor";
@@ -36,6 +40,7 @@ interface Props {
 export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
+  const tt = (k: TKey) => t(k, lang);
   const [ready, setReady] = useState(false);
   const [cats, setCats] = useState<CustomCategory[]>([]);
   const [openId, setOpenId] = useState<string | null>(null);
@@ -60,13 +65,20 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
     });
   }, []);
 
+  useEffect(() => {
+    if (!ready) return;
+    setSeedLanguage(lang);
+    retranslateSeedBoard(lang);
+    refresh();
+  }, [ready, lang]);
+
   const open = openId ? getCategory(openId) ?? null : null;
 
   function confirmDelete(cat: CustomCategory) {
-    Alert.alert(`Delete "${cat.name}"?`, `${cat.words.length} words (and any sub-folders) will be removed.`, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(tt("mcDeleteFolderTitle").replace("{name}", cat.name), tt("mcDeleteFolderMsg").replace("{count}", String(cat.words.length)), [
+      { text: tt("cancel"), style: "cancel" },
       {
-        text: "Delete",
+        text: tt("mcDelete"),
         style: "destructive",
         onPress: () => {
           deleteCategoryDeep(cat.id);
@@ -91,11 +103,11 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
   async function exportAll() {
     const backup = buildBackup();
     if (backup.categoryCount === 0) {
-      Alert.alert("Nothing to export yet.");
+      Alert.alert(tt("mcNothingToExport"));
       return;
     }
     try {
-      await Share.share({ title: "KiddoCare categories backup", message: JSON.stringify(backup, null, 2) });
+      await Share.share({ title: tt("mcBackupShareTitle"), message: JSON.stringify(backup, null, 2) });
     } catch {
       /* dismissed */
     }
@@ -106,7 +118,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
     try {
       parsed = JSON.parse(importText);
     } catch {
-      Alert.alert("That doesn't look like valid backup JSON.");
+      Alert.alert(tt("mcInvalidBackupJson"));
       return;
     }
     const report = restoreBackup(parsed, "merge");
@@ -114,8 +126,11 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
     setImportText("");
     refresh();
     Alert.alert(
-      report.ok ? "Restore complete" : "Restored with warnings",
-      `${report.restoredCategories} categories · ${report.restoredWords} words · ${report.restoredImages} images` +
+      report.ok ? tt("mcRestoreCompleteTitle") : tt("mcRestoredWithWarningsTitle"),
+      tt("mcRestoreSummary")
+        .replace("{cats}", String(report.restoredCategories))
+        .replace("{words}", String(report.restoredWords))
+        .replace("{images}", String(report.restoredImages)) +
         (report.issues.length ? `\n\n${report.issues.join("\n")}` : ""),
     );
   }
@@ -141,7 +156,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
             </Pressable>
             <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle}>{open.icon} {open.name}</Text>
-              <Text style={styles.headerSub}>{open.words.length} words</Text>
+              <Text style={styles.headerSub}>{tt("mcWordsCount").replace("{count}", String(open.words.length))}</Text>
             </View>
             <Pressable onPress={() => openMeta(open)} style={styles.backBtn}>
               <Ionicons name="create-outline" size={18} color="white" />
@@ -154,7 +169,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
           <View style={styles.toolbar}>
             <Pressable onPress={() => setEditorWord("new")} style={[styles.toolBtn, styles.toolBtnActive]}>
               <Ionicons name="add" size={14} color="white" />
-              <Text style={[styles.toolBtnText, { color: "white" }]}>Add word</Text>
+              <Text style={[styles.toolBtnText, { color: "white" }]}>{tt("mcAddWord")}</Text>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -164,7 +179,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
               style={styles.toolBtn}
             >
               <Ionicons name="swap-vertical" size={14} color={colors.forestDark} />
-              <Text style={styles.toolBtnText}>Sort A–Z</Text>
+              <Text style={styles.toolBtnText}>{tt("mcSortAZ")}</Text>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -174,7 +189,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
               style={[styles.toolBtn, grouped && styles.toolBtnActive]}
             >
               <Ionicons name="albums-outline" size={14} color={grouped ? "white" : colors.forestDark} />
-              <Text style={[styles.toolBtnText, grouped && { color: "white" }]}>Groups</Text>
+              <Text style={[styles.toolBtnText, grouped && { color: "white" }]}>{tt("mcGroups")}</Text>
             </Pressable>
           </View>
 
@@ -191,7 +206,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
                     )}
                     <View style={{ flex: 1 }}>
                       <Text style={styles.wordLabel}>{w.label}</Text>
-                      <Text style={styles.wordPhrase}>{w.audioUri && !w.useTextToSpeech ? "🎙️ recorded voice" : "🔊 text-to-speech"}</Text>
+                      <Text style={styles.wordPhrase}>{w.audioUri && !w.useTextToSpeech ? tt("mcRecordedVoice") : tt("mcTextToSpeech")}</Text>
                     </View>
                     <Pressable
                       onPress={() =>
@@ -215,7 +230,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
                 ))}
               </View>
             ))}
-            {!grouped && <Text style={styles.moveHint}>Tap a word to edit its picture and voice. Use the arrows to reorder.</Text>}
+            {!grouped && <Text style={styles.moveHint}>{tt("mcMoveHint")}</Text>}
           </ScrollView>
         </SafeAreaView>
 
@@ -230,8 +245,8 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
         <Modal visible={metaOpen} transparent animationType="fade" onRequestClose={() => setMetaOpen(false)}>
           <View style={styles.modalBackdrop}>
             <View style={styles.modalCard}>
-              <Text style={styles.modalTitle}>Folder</Text>
-              <TextInput value={metaName} onChangeText={setMetaName} placeholder="Folder name" placeholderTextColor={colors.textLight} style={styles.importInput2} />
+              <Text style={styles.modalTitle}>{tt("mcFolderTitle")}</Text>
+              <TextInput value={metaName} onChangeText={setMetaName} placeholder={tt("mcFolderNamePlaceholder")} placeholderTextColor={colors.textLight} style={styles.importInput2} />
               <View style={styles.iconWrap}>
                 {CAT_ICONS.map((ic) => (
                   <Pressable key={ic} onPress={() => setMetaIcon(ic)} style={[styles.iconBtn, metaIcon === ic && styles.iconBtnOn]}>
@@ -241,10 +256,10 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
               </View>
               <View style={styles.modalRow}>
                 <Pressable onPress={() => setMetaOpen(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                  <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+                  <Text style={{ color: colors.textMid, fontWeight: "700" }}>{tt("cancel")}</Text>
                 </Pressable>
                 <Pressable onPress={saveMeta} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                  <Text style={{ color: "white", fontWeight: "700" }}>Save</Text>
+                  <Text style={{ color: "white", fontWeight: "700" }}>{tt("save")}</Text>
                 </Pressable>
               </View>
             </View>
@@ -262,63 +277,72 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
             <Ionicons name="arrow-back" size={18} color="white" />
           </Pressable>
           <View style={{ flex: 1 }}>
-            <Text style={styles.headerTitle}>My Categories</Text>
-            <Text style={styles.headerSub}>{cats.length} caregiver-made</Text>
+            <Text style={styles.headerTitle}>{tt("mcMyCategoriesTitle")}</Text>
+            <Text style={styles.headerSub}>{tt("mcCaregiverMade").replace("{count}", String(cats.length))}</Text>
           </View>
         </View>
 
         <ScrollView contentContainerStyle={styles.body}>
           <Pressable onPress={() => setVoiceOpen(true)} style={[styles.primaryBtn, { backgroundColor: colors.forest }]}>
             <Ionicons name="mic" size={16} color="white" />
-            <Text style={styles.primaryBtnText}>Add word by voice</Text>
+            <Text style={styles.primaryBtnText}>{tt("mcAddWordByVoice")}</Text>
           </Pressable>
 
           <View style={styles.ioRow}>
             <Pressable
               onPress={() => {
-                const c = createBlankCategory({ name: "New Folder" });
+                const c = createBlankCategory({ name: tt("mcDefaultFolderName") });
                 refresh();
                 setOpenId(c.id);
               }}
               style={[styles.primaryBtn, { backgroundColor: colors.blueDeep }]}
             >
               <Ionicons name="folder-open" size={16} color="white" />
-              <Text style={styles.primaryBtnText}>New folder</Text>
+              <Text style={styles.primaryBtnText}>{tt("mcNewFolder")}</Text>
             </Pressable>
             <Pressable onPress={onCreate} style={[styles.primaryBtn, { backgroundColor: colors.blueDeep }]}>
               <Ionicons name="sparkles" size={16} color="white" />
-              <Text style={styles.primaryBtnText}>Bulk build</Text>
+              <Text style={styles.primaryBtnText}>{tt("mcBulkBuild")}</Text>
             </Pressable>
           </View>
 
           <View style={styles.ioRow}>
             <Pressable onPress={exportAll} style={styles.ioBtn}>
               <Ionicons name="share-outline" size={15} color={colors.forestDark} />
-              <Text style={styles.ioBtnText}>Export / backup</Text>
+              <Text style={styles.ioBtnText}>{tt("mcExportBackup")}</Text>
             </Pressable>
             <Pressable onPress={() => setImportOpen(true)} style={styles.ioBtn}>
               <Ionicons name="download-outline" size={15} color={colors.forestDark} />
-              <Text style={styles.ioBtnText}>Import</Text>
+              <Text style={styles.ioBtnText}>{tt("mcImport")}</Text>
             </Pressable>
           </View>
 
           {ready && cats.length === 0 && (
             <View style={styles.empty}>
               <Text style={{ fontSize: 44 }}>🗂️</Text>
-              <Text style={styles.emptyText}>No folders yet. Tap "New folder" to start, or "Bulk build" to generate one.</Text>
+              <Text style={styles.emptyText}>{tt("mcEmptyFolders")}</Text>
             </View>
           )}
 
           {topLevelCategories().map((c, i, arr) => (
-            <View key={c.id} style={styles.catRow}>
+            <View key={c.id} style={[styles.catRow, c.hidden && styles.catRowHidden]}>
               <Pressable onPress={() => setOpenId(c.id)} style={styles.catRowMain}>
                 <View style={[styles.catIcon, { backgroundColor: (c.color ?? colors.forest) + "22" }]}>
                   <Text style={{ fontSize: 22 }}>{c.icon ?? "📁"}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.catName}>{c.name}</Text>
-                  <Text style={styles.catMeta}>{c.words.length} words</Text>
+                  <Text style={styles.catMeta}>
+                    {tt("mcWordsCount").replace("{count}", String(c.words.length))}{c.hidden ? tt("mcHiddenFromChild") : ""}
+                  </Text>
                 </View>
+              </Pressable>
+              <Pressable
+                onPress={() => { setCategoryHidden(c.id, !c.hidden); refresh(); }}
+                hitSlop={6}
+                style={styles.eyeBtn}
+              >
+                <Ionicons name={c.hidden ? "eye-off" : "eye-outline"} size={19} color={c.hidden ? colors.textLight : colors.forestDark} />
               </Pressable>
               <Pressable onPress={() => { reorderCategory(c.id, "up"); refresh(); }} disabled={i === 0} hitSlop={6} style={i === 0 && { opacity: 0.3 }}>
                 <Ionicons name="chevron-up" size={18} color={colors.textMid} />
@@ -336,7 +360,7 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
       <Modal visible={importOpen} transparent animationType="fade" onRequestClose={() => setImportOpen(false)}>
         <View style={styles.modalBackdrop}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Paste backup JSON</Text>
+            <Text style={styles.modalTitle}>{tt("mcPasteBackupTitle")}</Text>
             <TextInput
               value={importText}
               onChangeText={setImportText}
@@ -347,10 +371,10 @@ export default function MyCategoriesScreen({ onBack, onCreate }: Props) {
             />
             <View style={styles.modalRow}>
               <Pressable onPress={() => setImportOpen(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                <Text style={{ color: colors.textMid, fontWeight: "700" }}>Cancel</Text>
+                <Text style={{ color: colors.textMid, fontWeight: "700" }}>{tt("cancel")}</Text>
               </Pressable>
               <Pressable onPress={runImport} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                <Text style={{ color: "white", fontWeight: "700" }}>Restore</Text>
+                <Text style={{ color: "white", fontWeight: "700" }}>{tt("mcRestore")}</Text>
               </Pressable>
             </View>
           </View>
@@ -410,7 +434,9 @@ const styles = StyleSheet.create({
     borderRadius: radius,
     paddingRight: 12,
   },
+  catRowHidden: { opacity: 0.55, borderStyle: "dashed" },
   catRowMain: { flex: 1, flexDirection: "row", alignItems: "center", gap: 14, padding: 14 },
+  eyeBtn: { padding: 6 },
   catIcon: { width: 44, height: 44, borderRadius: 12, backgroundColor: colors.cardMuted, alignItems: "center", justifyContent: "center" },
   wordThumb: { width: 34, height: 34, borderRadius: 7, backgroundColor: colors.cardMuted },
   importInput2: { backgroundColor: colors.card, borderWidth: 2, borderColor: colors.border, borderRadius: radius, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: colors.textDark },

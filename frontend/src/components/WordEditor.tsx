@@ -15,6 +15,8 @@ import {
   type ImageSource,
 } from "../modules/imageSearch";
 import { colors, radius } from "../theme";
+import { useSettings } from "../context/SettingsContext";
+import { t } from "../modules/i18n";
 
 interface Props {
   visible: boolean;
@@ -27,6 +29,8 @@ interface Props {
 const SIZES: TileSize[] = ["sm", "md", "lg"];
 
 export default function WordEditor({ visible, catId, word, onClose, onSaved }: Props) {
+  const { settings } = useSettings();
+  const lang = settings.language;
   const editing = !!word;
   const [label, setLabel] = useState("");
   const [emoji, setEmoji] = useState("🔹");
@@ -55,10 +59,10 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
 
   async function pickFromCamera() {
     const perm = await ImagePicker.requestCameraPermissionsAsync();
-    if (!perm.granted) return Alert.alert("Camera permission is needed.");
+    if (!perm.granted) return Alert.alert(t("weCameraPermission", lang));
     const res = await ImagePicker.launchCameraAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] });
     if (res.canceled || !res.assets[0]) return;
-    setBusy("Saving photo…");
+    setBusy(t("weSavingPhoto", lang));
     const saved = await saveLocalTileImage(res.assets[0].uri, tempId);
     setBusy(null);
     if (saved) setImageUri(saved);
@@ -66,10 +70,10 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
 
   async function pickFromGallery() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (!perm.granted) return Alert.alert("Photo library permission is needed.");
+    if (!perm.granted) return Alert.alert(t("weGalleryPermission", lang));
     const res = await ImagePicker.launchImageLibraryAsync({ quality: 0.7, allowsEditing: true, aspect: [1, 1] });
     if (res.canceled || !res.assets[0]) return;
-    setBusy("Saving picture…");
+    setBusy(t("weSavingPicture", lang));
     const saved = await saveLocalTileImage(res.assets[0].uri, tempId);
     setBusy(null);
     if (saved) setImageUri(saved);
@@ -77,11 +81,11 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
 
   async function chooseSearchImage(hit: ImageHit) {
     setSearchOpen(false);
-    setBusy("Downloading…");
+    setBusy(t("weDownloading", lang));
     const saved = await downloadTileImage(hit.full, tempId);
     setBusy(null);
     if (saved) setImageUri(saved);
-    else Alert.alert("Could not download that picture.");
+    else Alert.alert(t("weDownloadFailed", lang));
   }
 
   async function toggleRecord() {
@@ -95,7 +99,7 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
       return;
     }
     const ok = await startRecording();
-    if (!ok) return Alert.alert("Microphone permission is needed to record a voice.");
+    if (!ok) return Alert.alert(t("weMicPermission", lang));
     setRecording(true);
   }
 
@@ -107,7 +111,7 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
 
   function save() {
     const l = label.trim();
-    if (!l) return Alert.alert("Type a word first.");
+    if (!l) return Alert.alert(t("weTypeWordFirst", lang));
     const patch = { label: l, phrase: l, emoji, imageUri, audioUri, useTextToSpeech: audioUri ? useTts : true, size };
     if (editing && word) updateWord(catId, word.id, patch);
     else addWord(catId, patch);
@@ -117,10 +121,10 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
 
   function del() {
     if (!word) return;
-    Alert.alert(`Delete "${word.label}"?`, undefined, [
-      { text: "Cancel", style: "cancel" },
+    Alert.alert(t("weDeleteWordTitle", lang).replace("{word}", word.label), undefined, [
+      { text: t("cancel", lang), style: "cancel" },
       {
-        text: "Delete",
+        text: t("weDelete", lang),
         style: "destructive",
         onPress: () => {
           deleteClip(word.audioUri);
@@ -140,7 +144,7 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
             <Pressable onPress={onClose} style={styles.hbtn}>
               <Ionicons name="close" size={20} color="white" />
             </Pressable>
-            <Text style={styles.htitle}>{editing ? "Edit word" : "Add word"}</Text>
+            <Text style={styles.htitle}>{editing ? t("weEditWord", lang) : t("weAddWord", lang)}</Text>
             {editing ? (
               <Pressable onPress={del} style={styles.hbtn}>
                 <Ionicons name="trash-outline" size={18} color="white" />
@@ -151,23 +155,23 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
           </View>
 
           <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
-            <Text style={styles.label}>Word / phrase</Text>
-            <TextInput value={label} onChangeText={setLabel} placeholder="e.g. juice" placeholderTextColor={colors.textLight} style={styles.input} />
+            <Text style={styles.label}>{t("weWordPhrase", lang)}</Text>
+            <TextInput value={label} onChangeText={setLabel} placeholder={t("wePlaceholderWord", lang)} placeholderTextColor={colors.textLight} style={styles.input} />
 
-            <Text style={styles.label}>Picture</Text>
+            <Text style={styles.label}>{t("wePicture", lang)}</Text>
             <View style={styles.previewRow}>
               <View style={styles.preview}>
                 {imageUri ? <Image source={{ uri: imageUri }} style={styles.previewImg} /> : <Text style={{ fontSize: 40 }}>{emoji}</Text>}
               </View>
               <View style={{ flex: 1, gap: 8 }}>
                 <View style={styles.srcRow}>
-                  <SrcBtn icon="camera" label="Camera" onPress={pickFromCamera} />
-                  <SrcBtn icon="images" label="Gallery" onPress={pickFromGallery} />
+                  <SrcBtn icon="camera" label={t("weCamera", lang)} onPress={pickFromCamera} />
+                  <SrcBtn icon="images" label={t("weGallery", lang)} onPress={pickFromGallery} />
                 </View>
                 <View style={styles.srcRow}>
-                  <SrcBtn icon="search" label="Search" onPress={() => setSearchOpen(true)} />
+                  <SrcBtn icon="search" label={t("weSearch", lang)} onPress={() => setSearchOpen(true)} />
                   {imageUri ? (
-                    <SrcBtn icon="close-circle" label="Remove" onPress={() => setImageUri(undefined)} />
+                    <SrcBtn icon="close-circle" label={t("weRemove", lang)} onPress={() => setImageUri(undefined)} />
                   ) : (
                     <View style={{ flex: 1 }} />
                   )}
@@ -178,22 +182,22 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
               <TextInput
                 value={emoji}
                 onChangeText={(v) => setEmoji(v.slice(0, 2) || "🔹")}
-                placeholder="or type an emoji"
+                placeholder={t("wePlaceholderEmoji", lang)}
                 placeholderTextColor={colors.textLight}
                 style={[styles.input, { marginTop: 8 }]}
               />
             )}
 
-            <Text style={styles.label}>Voice</Text>
+            <Text style={styles.label}>{t("weVoice", lang)}</Text>
             {audioUri ? (
               <View style={styles.voiceRow}>
                 <Pressable onPress={() => previewClip(audioUri)} style={styles.voiceBtn}>
                   <Ionicons name="play" size={16} color={colors.forestDark} />
-                  <Text style={styles.voiceBtnText}>Preview</Text>
+                  <Text style={styles.voiceBtnText}>{t("wePreview", lang)}</Text>
                 </Pressable>
                 <Pressable onPress={toggleRecord} style={styles.voiceBtn}>
                   <Ionicons name={recording ? "stop" : "mic"} size={16} color={colors.forestDark} />
-                  <Text style={styles.voiceBtnText}>{recording ? "Stop" : "Re-record"}</Text>
+                  <Text style={styles.voiceBtnText}>{recording ? t("weStop", lang) : t("weReRecord", lang)}</Text>
                 </Pressable>
                 <Pressable onPress={removeVoice} style={styles.voiceBtn}>
                   <Ionicons name="trash-outline" size={16} color={colors.pinkDeep} />
@@ -202,20 +206,20 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
             ) : (
               <Pressable onPress={toggleRecord} style={[styles.recordBtn, recording && styles.recordBtnOn]}>
                 <Ionicons name={recording ? "stop" : "mic"} size={18} color="white" />
-                <Text style={styles.recordBtnText}>{recording ? "Stop recording" : "Record a voice"}</Text>
+                <Text style={styles.recordBtnText}>{recording ? t("weStopRecording", lang) : t("weRecordVoice", lang)}</Text>
               </Pressable>
             )}
             <Text style={styles.voiceNote}>
-              {audioUri && !useTts ? "The child hears the recorded voice." : "The child hears the built-in speaking voice."}
+              {audioUri && !useTts ? t("weVoiceNoteRecorded", lang) : t("weVoiceNoteTts", lang)}
             </Text>
             {audioUri && (
               <Pressable onPress={() => setUseTts((v) => !v)} style={styles.ttsToggle}>
                 <Ionicons name={useTts ? "checkbox" : "square-outline"} size={18} color={colors.forest} />
-                <Text style={styles.ttsToggleText}>Use text-to-speech instead of the recording</Text>
+                <Text style={styles.ttsToggleText}>{t("weUseTtsInstead", lang)}</Text>
               </Pressable>
             )}
 
-            <Text style={styles.label}>Tile size</Text>
+            <Text style={styles.label}>{t("weTileSize", lang)}</Text>
             <View style={styles.sizeRow}>
               {SIZES.map((s) => (
                 <Pressable key={s} onPress={() => setSize(s)} style={[styles.sizeBtn, size === s && styles.sizeBtnOn]}>
@@ -226,7 +230,7 @@ export default function WordEditor({ visible, catId, word, onClose, onSaved }: P
 
             <Pressable onPress={save} style={styles.saveBtn}>
               <Ionicons name="checkmark" size={18} color="white" />
-              <Text style={styles.saveBtnText}>{editing ? "Save changes" : "Add to board"}</Text>
+              <Text style={styles.saveBtnText}>{editing ? t("weSaveChanges", lang) : t("weAddToBoard", lang)}</Text>
             </Pressable>
           </ScrollView>
 
@@ -269,6 +273,8 @@ function ImageSearchModal({
   onClose: () => void;
   onPick: (h: ImageHit) => void;
 }) {
+  const { settings } = useSettings();
+  const lang = settings.language;
   const [term, setTerm] = useState("");
   const [source, setSource] = useState<ImageSource>("arasaac");
   const [hits, setHits] = useState<ImageHit[]>([]);
@@ -301,7 +307,7 @@ function ImageSearchModal({
             <Pressable onPress={onClose} style={styles.hbtn}>
               <Ionicons name="arrow-back" size={20} color="white" />
             </Pressable>
-            <Text style={styles.htitle}>Find a picture</Text>
+            <Text style={styles.htitle}>{t("weFindPicture", lang)}</Text>
             <View style={styles.hbtn} />
           </View>
 
@@ -309,7 +315,7 @@ function ImageSearchModal({
             <TextInput
               value={term}
               onChangeText={setTerm}
-              placeholder="Search word…"
+              placeholder={t("wePlaceholderSearch", lang)}
               placeholderTextColor={colors.textLight}
               style={styles.searchInput}
               onSubmitEditing={() => run(source, term)}
@@ -319,14 +325,20 @@ function ImageSearchModal({
             </Pressable>
           </View>
 
-          <View style={styles.tabRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabRow}>
             <Pressable onPress={() => run("arasaac", term)} style={[styles.tab, source === "arasaac" && styles.tabOn]}>
-              <Text style={[styles.tabText, source === "arasaac" && { color: "white" }]}>AAC symbols</Text>
+              <Text style={[styles.tabText, source === "arasaac" && { color: "white" }]}>ARASAAC</Text>
+            </Pressable>
+            <Pressable onPress={() => run("opensymbols", term)} style={[styles.tab, source === "opensymbols" && styles.tabOn]}>
+              <Text style={[styles.tabText, source === "opensymbols" && { color: "white" }]}>{t("weSourceOpenSymbols", lang)}</Text>
+            </Pressable>
+            <Pressable onPress={() => run("mulberry", term)} style={[styles.tab, source === "mulberry" && styles.tabOn]}>
+              <Text style={[styles.tabText, source === "mulberry" && { color: "white" }]}>Mulberry</Text>
             </Pressable>
             <Pressable onPress={() => run("pixabay", term)} style={[styles.tab, source === "pixabay" && styles.tabOn]}>
-              <Text style={[styles.tabText, source === "pixabay" && { color: "white" }]}>Photos{hasPixabayKey() ? "" : " (key)"}</Text>
+              <Text style={[styles.tabText, source === "pixabay" && { color: "white" }]}>{hasPixabayKey() ? t("photos", lang) : t("weSourcePhotosKey", lang)}</Text>
             </Pressable>
-          </View>
+          </ScrollView>
 
           <ScrollView contentContainerStyle={styles.hitGrid}>
             {loading && <ActivityIndicator color={colors.forest} style={{ marginTop: 30 }} />}
@@ -334,6 +346,11 @@ function ImageSearchModal({
             {hits.map((h) => (
               <Pressable key={h.id} onPress={() => onPick(h)} style={styles.hit}>
                 <Image source={{ uri: h.thumb }} style={styles.hitImg} resizeMode="contain" />
+                {h.repo && (
+                  <View style={styles.hitBadge}>
+                    <Text style={styles.hitBadgeText} numberOfLines={1}>{h.repo}</Text>
+                  </View>
+                )}
               </Pressable>
             ))}
           </ScrollView>
@@ -389,7 +406,9 @@ const styles = StyleSheet.create({
   tabOn: { backgroundColor: colors.forest },
   tabText: { fontWeight: "700", fontSize: 12.5, color: colors.textMid },
   hitGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8, padding: 16 },
-  hit: { width: "31%", aspectRatio: 1, backgroundColor: colors.card, borderRadius: 10, borderWidth: 1, borderColor: colors.border, overflow: "hidden" },
+  hit: { width: "31%", aspectRatio: 1, backgroundColor: colors.card, borderRadius: 10, borderWidth: 1, borderColor: colors.border, overflow: "hidden", position: "relative" },
   hitImg: { width: "100%", height: "100%" },
+  hitBadge: { position: "absolute", bottom: 2, right: 2, backgroundColor: "rgba(0,0,0,0.6)", borderRadius: 4, paddingHorizontal: 4, paddingVertical: 1 },
+  hitBadgeText: { color: "#ffffff", fontSize: 8.5, fontWeight: "700", textTransform: "uppercase" },
   hitErr: { color: colors.textMid, fontSize: 13, padding: 20, width: "100%", textAlign: "center" },
 });

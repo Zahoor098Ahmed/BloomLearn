@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import type { ChildProfile } from "../types";
 import { updateChild } from "../modules/storage";
 import { useSettings } from "../context/SettingsContext";
-import { t } from "../modules/i18n";
+import { t, TKey } from "../modules/i18n";
 import { speak } from "../modules/tts";
 import Mascot from "../components/Mascot";
 import BigButton from "../components/BigButton";
@@ -16,15 +16,15 @@ interface Props {
   onUpdate: (c: ChildProfile) => void;
 }
 
-const BADGES = [
-  { id: "first-star", label: "First Star!", emoji: "⭐", req: 1 },
-  { id: "five-stars", label: "Star Collector", emoji: "🌟", req: 5 },
-  { id: "ten-stars", label: "Star Champion", emoji: "🏆", req: 10 },
-  { id: "twenty-stars", label: "Superstar!", emoji: "🦸", req: 20 },
-  { id: "fifty-stars", label: "Legend!", emoji: "👑", req: 50 },
-  { id: "explorer", label: "Explorer", emoji: "🗺️", req: 3 },
-  { id: "reader", label: "Bookworm", emoji: "📚", req: 7 },
-  { id: "helper", label: "Helpful Friend", emoji: "🤝", req: 15 },
+const BADGES: { id: string; labelKey: TKey; emoji: string; req: number }[] = [
+  { id: "first-star", labelKey: "rFirstStar", emoji: "⭐", req: 1 },
+  { id: "five-stars", labelKey: "rFiveStars", emoji: "🌟", req: 5 },
+  { id: "ten-stars", labelKey: "rTenStars", emoji: "🏆", req: 10 },
+  { id: "twenty-stars", labelKey: "rTwentyStars", emoji: "🦸", req: 20 },
+  { id: "fifty-stars", labelKey: "rFiftyStars", emoji: "👑", req: 50 },
+  { id: "explorer", labelKey: "rExplorer", emoji: "🗺️", req: 3 },
+  { id: "reader", labelKey: "rReader", emoji: "📚", req: 7 },
+  { id: "helper", labelKey: "rHelper", emoji: "🤝", req: 15 },
 ];
 
 export default function RewardsScreen({ child, onBack, onUpdate }: Props) {
@@ -32,6 +32,7 @@ export default function RewardsScreen({ child, onBack, onUpdate }: Props) {
   const lang = settings.language;
   const [stars, setStars] = useState(child.stars);
   const [badges, setBadges] = useState(child.badges);
+  const tt = (k: TKey) => t(k, lang);
 
   function addStar() {
     const newStars = stars + 1;
@@ -41,7 +42,7 @@ export default function RewardsScreen({ child, onBack, onUpdate }: Props) {
     BADGES.forEach((b) => {
       if (!newBadges.includes(b.id) && newStars >= b.req) {
         newBadges.push(b.id);
-        setTimeout(() => speak(b.label, lang, settings.soundEnabled), 1200);
+        setTimeout(() => speak(tt(b.labelKey), lang, settings.soundEnabled), 1200);
       }
     });
     setBadges(newBadges);
@@ -64,7 +65,7 @@ export default function RewardsScreen({ child, onBack, onUpdate }: Props) {
             <Mascot mood="excited" size={56} animate={false} />
             <View>
               <Text style={styles.headerTitle}>⭐ {t("rewards", lang)}</Text>
-              <Text style={styles.headerSub}>{child.name}'s achievements</Text>
+              <Text style={styles.headerSub}>{tt("rChildAchievements").replace("{name}", child.name)}</Text>
             </View>
           </View>
         </View>
@@ -75,7 +76,7 @@ export default function RewardsScreen({ child, onBack, onUpdate }: Props) {
             <Text style={styles.starCount}>{stars}</Text>
             <Text style={styles.starLabel}>{t("stars", lang)}</Text>
             <BigButton variant="primary" onPress={addStar} style={{ width: "100%", paddingVertical: 18 }}>
-              🎉 {t("wellDone", lang)} +1 Star
+              🎉 {t("wellDone", lang)} {tt("rPlusOneStar")}
             </BigButton>
           </View>
 
@@ -85,17 +86,17 @@ export default function RewardsScreen({ child, onBack, onUpdate }: Props) {
                 ⭐
               </Text>
             ))}
-            {stars > 30 && <Text style={styles.moreStars}>+{stars - 30} more</Text>}
+            {stars > 30 && <Text style={styles.moreStars}>{tt("rMoreStars").replace("{n}", String(stars - 30))}</Text>}
           </View>
 
           {earnedBadges.length > 0 && (
             <View>
-              <Text style={styles.sectionTitle}>🏅 {t("badges", lang)} Earned</Text>
+              <Text style={styles.sectionTitle}>🏅 {t("badges", lang)} {tt("rBadgesEarnedSuffix")}</Text>
               <View style={styles.badgeGrid}>
                 {earnedBadges.map((b) => (
                   <View key={b.id} style={styles.badgeCardEarned}>
                     <Text style={{ fontSize: 32 }}>{b.emoji}</Text>
-                    <Text style={styles.badgeLabel}>{b.label}</Text>
+                    <Text style={styles.badgeLabel}>{tt(b.labelKey)}</Text>
                   </View>
                 ))}
               </View>
@@ -104,12 +105,12 @@ export default function RewardsScreen({ child, onBack, onUpdate }: Props) {
 
           {lockedBadges.length > 0 && (
             <View>
-              <Text style={[styles.sectionTitle, { color: colors.textLight }]}>🔒 Coming Soon</Text>
+              <Text style={[styles.sectionTitle, { color: colors.textLight }]}>🔒 {tt("rComingSoon")}</Text>
               <View style={styles.badgeGrid}>
                 {lockedBadges.map((b) => (
                   <View key={b.id} style={styles.badgeCardLocked}>
                     <Text style={{ fontSize: 32, opacity: 0.4 }}>{b.emoji}</Text>
-                    <Text style={styles.badgeReq}>{b.req} ⭐ needed</Text>
+                    <Text style={styles.badgeReq}>{b.req} ⭐ {tt("rNeededSuffix")}</Text>
                   </View>
                 ))}
               </View>

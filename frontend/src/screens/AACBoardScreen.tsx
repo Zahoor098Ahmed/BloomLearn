@@ -1,18 +1,36 @@
 import { useEffect, useMemo, useState } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView, Image, I18nManager } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  ScrollView,
+  Image,
+  I18nManager,
+  Alert,
+  useWindowDimensions,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import * as Speech from "expo-speech";
 import type { ChildProfile, CustomCategory, CustomWord, TabScreen } from "../types";
 import { useSettings } from "../context/SettingsContext";
 import {
   ensureCategoriesLoaded,
   topLevelCategories,
-  childCategories,
+  visibleTopLevelCategories,
+  visibleChildCategories,
   getCategory,
   createBlankCategory,
+  bottomTabCategories,
+  coreWords,
+  setSeedLanguage,
+  retranslateSeedBoard,
 } from "../modules/customCategories";
-import { playWord, playSentence, type SpokenWord } from "../modules/audio";
-import { recordWordUsage } from "../modules/storage";
+import { playWord, playSentence, stopSentence, type SpokenWord } from "../modules/audio";
+import { dictUrl } from "../modules/imageLibrary";
+import { getPictogramUrl } from "../modules/aacPictograms";
+import { recordWordUsage, recordSentencePlayed, recordCorrectionUsed } from "../modules/storage";
 import { tapFeedback, selectFeedback } from "../modules/haptics";
 import { t } from "../modules/i18n";
 import LangBadge from "../components/LangBadge";
@@ -33,10 +51,57 @@ interface Chip extends SpokenWord {
   imageUri?: string;
 }
 
+/** Card pictogram illustration with automatic ARASAAC lookup and emoji fallback */
+function CardPic({
+  label,
+  imageUri,
+  emoji,
+  size = 44,
+}: {
+  label: string;
+  imageUri?: string;
+  emoji: string;
+  size?: number;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const uri = useMemo(() => {
+    return imageUri || getPictogramUrl(label) || (!imgError ? dictUrl(label) : null);
+  }, [imageUri, label, imgError]);
+
+  if (uri && !imgError) {
+    return (
+      <Image
+        source={{ uri }}
+        style={{ width: size, height: size }}
+        resizeMode="contain"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+  return <Text style={{ fontSize: Math.max(18, Math.round(size * 0.72)) }}>{emoji || "🔹"}</Text>;
+}
+
 export default function AACBoardScreen({ child, tab, onTabChange, labels }: Props) {
   const { settings } = useSettings();
   const lang = settings.language;
-  const cols = Math.min(5, Math.max(2, settings.boardColumns || 3));
+  const { width } = useWindowDimensions();
+
+  // Responsive columns: supports density levels (1, 2, 4, 8, 16, 28, 35+) or window dimensions
+  const cols = useMemo(() => {
+    if (child.buttonDensity) {
+      if (child.buttonDensity === 1) return 1;
+      if (child.buttonDensity === 2) return 2;
+      if (child.buttonDensity <= 4) return 2;
+      if (child.buttonDensity <= 8) return 3;
+      if (child.buttonDensity <= 16) return 4;
+      if (child.buttonDensity <= 28) return 6;
+      return 7;
+    }
+    if (width >= 880) return 7;
+    if (width >= 680) return 6;
+    if (width >= 500) return 5;
+    return Math.min(5, Math.max(3, settings.boardColumns || 4));
+  }, [width, settings.boardColumns, child.buttonDensity]);
 
   const [ready, setReady] = useState(false);
   const [path, setPath] = useState<string[]>([]); // category id stack
@@ -44,24 +109,71 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
   const [tick, setTick] = useState(0); // re-read after edits elsewhere
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [voiceTarget, setVoiceTarget] = useState<string | null>(null);
+  const [speaking, setSpeaking] = useState(false);
 
   useEffect(() => {
-    ensureCategoriesLoaded().then(() => setReady(true));
+    ensureCategoriesLoaded().then(() => {
+      setReady(true);
+      // Auto-select "Schools" (or first category) on load so communication cards appear immediately
+      const tabs = bottomTabCategories();
+      const schoolTab =
+        tabs.find(
+          (t) =>
+            t.name.toLowerCase().includes("school") ||
+            t.name === "اسکول" ||
+            t.name === "مدرسة"
+        ) ?? tabs[0];
+      if (schoolTab?.id) {
+        setPath([schoolTab.id]);
+      }
+    });
   }, []);
 
+  // Keep the built-in folder/word names in sync with the *actual* current
+  // language, independent of whichever screen last toggled it (or of any
+  // start-up race between settings hydrating and categories loading) — a
+  // stale seedLang at load time could otherwise leave folder names like
+  // "Schools"/"Sports" translated even while the app is set to English.
+  useEffect(() => {
+    if (!ready) return;
+    setSeedLanguage(lang);
+    retranslateSeedBoard(lang);
+    setTick((n) => n + 1);
+  }, [ready, lang]);
+
   const currentId = path[path.length - 1] ?? null;
+  const current = currentId ? getCategory(currentId) : null;
   const folders: CustomCategory[] = useMemo(
-    () => (currentId ? childCategories(currentId) : topLevelCategories()),
+    () => (currentId ? visibleChildCategories(currentId) : visibleTopLevelCategories()),
     [currentId, ready, tick],
   );
-  const current = currentId ? getCategory(currentId) : null;
-  const words: CustomWord[] = useMemo(
-    () => (current ? [...current.words].sort((a, b) => a.order - b.order) : []),
-    [current, ready, tick],
-  );
+  const isCoreGridMode = child.pageSetStyle === "core-grid";
+
+  const rawWords: CustomWord[] = useMemo(() => {
+    if (isCoreGridMode && (!currentId || current?.name.toLowerCase() === "core")) {
+      // Fixed-position core words locked at top slots for motor-memory
+      const cores = coreWords();
+      const nonCores = current ? current.words.filter((w: CustomWord) => !cores.some((c) => c.label === w.label)) : [];
+      return [...cores, ...nonCores];
+    }
+    return current ? [...current.words].sort((a, b) => (a.order ?? 0) - (b.order ?? 0)) : [];
+  }, [current, currentId, isCoreGridMode, ready, tick]);
+
+  const words: CustomWord[] = useMemo(() => {
+    if (child.buttonDensity && child.buttonDensity > 0) {
+      return rawWords.slice(0, child.buttonDensity);
+    }
+    return rawWords;
+  }, [rawWords, child.buttonDensity]);
+
+  const bottomTabs = useMemo(() => (ready ? bottomTabCategories() : []), [ready, tick]);
 
   function speakWords(): SpokenWord[] {
-    return sentence.map((c) => ({ label: c.label, audioUri: c.audioUri, useTextToSpeech: c.useTextToSpeech }));
+    return sentence.map((c) => ({
+      label: c.label,
+      audioUri: c.audioUri,
+      useTextToSpeech: c.useTextToSpeech,
+    }));
   }
 
   /** Child taps "Make a word": add straight into the open folder, or a "My Words" folder. */
@@ -81,10 +193,49 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
   function tapWord(w: CustomWord) {
     tapFeedback();
     recordWordUsage(child.id, w.label);
-    void playWord({ label: w.phrase || w.label, audioUri: w.audioUri, useTextToSpeech: w.useTextToSpeech }, lang, settings.speechRate);
+    // Instant clear pronunciation of tapped card
+    void playWord(
+      { label: w.phrase || w.label, audioUri: w.audioUri, useTextToSpeech: w.useTextToSpeech },
+      lang,
+      settings.speechRate
+    );
     setSentence((prev) => [
       ...prev,
-      { id: `${w.id}-${prev.length}`, label: w.phrase || w.label, emoji: w.emoji, imageUri: w.imageUri, audioUri: w.audioUri, useTextToSpeech: w.useTextToSpeech },
+      {
+        id: `${w.id}-${prev.length}-${Date.now().toString(36).slice(-4)}`,
+        label: w.phrase || w.label,
+        emoji: w.emoji,
+        imageUri: w.imageUri || getPictogramUrl(w.phrase || w.label) || undefined,
+        audioUri: w.audioUri,
+        useTextToSpeech: w.useTextToSpeech,
+      },
+    ]);
+  }
+
+  function removeChipAt(index: number) {
+    tapFeedback();
+    recordCorrectionUsed(child.id);
+    setSentence((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function undoLastChip() {
+    if (sentence.length === 0) return;
+    tapFeedback();
+    recordCorrectionUsed(child.id);
+    setSentence((prev) => prev.slice(0, -1));
+  }
+
+  /** "I made a mistake" attention action + calm TTS prompt */
+  function attentionMistake() {
+    selectFeedback();
+    recordCorrectionUsed(child.id);
+    const msg = "I made a mistake";
+    Speech.stop();
+    Speech.speak(msg, { language: lang, rate: settings.speechRate, pitch: 1 });
+    Alert.alert("I made a mistake", "Undo the last word or clear all?", [
+      { text: "Close", style: "cancel" },
+      { text: "Undo last word", style: "default", onPress: () => undoLastChip() },
+      { text: "Clear all", style: "destructive", onPress: () => setSentence([]) },
     ]);
   }
 
@@ -97,37 +248,117 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
     setPath((p) => p.slice(0, idx)); // idx 0 = Home
   }
 
-  function speakSentence() {
-    if (sentence.length === 0) return;
+  async function speakSentence() {
+    if (sentence.length === 0 || speaking) return;
     tapFeedback();
-    void playSentence(speakWords(), lang, settings.speechRate);
+    setSpeaking(true);
+    const labels = sentence.map((c) => c.label);
+    recordSentencePlayed(child.id, labels);
+    try {
+      await playSentence(speakWords(), lang, settings.speechRate);
+    } finally {
+      setSpeaking(false);
+    }
+  }
+
+  function handleBack() {
+    tapFeedback();
+    if (path.length > 1) {
+      setPath((p) => p.slice(0, -1));
+      return;
+    }
+    const tabs = bottomTabCategories();
+    const schoolTab =
+      tabs.find(
+        (t) =>
+          t.name.toLowerCase().includes("school") ||
+          t.name === "اسکول" ||
+          t.name === "مدرسة"
+      ) ?? tabs[0];
+    if (schoolTab?.id && path[0] !== schoolTab.id) {
+      setPath([schoolTab.id]);
+      return;
+    }
+    onTabChange("home");
+  }
+
+  function openBottomTab(idOrNull: string | null) {
+    if (!idOrNull) return;
+    selectFeedback();
+    if (path[path.length - 1] !== idOrNull) {
+      setPath((p) => [...p, idOrNull]);
+    }
   }
 
   const tileSize = { width: `${100 / cols}%` as const };
-  const canBack = path.length > 0;
   const title = current?.name ?? t("talk", lang);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
-      <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-        {/* header */}
+    <View style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={["top"]}>
+        {/* Top Header */}
         <View style={styles.header}>
           <Pressable
-            onPress={() => (canBack ? goCrumb(path.length - 1) : undefined)}
-            disabled={!canBack}
-            style={[styles.navBtn, !canBack && styles.navBtnGhost]}
+            onPress={handleBack}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={styles.navBtn}
             accessibilityLabel={t("back", lang)}
           >
-            <Ionicons name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"} size={20} color={canBack ? colors.forest : colors.textLight} />
+            <Ionicons
+              name={I18nManager.isRTL ? "arrow-forward" : "arrow-back"}
+              size={20}
+              color={colors.forest}
+            />
           </Pressable>
-          <Pressable onPress={() => goCrumb(0)} disabled={!canBack} style={[styles.navBtn, !canBack && styles.navBtnGhost]} accessibilityLabel={t("home", lang)}>
-            <Ionicons name="home" size={18} color={canBack ? colors.forest : colors.textLight} />
+
+          <Pressable
+            onPress={() => {
+              tapFeedback();
+              const tabs = bottomTabCategories();
+              const schoolTab =
+                tabs.find(
+                  (t) =>
+                    t.name.toLowerCase().includes("school") ||
+                    t.name === "اسکول" ||
+                    t.name === "مدرسة"
+                ) ?? tabs[0];
+              if (schoolTab?.id) setPath([schoolTab.id]);
+              else setPath([]);
+            }}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={styles.navBtn}
+            accessibilityLabel={t("home", lang)}
+          >
+            <Ionicons name="home" size={18} color={colors.forest} />
           </Pressable>
-          <Text style={styles.headerTitle} numberOfLines={1}>{title}</Text>
+
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {title}
+          </Text>
+
+          {/* Clean Oops/Mistake button */}
+          <Pressable
+            onPress={attentionMistake}
+            style={styles.mistakeHeaderBtn}
+            accessibilityLabel="I made a mistake"
+          >
+            <Ionicons name="alert-circle-outline" size={15} color="#ffffff" />
+            <Text style={styles.mistakeHeaderBtnText}>Oops</Text>
+          </Pressable>
+
+          {/* Voice Add button */}
+          <Pressable
+            onPress={startVoiceAdd}
+            style={styles.voiceHeaderBtn}
+            accessibilityLabel={t("makeAWord", lang)}
+          >
+            <Ionicons name="mic" size={16} color="#ffffff" />
+          </Pressable>
+
           <LangBadge />
         </View>
 
-        {/* message / sentence bar */}
+        {/* Top Sentence Strip (Miniature Cards + Orange Trash Button + Green Speak Button) */}
         <View style={styles.msgBar}>
           <ScrollView
             horizontal
@@ -136,100 +367,180 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
             keyboardShouldPersistTaps="handled"
           >
             {sentence.length === 0 ? (
-              <Text style={styles.msgPlaceholder}>{t("buildSentence", lang)}</Text>
+              <View style={styles.placeholderWrap}>
+                <Ionicons name="chatbubbles-outline" size={20} color={colors.textLight} />
+                <Text style={styles.msgPlaceholder}>{t("buildSentence", lang)}</Text>
+              </View>
             ) : (
-              sentence.map((c) => (
-                <View key={c.id} style={styles.msgChip}>
-                  {c.imageUri ? (
-                    <Image source={{ uri: c.imageUri }} style={styles.msgChipImg} />
-                  ) : (
-                    <Text style={styles.msgChipEmoji}>{c.emoji}</Text>
-                  )}
-                  <Text style={styles.msgChipText} numberOfLines={1}>{c.label}</Text>
+              sentence.map((c, idx) => (
+                <View key={c.id} style={styles.miniCard}>
+                  <View style={styles.miniCardMedia}>
+                    <CardPic label={c.label} imageUri={c.imageUri} emoji={c.emoji} size={30} />
+                  </View>
+                  <Text style={styles.miniCardText} numberOfLines={1}>
+                    {c.label}
+                  </Text>
+                  <Pressable
+                    onPress={() => removeChipAt(idx)}
+                    style={styles.miniCardClose}
+                    hitSlop={{ top: 8, left: 8, right: 8, bottom: 8 }}
+                    accessibilityLabel={`Remove ${c.label}`}
+                  >
+                    <Ionicons name="close" size={12} color="#ffffff" />
+                  </Pressable>
                 </View>
               ))
             )}
           </ScrollView>
 
-          <Pressable
-            onPress={() => setSentence((p) => p.slice(0, -1))}
-            disabled={sentence.length === 0}
-            style={[styles.msgMiniBtn, sentence.length === 0 && styles.msgBtnOff]}
-            accessibilityLabel={t("removeLast", lang)}
-          >
-            <Ionicons name="backspace-outline" size={18} color={colors.textMid} />
-          </Pressable>
-          <Pressable
-            onPress={() => setSentence([])}
-            disabled={sentence.length === 0}
-            style={[styles.msgMiniBtn, sentence.length === 0 && styles.msgBtnOff]}
-            accessibilityLabel={t("clearSentence", lang)}
-          >
-            <Ionicons name="trash-outline" size={17} color={colors.textMid} />
-          </Pressable>
-          <Pressable
-            onPress={speakSentence}
-            disabled={sentence.length === 0}
-            style={[styles.playBtn, sentence.length === 0 && styles.msgBtnOff]}
-            accessibilityLabel={t("speakSentence", lang)}
-          >
-            <Ionicons name="play" size={22} color="white" />
-          </Pressable>
+          {/* Action buttons matching the tablet photo */}
+          <View style={styles.msgActions}>
+            <Pressable
+              onPress={() => {
+                if (sentence.length === 0) return;
+                tapFeedback();
+                stopSentence();
+                setSentence([]);
+              }}
+              disabled={sentence.length === 0}
+              style={[styles.trashBtn, sentence.length === 0 && styles.btnDisabled]}
+              accessibilityLabel={t("clearSentence", lang)}
+            >
+              <Ionicons name="trash" size={20} color="#ffffff" />
+            </Pressable>
+
+            <Pressable
+              onPress={speakSentence}
+              disabled={sentence.length === 0 || speaking}
+              style={[
+                styles.speakBtn,
+                sentence.length === 0 && styles.btnDisabled,
+                speaking && styles.speakBtnActive,
+              ]}
+              accessibilityLabel={t("speakSentence", lang)}
+            >
+              <Ionicons
+                name={speaking ? "volume-high" : "volume-medium"}
+                size={24}
+                color="#ffffff"
+              />
+            </Pressable>
+          </View>
         </View>
 
-        {/* grid */}
-        <ScrollView contentContainerStyle={styles.grid} showsVerticalScrollIndicator={false}>
+        {/* Main Grid: Responsive AAC cards */}
+        <ScrollView
+          style={styles.gridScroll}
+          contentContainerStyle={styles.grid}
+          showsVerticalScrollIndicator={false}
+        >
           {!ready ? null : (
             <>
               {folders.map((f) => {
                 const c = f.color ?? colors.forest;
                 return (
                   <View key={f.id} style={[styles.cell, tileSize]}>
-                    <Pressable onPress={() => openFolder(f.id)} style={[styles.tile, styles.folderTile, { borderColor: c }]}>
-                      <View style={[styles.labelBar, { backgroundColor: c }]}>
-                        <Text style={styles.labelText} numberOfLines={1}>{f.name}</Text>
-                      </View>
-                      <View style={[styles.body, { backgroundColor: c + "12" }]}>
+                    <Pressable
+                      onPress={() => openFolder(f.id)}
+                      style={[styles.tile, styles.folderTile, { borderColor: c }]}
+                    >
+                      <View style={[styles.folderBody, { backgroundColor: c + "12" }]}>
                         <Text style={styles.folderIcon}>{f.icon ?? "📁"}</Text>
                       </View>
-                      <View style={styles.folderTag}>
-                        <Ionicons name="chevron-forward" size={12} color={c} />
+                      <View style={[styles.folderLabelBar, { backgroundColor: c }]}>
+                        <Text style={styles.folderLabelText} numberOfLines={1}>
+                          {f.name}
+                        </Text>
                       </View>
                     </Pressable>
                   </View>
                 );
               })}
+
               {words.map((w) => (
                 <View key={w.id} style={[styles.cell, tileSize]}>
-                  <Pressable onPress={() => tapWord(w)} style={[styles.tile, { borderColor: colors.forest }]}>
-                    <View style={[styles.labelBar, { backgroundColor: colors.forest }]}>
-                      <Text style={styles.labelText} numberOfLines={1}>{w.label}</Text>
+                  <Pressable
+                    onPress={() => tapWord(w)}
+                    style={({ pressed }) => [
+                      styles.tile,
+                      styles.wordTile,
+                      pressed && styles.tilePressed,
+                    ]}
+                  >
+                    <View style={styles.wordBody}>
+                      <CardPic
+                        label={w.label}
+                        imageUri={w.imageUri}
+                        emoji={w.emoji}
+                        size={cols >= 7 ? 40 : cols >= 5 ? 46 : 52}
+                      />
                     </View>
-                    <View style={styles.body}>
-                      {w.imageUri ? (
-                        <Image source={{ uri: w.imageUri }} style={styles.wordImg} resizeMode="cover" />
-                      ) : (
-                        <Text style={styles.wordEmoji}>{w.emoji}</Text>
-                      )}
+                    <View style={styles.wordLabelBar}>
+                      <Text style={styles.wordLabelText} numberOfLines={1}>
+                        {w.label}
+                      </Text>
                     </View>
                   </Pressable>
                 </View>
               ))}
+
               {folders.length === 0 && words.length === 0 && (
                 <Text style={styles.emptyBoard}>{t("emptyFolder", lang)}</Text>
               )}
             </>
           )}
-          <View style={{ height: 90 }} />
         </ScrollView>
       </SafeAreaView>
 
-      {/* floating "make a word" */}
-      <Pressable onPress={startVoiceAdd} style={styles.fab} accessibilityLabel={t("makeAWord", lang)}>
-        <Ionicons name="mic" size={20} color="white" />
-        <Text style={styles.fabText}>{t("makeAWord", lang)}</Text>
-      </Pressable>
+      {/* Category Navigation Bar (Tools, Emotion, Attributes, Sentences, Schools, Sports, Hygiene, Music) */}
+      <View style={styles.bottomBar}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.bottomRow}
+        >
+          {bottomTabs.map((bt) => {
+            const active = currentId === bt.id;
+            return (
+              <Pressable
+                key={bt.name}
+                onPress={() => openBottomTab(bt.id)}
+                style={[styles.bottomTab, active && styles.bottomTabActive]}
+                disabled={!bt.id}
+              >
+                <View
+                  style={[
+                    styles.bottomTabIcon,
+                    active && { backgroundColor: (bt.color || colors.forest) + "28" },
+                  ]}
+                >
+                  <CardPic label={bt.name} emoji={bt.icon} size={28} />
+                </View>
+                <Text
+                  style={[
+                    styles.bottomTabLabel,
+                    active && { color: bt.color || colors.forest, fontWeight: "800" },
+                    !bt.id && { color: colors.textLight },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {bt.name}
+                </Text>
+                {active && (
+                  <View
+                    style={[
+                      styles.activeIndicator,
+                      { backgroundColor: bt.color || colors.forest },
+                    ]}
+                  />
+                )}
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
 
+      {/* Main navigation TabBar */}
       <TabBar active={tab} onChange={onTabChange} labels={labels} />
 
       <AddByVoiceScreen
@@ -244,94 +555,319 @@ export default function AACBoardScreen({ child, tab, onTabChange, labels }: Prop
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f4f6f8",
+  },
+  safeArea: {
+    flex: 1,
+  },
+
+  // Header
   header: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
   navBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 12,
-    backgroundColor: colors.card,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
   },
   navBtnGhost: { backgroundColor: "transparent", borderColor: "transparent" },
-  headerTitle: { flex: 1, fontSize: 18, fontWeight: "800", color: colors.textDark, marginLeft: 2 },
+  headerTitle: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "800",
+    color: colors.textDark,
+    marginLeft: 4,
+  },
+  mistakeHeaderBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.orangeDeep,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 10,
+  },
+  mistakeHeaderBtnText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "800",
+  },
+  voiceHeaderBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 10,
+    backgroundColor: colors.forest,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
+  // Sentence Strip
   msgBar: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    marginHorizontal: 12,
+    marginHorizontal: 10,
     marginBottom: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  msgScroll: { alignItems: "center", gap: 8, paddingRight: 6, minHeight: 46 },
-  msgPlaceholder: { color: colors.textLight, fontSize: 14, paddingVertical: 14, paddingLeft: 4 },
-  msgChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colors.forestLight,
-    borderRadius: 12,
-    paddingVertical: 6,
     paddingHorizontal: 8,
-    maxWidth: 132,
-  },
-  msgChipImg: { width: 26, height: 26, borderRadius: 6 },
-  msgChipEmoji: { fontSize: 20 },
-  msgChipText: { fontSize: 13, fontWeight: "700", color: colors.forestDark },
-  msgBtnOff: { opacity: 0.35 },
-  msgMiniBtn: { width: 36, height: 40, borderRadius: 10, backgroundColor: colors.cardMuted, alignItems: "center", justifyContent: "center" },
-  playBtn: { width: 52, height: 40, borderRadius: 10, backgroundColor: colors.forest, alignItems: "center", justifyContent: "center" },
-
-  grid: { flexDirection: "row", flexWrap: "wrap", paddingHorizontal: 8, paddingTop: 2 },
-  cell: { padding: 5 },
-  tile: {
-    aspectRatio: 0.92,
-    borderRadius: 14,
-    borderWidth: 2,
-    overflow: "hidden",
+    paddingVertical: 8,
     backgroundColor: "#ffffff",
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: "#e2e8f0",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    minHeight: 84,
   },
-  folderTile: {},
-  labelBar: { paddingVertical: 6, paddingHorizontal: 4, alignItems: "center" },
-  labelText: { color: "white", fontWeight: "800", fontSize: 13 },
-  body: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: "#ffffff" },
-  folderIcon: { fontSize: 40 },
-  folderTag: { position: "absolute", top: 6, right: 6, backgroundColor: "#ffffff", borderRadius: 8, padding: 2 },
-  wordEmoji: { fontSize: 46 },
-  wordImg: { width: "100%", height: "100%" },
-  emptyBoard: { color: colors.textLight, fontSize: 14, textAlign: "center", padding: 36, width: "100%", lineHeight: 21 },
-
-  fab: {
-    position: "absolute",
-    right: 16,
-    bottom: 74,
+  msgScroll: {
+    alignItems: "center",
+    paddingRight: 6,
+    paddingLeft: 4,
+    flexGrow: 1,
+  },
+  placeholderWrap: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 7,
-    backgroundColor: colors.forest,
-    borderRadius: 24,
-    paddingLeft: 14,
-    paddingRight: 18,
-    paddingVertical: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.18,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 5,
+    gap: 8,
+    paddingVertical: 14,
+    paddingLeft: 6,
   },
-  fabText: { color: "white", fontWeight: "800", fontSize: 13 },
+  msgPlaceholder: {
+    color: colors.textLight,
+    fontSize: 14,
+    fontWeight: "600",
+  },
+
+  // Mini Card in Sentence Strip
+  miniCard: {
+    width: 64,
+    height: 68,
+    borderRadius: 10,
+    backgroundColor: "#ffffff",
+    borderWidth: 1.5,
+    borderColor: "#cbd5e1",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingVertical: 4,
+    paddingHorizontal: 2,
+    marginRight: 10,
+    position: "relative",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  miniCardMedia: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  miniCardText: {
+    fontSize: 10.5,
+    fontWeight: "800",
+    color: "#1e293b",
+    textAlign: "center",
+    width: "100%",
+  },
+  miniCardClose: {
+    position: "absolute",
+    top: -5,
+    right: -5,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.orangeDeep,
+    borderWidth: 1.5,
+    borderColor: "#ffffff",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 10,
+  },
+
+  // Strip Action Buttons
+  msgActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingLeft: 6,
+  },
+  trashBtn: {
+    width: 44,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: colors.orangeDeep,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  speakBtn: {
+    width: 58,
+    height: 52,
+    borderRadius: 12,
+    backgroundColor: "#10b981",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.18,
+    shadowRadius: 4,
+    elevation: 4,
+  },
+  speakBtnActive: {
+    backgroundColor: "#059669",
+    transform: [{ scale: 1.05 }],
+  },
+  btnDisabled: {
+    opacity: 0.35,
+  },
+
+  // Grid
+  gridScroll: {
+    flex: 1,
+  },
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    paddingHorizontal: 6,
+    paddingBottom: 20,
+  },
+  cell: {
+    padding: 4,
+  },
+  tile: {
+    aspectRatio: 0.95,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: "#cbd5e1",
+    backgroundColor: "#ffffff",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  tilePressed: {
+    transform: [{ scale: 0.96 }],
+    borderColor: colors.forest,
+  },
+
+  // Word card styles
+  wordTile: {},
+  wordBody: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ffffff",
+    padding: 4,
+  },
+  wordLabelBar: {
+    paddingVertical: 5,
+    paddingHorizontal: 3,
+    alignItems: "center",
+    backgroundColor: "#f8fafc",
+    borderTopWidth: 1,
+    borderTopColor: "#f1f5f9",
+  },
+  wordLabelText: {
+    color: "#1e293b",
+    fontWeight: "800",
+    fontSize: 11.5,
+    textAlign: "center",
+  },
+
+  // Folder card styles
+  folderTile: {
+    borderWidth: 2,
+  },
+  folderBody: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  folderIcon: {
+    fontSize: 38,
+  },
+  folderLabelBar: {
+    paddingVertical: 5,
+    paddingHorizontal: 3,
+    alignItems: "center",
+  },
+  folderLabelText: {
+    color: "#ffffff",
+    fontWeight: "800",
+    fontSize: 12,
+    textAlign: "center",
+  },
+  emptyBoard: {
+    color: colors.textLight,
+    fontSize: 14,
+    textAlign: "center",
+    padding: 36,
+    width: "100%",
+  },
+
+  // Category Tab Bar at bottom
+  bottomBar: {
+    backgroundColor: "#ffffff",
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    paddingVertical: 4,
+  },
+  bottomRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 8,
+    gap: 6,
+  },
+  bottomTab: {
+    alignItems: "center",
+    width: 66,
+    borderRadius: 12,
+    paddingVertical: 5,
+    paddingHorizontal: 2,
+    position: "relative",
+  },
+  bottomTabActive: {
+    backgroundColor: "#f1f5f9",
+  },
+  bottomTabIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2,
+  },
+  bottomTabLabel: {
+    fontSize: 10,
+    fontWeight: "700",
+    color: colors.textDark,
+    textAlign: "center",
+  },
+  activeIndicator: {
+    position: "absolute",
+    bottom: 0,
+    left: 12,
+    right: 12,
+    height: 3,
+    borderRadius: 2,
+  },
 });

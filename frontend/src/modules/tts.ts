@@ -1,12 +1,28 @@
 import * as Speech from "expo-speech";
 import type { LanguageCode } from "../types";
 
-export function speak(text: string, lang: LanguageCode, enabled: boolean): void {
-  if (!enabled) return;
-  Speech.stop();
-  Speech.speak(text, { language: lang, rate: 0.85, pitch: 1.1 });
+/**
+ * Text-to-speech engine optimized for children with autism and special needs.
+ * Uses a clear, gentle pace (rate 0.88, pitch 1.05) and handles language fallbacks.
+ */
+export function speak(text: string, lang: LanguageCode | string, enabled: boolean): void {
+  if (!enabled || !text?.trim()) return;
+  try {
+    Speech.stop();
+    Speech.speak(text.trim(), {
+      language: lang || "en-US",
+      rate: 0.88,
+      pitch: 1.05,
+    });
+  } catch (err) {
+    console.warn("[tts] speak error:", err);
+  }
 }
 
 export function stopSpeech(): void {
-  Speech.stop();
+  try {
+    Speech.stop();
+  } catch {
+    /* ignore */
+  }
 }

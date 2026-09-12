@@ -4,6 +4,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { loadPasscode, hasPasscode, checkPasscode } from "../modules/passcode";
 import { colors, radius } from "../theme";
+import { useSettings } from "../context/SettingsContext";
+import { t } from "../modules/i18n";
 
 /**
  * Blocks its children until the 4-digit admin passcode is entered. If no
@@ -13,12 +15,15 @@ import { colors, radius } from "../theme";
 export default function PinGate({
   children,
   onCancel,
-  title = "Parent area",
+  title,
 }: {
   children: React.ReactNode;
   onCancel: () => void;
   title?: string;
 }) {
+  const { settings } = useSettings();
+  const lang = settings.language;
+  const resolvedTitle = title ?? t("pgDefaultTitle", lang);
   const [ready, setReady] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
   const [entry, setEntry] = useState("");
@@ -58,15 +63,15 @@ export default function PinGate({
 
         <View style={styles.center}>
           <Ionicons name="lock-closed" size={30} color={colors.forest} />
-          <Text style={styles.title}>{title}</Text>
-          <Text style={styles.sub}>Enter the 4-digit passcode</Text>
+          <Text style={styles.title}>{resolvedTitle}</Text>
+          <Text style={styles.sub}>{t("pgEnterPasscodeSub", lang)}</Text>
 
           <View style={styles.dots}>
             {[0, 1, 2, 3].map((i) => (
               <View key={i} style={[styles.dot, entry.length > i && styles.dotFull, error && styles.dotError]} />
             ))}
           </View>
-          {error && <Text style={styles.errText}>Wrong passcode — try again</Text>}
+          {error && <Text style={styles.errText}>{t("pgWrongPasscode", lang)}</Text>}
 
           <View style={styles.pad}>
             {["1", "2", "3", "4", "5", "6", "7", "8", "9", "", "0", "del"].map((k, i) => {
