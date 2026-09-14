@@ -286,6 +286,7 @@ export type TKey =
   | 'appKioskExitTitle' | 'appKioskExitBody' | 'appExitPasscodePrompt' | 'appIncorrectPasscode'
   | 'appEnterBtn' | 'appKioskExitA11y' | 'pgBoardEditorTitle'
   | 'pgDefaultTitle' | 'pgEnterPasscodeSub' | 'pgWrongPasscode'
+  | 'pgCreatePasscodeSub' | 'pgConfirmPasscodeSub' | 'pgPasscodeMismatch' | 'pgPasscodeCreated'
   | 'qabMistake' | 'qabAttention'
   | 'scEmptyHint'
   | 'ssBodyTitle' | 'ssAnatomyHint' | 'ssEmptyHint'
@@ -413,6 +414,10 @@ const T: AllTranslations = {
     pgDefaultTitle: 'Parent area',
     pgEnterPasscodeSub: 'Enter the 4-digit passcode',
     pgWrongPasscode: 'Wrong passcode — try again',
+    pgCreatePasscodeSub: 'Create a 4-digit parent passcode to protect this area',
+    pgConfirmPasscodeSub: 'Enter the same 4 digits again to confirm',
+    pgPasscodeMismatch: "Those didn't match — let's try again",
+    pgPasscodeCreated: 'Passcode set!',
     qabMistake: 'Mistake',
     qabAttention: 'Attention',
     scEmptyHint: 'Say or type a sentence — the picture builds as you talk.',
@@ -1100,6 +1105,10 @@ const T: AllTranslations = {
     pgDefaultTitle: 'منطقة الوالدين',
     pgEnterPasscodeSub: 'أدخل رمز المرور المكوّن من 4 أرقام',
     pgWrongPasscode: 'رمز مرور خاطئ — حاول مرة أخرى',
+    pgCreatePasscodeSub: 'أنشئ رمز مرور من 4 أرقام لحماية هذه المنطقة',
+    pgConfirmPasscodeSub: 'أدخل نفس الأرقام الأربعة مرة أخرى للتأكيد',
+    pgPasscodeMismatch: 'الرمزان غير متطابقين — حاول مرة أخرى',
+    pgPasscodeCreated: 'تم تعيين رمز المرور!',
     qabMistake: 'خطأ',
     qabAttention: 'انتباه',
     scEmptyHint: 'قل أو اكتب جملة — تُبنى الصورة أثناء حديثك.',
