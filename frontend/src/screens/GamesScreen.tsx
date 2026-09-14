@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   StyleSheet,
   ScrollView,
   Animated,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,9 +17,28 @@ import { recordGamePlayed } from "../modules/storage";
 import { t, gameAnswerLabel, type TKey } from "../modules/i18n";
 import { tapFeedback } from "../modules/haptics";
 import { useResponsive } from "../modules/responsive";
+import { getPictogramUrl } from "../modules/aacPictograms";
 import LangBadge from "../components/LangBadge";
 import TabBar from "../components/TabBar";
 import { colors, radius } from "../theme";
+
+/** Real AAC pictogram (same ARASAAC set used on the Talk board) with an
+ * emoji fallback — used by the puzzle games instead of plain emoji glyphs. */
+function GamePic({ answer, emoji, size = 40 }: { answer: string; emoji: string; size?: number }) {
+  const [imgError, setImgError] = useState(false);
+  const uri = useMemo(() => getPictogramUrl(answer), [answer]);
+  if (uri && !imgError) {
+    return (
+      <Image
+        source={{ uri }}
+        style={{ width: size, height: size }}
+        resizeMode="contain"
+        onError={() => setImgError(true)}
+      />
+    );
+  }
+  return <Text style={{ fontSize: Math.round(size * 0.8) }}>{emoji}</Text>;
+}
 
 interface Props {
   child: ChildProfile;
@@ -27,7 +47,54 @@ interface Props {
   labels: Record<TabScreen, string>;
 }
 
-type GameMode = "animals" | "letters" | "numbers" | "colors" | "shapes" | "emotions" | "food";
+type GameMode = "animals" | "letters" | "numbers" | "colors" | "shapes" | "emotions" | "food" | "puzzle" | "sequence" | "jigsaw" | "sort";
+
+interface PuzzleCard {
+  id: number;
+  answer: string;
+  emoji: string;
+  matched: boolean;
+}
+
+/** Shared with the "animals" round data below — reusing it means the memory
+ * puzzle's pieces already have bilingual names via gameAnswerLabel(). */
+const SEQUENCE_MAX = 6;
+
+/** Category Sort — a categorization/classification task (a core early-learner
+ * ABA/OT skill for autistic children: "which bin does this belong in?"),
+ * distinct from the tap-a-card games above. */
+const SORT_ANIMAL_ITEMS: { emoji: string; answer: string }[] = [
+  { emoji: "🐸", answer: "Frog" },
+  { emoji: "🐶", answer: "Dog" },
+  { emoji: "🐱", answer: "Cat" },
+  { emoji: "🐰", answer: "Rabbit" },
+  { emoji: "🐮", answer: "Cow" },
+];
+const SORT_FOOD_ITEMS: { emoji: string; answer: string }[] = [
+  { emoji: "🍎", answer: "Apple" },
+  { emoji: "🍌", answer: "Banana" },
+  { emoji: "🍕", answer: "Pizza" },
+  { emoji: "🍪", answer: "Cookie" },
+  { emoji: "🍞", answer: "Bread" },
+];
+interface SortItem {
+  emoji: string;
+  answer: string;
+  category: "animal" | "food";
+}
+const SORT_ITEMS: SortItem[] = [
+  ...SORT_ANIMAL_ITEMS.map((i) => ({ ...i, category: "animal" as const })),
+  ...SORT_FOOD_ITEMS.map((i) => ({ ...i, category: "food" as const })),
+];
+
+const PUZZLE_ITEMS: { emoji: string; answer: string }[] = [
+  { emoji: "🐸", answer: "Frog" },
+  { emoji: "🐶", answer: "Dog" },
+  { emoji: "🐦", answer: "Bird" },
+  { emoji: "🐱", answer: "Cat" },
+  { emoji: "🐰", answer: "Rabbit" },
+  { emoji: "🐮", answer: "Cow" },
+];
 
 interface Round {
   prompt: string;
@@ -142,6 +209,10 @@ const MODE_ROUNDS: Record<GameMode, Round[]> = {
   shapes: SHAPES_ROUNDS,
   emotions: EMOTIONS_ROUNDS,
   food: FOOD_ROUNDS,
+  puzzle: [], // memory-match has its own grid state below, not round/option-based
+  sequence: [], // number-sequence has its own grid state below, not round/option-based
+  jigsaw: [], // picture jigsaw has its own grid state below, not round/option-based
+  sort: [], // category sort has its own grid state below, not round/option-based
 };
 
 const MODES: {
@@ -159,6 +230,12 @@ const MODES: {
   { key: "colors", title: "Colors", subtitle: "Name the color you see", icon: "🎨", color: "#fce7f3", accent: "#be185d" },
   { key: "shapes", title: "Shapes", subtitle: "Name the shape you see", icon: "🔷", color: "#f3e8ff", accent: "#7e22ce" },
   { key: "emotions", title: "Emotions", subtitle: "How is this face feeling?", icon: "🙂", color: "#ffedd5", accent: "#c2410c" },
+  // Memory Puzzle / Number Sequence / Picture Jigsaw / Category Sort were
+  // built but rejected as a direction — hidden from the visible mode list
+  // (and therefore the carousel + "Explore More Games" grid) without
+  // deleting their implementation below, in case a revised version is
+  // wanted later. See PUZZLE_ITEMS / SORT_ITEMS and the setup*/tap*/choose*
+  // functions further down.
 ];
 
 const MODE_TKEY: Record<GameMode, { title: TKey; sub: TKey }> = {
@@ -169,6 +246,10 @@ const MODE_TKEY: Record<GameMode, { title: TKey; sub: TKey }> = {
   colors: { title: "gColors", sub: "gColorsSub" },
   shapes: { title: "gShapes", sub: "gShapesSub" },
   emotions: { title: "gEmotions", sub: "gEmotionsSub" },
+  puzzle: { title: "gPuzzle", sub: "gPuzzleSub" },
+  sequence: { title: "gSequence", sub: "gSequenceSub" },
+  jigsaw: { title: "gJigsaw", sub: "gJigsawSub" },
+  sort: { title: "gSort", sub: "gSortSub" },
 };
 
 export default function GamesScreen({ child, tab, onTabChange, labels }: Props) {
@@ -187,11 +268,44 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
   const [choiceCount, setChoiceCount] = useState<2 | 3>(3);
   const [feedback, setFeedback] = useState<"correct" | "wrong" | null>(null);
   const [finished, setFinished] = useState(false);
+  const [puzzleCards, setPuzzleCards] = useState<PuzzleCard[]>([]);
+  const [flippedIdx, setFlippedIdx] = useState<number[]>([]);
+  const [puzzleBusy, setPuzzleBusy] = useState(false);
+  const [sequenceTiles, setSequenceTiles] = useState<number[]>([]);
+  const [sequenceNext, setSequenceNext] = useState(1);
+  const [sequenceWrong, setSequenceWrong] = useState<number | null>(null);
+  const [jigsawTargets, setJigsawTargets] = useState<string[]>([]);
+  const [jigsawFilled, setJigsawFilled] = useState<(string | null)[]>([]);
+  const [jigsawPieces, setJigsawPieces] = useState<{ answer: string; emoji: string; placed: boolean }[]>([]);
+  const [jigsawSelected, setJigsawSelected] = useState<string | null>(null);
+  const [jigsawWrongSlot, setJigsawWrongSlot] = useState<number | null>(null);
+  const [sortQueue, setSortQueue] = useState<SortItem[]>([]);
+  const [sortWrong, setSortWrong] = useState(false);
+
+  // Polished round-in / correct-answer animations for the flashcard games.
+  const promptAnim = useRef(new Animated.Value(0)).current;
+  const starBurstAnim = useRef(new Animated.Value(0)).current;
 
   const rounds = MODE_ROUNDS[mode];
   const round = rounds[roundIdx];
   const activeMeta = useMemo(() => MODES.find((m) => m.key === mode)!, [mode]);
   const progress = (roundIdx + 1) / rounds.length;
+
+  // Bounce the flashcard in on every new round instead of a flat cut.
+  useEffect(() => {
+    promptAnim.setValue(0);
+    Animated.spring(promptAnim, { toValue: 1, friction: 5, tension: 60, useNativeDriver: true }).start();
+  }, [roundIdx, mode]);
+
+  // Pop + fade a star reward whenever an answer is marked correct.
+  useEffect(() => {
+    if (feedback !== "correct") return;
+    starBurstAnim.setValue(0);
+    Animated.sequence([
+      Animated.timing(starBurstAnim, { toValue: 1, duration: 220, useNativeDriver: true }),
+      Animated.timing(starBurstAnim, { toValue: 0, duration: 400, delay: 200, useNativeDriver: true }),
+    ]).start();
+  }, [feedback]);
 
   const displayOptions = useMemo(() => {
     if (!round) return [];
@@ -241,6 +355,166 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
     }
   }
 
+  function setupSequence() {
+    setSequenceTiles(shuffle(Array.from({ length: SEQUENCE_MAX }, (_, i) => i + 1)));
+    setSequenceNext(1);
+    setSequenceWrong(null);
+  }
+
+  function tapSequenceTile(n: number) {
+    if (finished) return;
+    tapFeedback();
+    setTries((tr) => tr + 1);
+    if (n === sequenceNext) {
+      speak(String(n), lang, settings.soundEnabled);
+      setScore((s) => s + 1);
+      if (n >= SEQUENCE_MAX) {
+        setTimeout(() => {
+          setFinished(true);
+          speak(tt("gYouFinished"), lang, settings.soundEnabled);
+        }, 300);
+        recordGamePlayed(child.id);
+      } else {
+        setSequenceNext(n + 1);
+      }
+    } else {
+      setSequenceWrong(n);
+      speak(tt("gTryAgain"), lang, settings.soundEnabled);
+      setTimeout(() => setSequenceWrong(null), 600);
+    }
+  }
+
+  function setupJigsaw() {
+    setJigsawTargets(shuffle(PUZZLE_ITEMS.map((p) => p.answer)));
+    setJigsawFilled(Array(PUZZLE_ITEMS.length).fill(null));
+    setJigsawPieces(shuffle(PUZZLE_ITEMS.map((p) => ({ ...p, placed: false }))));
+    setJigsawSelected(null);
+    setJigsawWrongSlot(null);
+  }
+
+  function selectJigsawPiece(answer: string) {
+    if (finished) return;
+    const piece = jigsawPieces.find((p) => p.answer === answer);
+    if (!piece || piece.placed) return;
+    tapFeedback();
+    setJigsawSelected((cur) => (cur === answer ? null : answer));
+  }
+
+  function tapJigsawSlot(index: number) {
+    if (finished || !jigsawSelected || jigsawFilled[index]) return;
+    tapFeedback();
+    setTries((tr) => tr + 1);
+    if (jigsawTargets[index] === jigsawSelected) {
+      const placedAnswer = jigsawSelected;
+      setJigsawFilled((prev) => prev.map((v, i) => (i === index ? placedAnswer : v)));
+      setJigsawPieces((prev) => prev.map((p) => (p.answer === placedAnswer ? { ...p, placed: true } : p)));
+      setJigsawSelected(null);
+      speak(tt("gGreatJob"), lang, settings.soundEnabled);
+      setScore((s) => {
+        const nextScore = s + 1;
+        if (nextScore >= jigsawTargets.length) {
+          setTimeout(() => {
+            setFinished(true);
+            speak(tt("gYouFinished"), lang, settings.soundEnabled);
+          }, 300);
+          recordGamePlayed(child.id);
+        }
+        return nextScore;
+      });
+    } else {
+      speak(tt("gTryAgain"), lang, settings.soundEnabled);
+      setJigsawWrongSlot(index);
+      setTimeout(() => setJigsawWrongSlot(null), 500);
+    }
+  }
+
+  function setupSort() {
+    setSortQueue(shuffle(SORT_ITEMS));
+    setSortWrong(false);
+  }
+
+  function chooseSortBin(category: "animal" | "food") {
+    if (finished || sortQueue.length === 0) return;
+    tapFeedback();
+    const current = sortQueue[0];
+    setTries((tr) => tr + 1);
+    if (current.category === category) {
+      speak(tt("gGreatJob"), lang, settings.soundEnabled);
+      setSortWrong(false);
+      setScore((s) => {
+        const nextScore = s + 1;
+        const remaining = sortQueue.slice(1);
+        if (remaining.length === 0) {
+          setTimeout(() => {
+            setFinished(true);
+            speak(tt("gYouFinished"), lang, settings.soundEnabled);
+          }, 300);
+          recordGamePlayed(child.id);
+        } else {
+          setSortQueue(remaining);
+        }
+        return nextScore;
+      });
+    } else {
+      setSortWrong(true);
+      speak(tt("gTryAgain"), lang, settings.soundEnabled);
+      setTimeout(() => setSortWrong(false), 500);
+    }
+  }
+
+  function setupPuzzle() {
+    const cards = shuffle([...PUZZLE_ITEMS, ...PUZZLE_ITEMS]).map((p, i) => ({
+      id: i,
+      answer: p.answer,
+      emoji: p.emoji,
+      matched: false,
+    }));
+    setPuzzleCards(cards);
+    setFlippedIdx([]);
+    setPuzzleBusy(false);
+  }
+
+  function flipPuzzleCard(index: number) {
+    if (puzzleBusy || finished) return;
+    const card = puzzleCards[index];
+    if (!card || card.matched || flippedIdx.includes(index)) return;
+    tapFeedback();
+    const nextFlipped = [...flippedIdx, index];
+    setFlippedIdx(nextFlipped);
+    if (nextFlipped.length < 2) return;
+
+    setPuzzleBusy(true);
+    setTries((tr) => tr + 1);
+    const [i1, i2] = nextFlipped;
+    const isMatch = puzzleCards[i1].answer === puzzleCards[i2].answer;
+
+    if (isMatch) {
+      speak(tt("gGreatJob"), lang, settings.soundEnabled);
+      setTimeout(() => {
+        setPuzzleCards((prev) => prev.map((c, i) => (i === i1 || i === i2 ? { ...c, matched: true } : c)));
+        setFlippedIdx([]);
+        setPuzzleBusy(false);
+        setScore((s) => {
+          const nextScore = s + 1;
+          if (nextScore >= PUZZLE_ITEMS.length) {
+            setTimeout(() => {
+              setFinished(true);
+              speak(tt("gYouFinished"), lang, settings.soundEnabled);
+            }, 300);
+            recordGamePlayed(child.id);
+          }
+          return nextScore;
+        });
+      }, 500);
+    } else {
+      speak(tt("gTryAgain"), lang, settings.soundEnabled);
+      setTimeout(() => {
+        setFlippedIdx([]);
+        setPuzzleBusy(false);
+      }, 900);
+    }
+  }
+
   function restart(next: GameMode = mode) {
     tapFeedback();
     setMode(next);
@@ -251,6 +525,10 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
     setTries(0);
     setFeedback(null);
     setFinished(false);
+    if (next === "puzzle") setupPuzzle();
+    if (next === "sequence") setupSequence();
+    if (next === "jigsaw") setupJigsaw();
+    if (next === "sort") setupSort();
   }
 
   const accuracy = tries > 0 ? Math.round((score / tries) * 100) : 100;
@@ -330,7 +608,113 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
             </View>
           </View>
 
-          {!finished && (
+          {!finished && mode === "puzzle" && (
+            <View style={styles.puzzleGrid}>
+              {puzzleCards.map((c, i) => {
+                const shown = c.matched || flippedIdx.includes(i);
+                return (
+                  <Pressable
+                    key={c.id}
+                    onPress={() => flipPuzzleCard(i)}
+                    style={[
+                      styles.puzzleCard,
+                      shown && styles.puzzleCardShown,
+                      c.matched && styles.puzzleCardMatched,
+                    ]}
+                  >
+                    {shown ? <GamePic answer={c.answer} emoji={c.emoji} size={44} /> : <Text style={styles.puzzleCardText}>❓</Text>}
+                  </Pressable>
+                );
+              })}
+            </View>
+          )}
+
+          {!finished && mode === "sequence" && (
+            <>
+              <Text style={styles.sequenceHint}>{tt("gTapNumberN").replace("{n}", String(sequenceNext))}</Text>
+              <View style={styles.puzzleGrid}>
+                {sequenceTiles.map((n) => {
+                  const done = n < sequenceNext;
+                  const isWrong = sequenceWrong === n;
+                  return (
+                    <Pressable
+                      key={n}
+                      onPress={() => tapSequenceTile(n)}
+                      disabled={done}
+                      style={[
+                        styles.puzzleCard,
+                        done && styles.puzzleCardMatched,
+                        isWrong && { borderColor: "#ef4444", backgroundColor: "#fee2e2" },
+                      ]}
+                    >
+                      <Text style={styles.puzzleCardText}>{n}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </>
+          )}
+
+          {!finished && mode === "jigsaw" && (
+            <>
+              <Text style={styles.sequenceHint}>{tt("gJigsawHint")}</Text>
+              <View style={styles.puzzleGrid}>
+                {jigsawTargets.map((targetAnswer, i) => {
+                  const filledAnswer = jigsawFilled[i];
+                  const filledEmoji = filledAnswer ? PUZZLE_ITEMS.find((p) => p.answer === filledAnswer)?.emoji : null;
+                  return (
+                    <Pressable
+                      key={i}
+                      onPress={() => tapJigsawSlot(i)}
+                      disabled={!!filledAnswer}
+                      style={[
+                        styles.jigsawSlot,
+                        !!filledAnswer && styles.puzzleCardMatched,
+                        jigsawWrongSlot === i && { borderColor: "#ef4444", backgroundColor: "#fee2e2" },
+                      ]}
+                    >
+                      {filledAnswer ? <GamePic answer={targetAnswer} emoji={filledEmoji ?? ""} size={44} /> : null}
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={[styles.puzzleGrid, { marginTop: 4 }]}>
+                {jigsawPieces.map((p) => (
+                  <Pressable
+                    key={p.answer}
+                    onPress={() => selectJigsawPiece(p.answer)}
+                    disabled={p.placed}
+                    style={[
+                      styles.puzzleCard,
+                      p.placed && { opacity: 0.2 },
+                      jigsawSelected === p.answer && styles.jigsawPieceSelected,
+                    ]}
+                  >
+                    <GamePic answer={p.answer} emoji={p.emoji} size={44} />
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
+
+          {!finished && mode === "sort" && sortQueue.length > 0 && (
+            <>
+              <Text style={styles.sequenceHint}>{tt("gSortHint")}</Text>
+              <View style={[styles.sortCard, sortWrong && { borderColor: "#ef4444", backgroundColor: "#fee2e2" }]}>
+                <GamePic answer={sortQueue[0].answer} emoji={sortQueue[0].emoji} size={90} />
+              </View>
+              <View style={styles.sortBinRow}>
+                <Pressable onPress={() => chooseSortBin("animal")} style={[styles.sortBin, { backgroundColor: "#dcfce7", borderColor: "#15803d" }]}>
+                  <Text style={styles.sortBinText}>{tt("gSortAnimalsBin")}</Text>
+                </Pressable>
+                <Pressable onPress={() => chooseSortBin("food")} style={[styles.sortBin, { backgroundColor: "#fee2e2", borderColor: "#dc2626" }]}>
+                  <Text style={styles.sortBinText}>{tt("gSortFoodBin")}</Text>
+                </Pressable>
+              </View>
+            </>
+          )}
+
+          {!finished && mode !== "puzzle" && mode !== "sequence" && mode !== "jigsaw" && mode !== "sort" && (
             <>
               {/* Round Progress Bar */}
               <View style={[styles.progressSection, isTablet && styles.progressSectionTablet]}>
@@ -354,15 +738,39 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                   feedback === "wrong" && { borderColor: "#ef4444", backgroundColor: "#fee2e2" },
                 ]}
               >
-                <Text style={[styles.promptGlyph, isTablet && { fontSize: 104 }, isSmallPhone && { fontSize: 58 }]}>
-                  {round.prompt}
-                </Text>
+                <Animated.View
+                  style={{
+                    transform: [{ scale: promptAnim.interpolate({ inputRange: [0, 1], outputRange: [0.5, 1] }) }],
+                    opacity: promptAnim,
+                  }}
+                >
+                  {mode === "letters" || mode === "numbers" ? (
+                    <Text style={[styles.promptGlyph, isTablet && { fontSize: 104 }, isSmallPhone && { fontSize: 58 }]}>
+                      {round.prompt}
+                    </Text>
+                  ) : (
+                    <GamePic answer={round.answer} emoji={round.prompt} size={isTablet ? 130 : isSmallPhone ? 76 : 100} />
+                  )}
+                </Animated.View>
 
                 {/* Hear Question Speaker Button */}
                 <Pressable onPress={speakPrompt} style={styles.speakPromptBtn}>
                   <Ionicons name="volume-high" size={18} color="white" />
                   <Text style={styles.speakPromptText}>{tt("gListen")}</Text>
                 </Pressable>
+
+                <Animated.View
+                  pointerEvents="none"
+                  style={[
+                    styles.starBurst,
+                    {
+                      opacity: starBurstAnim,
+                      transform: [{ scale: starBurstAnim.interpolate({ inputRange: [0, 1], outputRange: [0.4, 1.6] }) }],
+                    },
+                  ]}
+                >
+                  <Text style={{ fontSize: 40 }}>⭐</Text>
+                </Animated.View>
 
                 {feedback === "correct" && (
                   <View style={styles.feedbackBadgeSuccess}>
@@ -422,7 +830,7 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                         feedback === "wrong" && opt === round.answer && styles.optionCardHint,
                       ]}
                     >
-                      {optEmoji ? <Text style={[styles.optEmoji, isTablet && { fontSize: 28 }]}>{optEmoji}</Text> : null}
+                      {optEmoji ? <GamePic answer={opt} emoji={optEmoji} size={isTablet ? 32 : 26} /> : null}
                       <Text style={[styles.optionText, isTablet && { fontSize: 18 }, isCorrect && { color: "#166534", fontWeight: "900" }]}>
                         {gameAnswerLabel(opt, lang)}
                       </Text>
@@ -451,13 +859,13 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                 {gTitle(mode)} {tt("gYouFinished")}
               </Text>
               <Text style={styles.finishSub}>
-                {child.name} completed the {gTitle(mode)} challenge!
+                {tt("gCompletedChallenge").replace("{name}", child.name).replace("{game}", gTitle(mode))}
               </Text>
 
               <View style={styles.finishStatsRow}>
                 <View style={styles.finishStatBox}>
                   <Text style={[styles.finishStatNum, { color: colors.forest }]}>{accuracy}%</Text>
-                  <Text style={styles.finishStatLabel}>Accuracy</Text>
+                  <Text style={styles.finishStatLabel}>{tt("gAccuracyLabel")}</Text>
                 </View>
                 <View style={styles.finishStatBox}>
                   <Text style={[styles.finishStatNum, { color: "#f59e0b" }]}>+{score} ⭐</Text>
@@ -514,7 +922,7 @@ export default function GamesScreen({ child, tab, onTabChange, labels }: Props) 
                   <Text style={styles.gameTileSub}>{gSub(m.key)}</Text>
                   <View style={styles.gameTileFooter}>
                     <Text style={[styles.gameRoundsText, { color: m.accent }]}>
-                      {MODE_ROUNDS[m.key].length} {tt("exercisesSuffix")}
+                      {m.key === "puzzle" || m.key === "jigsaw" ? PUZZLE_ITEMS.length : m.key === "sequence" ? SEQUENCE_MAX : m.key === "sort" ? SORT_ITEMS.length : MODE_ROUNDS[m.key].length} {tt("exercisesSuffix")}
                     </Text>
                     <Ionicons name="arrow-forward" size={14} color={m.accent} />
                   </View>
@@ -639,6 +1047,7 @@ const styles = StyleSheet.create({
     borderRadius: 28,
   },
   promptGlyph: { fontSize: 80, textAlign: "center" },
+  starBurst: { position: "absolute", top: "50%", left: "50%", marginTop: -20, marginLeft: -20 },
   speakPromptBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -669,6 +1078,59 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   feedbackTextWrong: { color: "white", fontSize: 13, fontWeight: "800" },
+
+  /* Memory Puzzle Grid */
+  puzzleGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
+    gap: 10,
+    width: "100%",
+    maxWidth: 420,
+    alignSelf: "center",
+    marginBottom: 16,
+  },
+  puzzleCard: {
+    width: 76,
+    height: 76,
+    borderRadius: 16,
+    backgroundColor: "#e0e7ff",
+    borderWidth: 1.5,
+    borderColor: "#c7d2fe",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  puzzleCardShown: { backgroundColor: "#ffffff", borderColor: "#a5b4fc" },
+  puzzleCardMatched: { backgroundColor: "#dcfce7", borderColor: colors.greenDeep },
+  puzzleCardText: { fontSize: 34 },
+  jigsawSlot: {
+    width: 76,
+    height: 76,
+    borderRadius: 16,
+    backgroundColor: "#fffbeb",
+    borderWidth: 2,
+    borderStyle: "dashed",
+    borderColor: "#fbbf24",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  jigsawPieceSelected: { borderColor: "#a16207", borderWidth: 3, backgroundColor: "#fef3c7" },
+  sortCard: {
+    width: 160,
+    height: 160,
+    borderRadius: 24,
+    backgroundColor: "#ffffff",
+    borderWidth: 2,
+    borderColor: "#e2e8f0",
+    alignItems: "center",
+    justifyContent: "center",
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  sortBinRow: { flexDirection: "row", gap: 14, width: "100%", maxWidth: 380, alignSelf: "center" },
+  sortBin: { flex: 1, paddingVertical: 22, borderRadius: 18, borderWidth: 2, alignItems: "center" },
+  sortBinText: { fontSize: 17, fontWeight: "800", color: "#1e293b" },
+  sequenceHint: { fontSize: 15, fontWeight: "700", color: colors.textDark, textAlign: "center", marginBottom: 12 },
 
   /* Options Grid */
   optionsGrid: { width: "100%", maxWidth: 380, gap: 10 },

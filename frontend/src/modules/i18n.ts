@@ -39,7 +39,10 @@ export type TKey =
   | 'gAnimalMatch' | 'gAnimalMatchSub' | 'gLearnLetters' | 'gLearnLettersSub'
   | 'gLearnNumbers' | 'gLearnNumbersSub' | 'gColors' | 'gColorsSub'
   | 'gShapes' | 'gShapesSub' | 'gEmotions' | 'gEmotionsSub'
-  | 'gFood' | 'gFoodSub'
+  | 'gFood' | 'gFoodSub' | 'gPuzzle' | 'gPuzzleSub' | 'gAccuracyLabel' | 'gCompletedChallenge'
+  | 'gSequence' | 'gSequenceSub' | 'gTapNumberN'
+  | 'gJigsaw' | 'gJigsawSub' | 'gJigsawHint'
+  | 'gSort' | 'gSortSub' | 'gSortHint' | 'gSortAnimalsBin' | 'gSortFoodBin'
   | 'gGreatJob' | 'gYouFinished'
   | 'exploreMoreGames' | 'playingBadge' | 'exercisesSuffix'
   | 'starsEarnedLabel' | 'bestStreakLabel'
@@ -611,6 +614,11 @@ const T: AllTranslations = {
     gShapes: 'Shapes', gShapesSub: 'Name the shape you see',
     gEmotions: 'Emotions', gEmotionsSub: 'How is this face feeling?',
     gFood: 'Food & Snacks', gFoodSub: 'Name the food you see',
+    gPuzzle: 'Memory Puzzle', gPuzzleSub: 'Find the matching pairs', gAccuracyLabel: 'Accuracy', gCompletedChallenge: '{name} completed the {game} challenge!',
+    gSequence: 'Number Sequence', gSequenceSub: 'Tap the numbers in order', gTapNumberN: 'Tap number {n}',
+    gJigsaw: 'Picture Jigsaw', gJigsawSub: 'Put each piece in its own spot', gJigsawHint: 'Pick a piece below, then tap its matching spot',
+    gSort: 'Category Sort', gSortSub: 'Sort each picture into the right group', gSortHint: 'Which group does this belong to?',
+    gSortAnimalsBin: '🐾 Animals', gSortFoodBin: '🍎 Food',
     gGreatJob: 'Great job!', gYouFinished: 'You finished! Amazing work!',
     exploreMoreGames: 'EXPLORE MORE LEARNING GAMES', playingBadge: 'Playing', exercisesSuffix: 'Exercises',
     starsEarnedLabel: 'Stars Earned', bestStreakLabel: 'Best Streak',
@@ -1290,6 +1298,11 @@ const T: AllTranslations = {
     gShapes: 'الأشكال', gShapesSub: 'سمِّ الشكل الذي تراه',
     gEmotions: 'المشاعر', gEmotionsSub: 'بماذا يشعر هذا الوجه؟',
     gFood: 'الطعام والوجبات', gFoodSub: 'سمِّ الطعام الذي تراه',
+    gPuzzle: 'لعبة الذاكرة', gPuzzleSub: 'ابحث عن الأزواج المتطابقة', gAccuracyLabel: 'الدقة', gCompletedChallenge: 'أكمل {name} تحدي {game}!',
+    gSequence: 'ترتيب الأرقام', gSequenceSub: 'اضغط على الأرقام بالترتيب', gTapNumberN: 'اضغط على الرقم {n}',
+    gJigsaw: 'أحجية الصورة', gJigsawSub: 'ضع كل قطعة في مكانها الصحيح', gJigsawHint: 'اختر قطعة من الأسفل، ثم اضغط على مكانها الصحيح',
+    gSort: 'فرز الفئات', gSortSub: 'ضع كل صورة في مجموعتها الصحيحة', gSortHint: 'إلى أي مجموعة تنتمي هذه الصورة؟',
+    gSortAnimalsBin: '🐾 حيوانات', gSortFoodBin: '🍎 طعام',
     gGreatJob: 'أحسنت!', gYouFinished: 'أنهيت! عمل رائع!',
     exploreMoreGames: 'اكتشف المزيد من الألعاب التعليمية', playingBadge: 'قيد اللعب', exercisesSuffix: 'تمارين',
     starsEarnedLabel: 'النجوم المكتسبة', bestStreakLabel: 'أفضل تتابع',
