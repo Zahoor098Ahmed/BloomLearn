@@ -1,10 +1,10 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView, Alert, TextInput, Modal, Linking, ActivityIndicator, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import appJson from "../../app.json";
 import { useSettings } from "../context/SettingsContext";
-import { LANGUAGES, t, type TKey, applyLanguageDirection, isRTL } from "../modules/i18n";
+import { LANGUAGES, t, type TKey, applyLanguageDirection } from "../modules/i18n";
 import type { LanguageCode } from "../types";
 import { speak } from "../modules/tts";
 import { getKey, getSavedKey, isFromBuild, setKey, clearApiKeys, maskKey, type ApiKeyName } from "../modules/apiKeys";
@@ -17,9 +17,10 @@ import { clearProgress } from "../modules/progress";
 import { loadPasscode, hasPasscode, setPasscode, clearPasscode } from "../modules/passcode";
 import Logo from "../components/Logo";
 import TopBar from "../components/TopBar";
-import IconSquare from "../components/IconSquare";
+import Group, { Row } from "../components/Group";
+import Segmented from "../components/Segmented";
 import Toggle from "../components/Toggle";
-import { colors, radiusLg, type } from "../theme";
+import { colors } from "../theme";
 
 interface Props {
   onBack: () => void;
@@ -37,6 +38,7 @@ interface EngineDef {
   id: string;
   icon: keyof typeof Ionicons.glyphMap;
   tint: string;
+  bg: string;
   title: TKey;
   sub: TKey;
   link?: string;
@@ -47,7 +49,8 @@ const ENGINES: EngineDef[] = [
   {
     id: "openai",
     icon: "mic-outline",
-    tint: colors.green,
+    tint: colors.greenDeep,
+    bg: colors.green,
     title: "stOpenai",
     sub: "stOpenaiSub",
     link: "https://platform.openai.com/api-keys",
@@ -56,7 +59,8 @@ const ENGINES: EngineDef[] = [
   {
     id: "groq",
     icon: "chatbubbles-outline",
-    tint: colors.blue,
+    tint: colors.blueDeep,
+    bg: colors.blue,
     title: "stGroq",
     sub: "stGroqSub",
     link: "https://console.groq.com/keys",
@@ -65,7 +69,8 @@ const ENGINES: EngineDef[] = [
   {
     id: "pollinations",
     icon: "brush-outline",
-    tint: colors.pink,
+    tint: colors.pinkDeep,
+    bg: colors.pink,
     title: "stPollinations",
     sub: "stPollinationsSub",
     link: "https://auth.pollinations.ai",
@@ -74,7 +79,8 @@ const ENGINES: EngineDef[] = [
   {
     id: "server",
     icon: "server-outline",
-    tint: colors.yellow,
+    tint: colors.yellowDeep,
+    bg: colors.yellow,
     title: "stServer",
     sub: "stServerSub",
     fields: [
@@ -88,7 +94,6 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
   const { settings, update, reset } = useSettings();
   const lang = settings.language;
   const tt = (k: TKey) => t(k, lang);
-  const chevron = isRTL(lang) ? "chevron-back" : "chevron-forward";
 
   const [, setKeysVersion] = useState(0);
   const [editing, setEditing] = useState<EngineDef | null>(null);
@@ -185,124 +190,110 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <View style={styles.pad}>
-          <TopBar label={tt("stTitle")} onBack={onBack} />
+          <TopBar title={tt("stTitle")} onBack={onBack} />
         </View>
 
         <ScrollView contentContainerStyle={[styles.pad, styles.body]} showsVerticalScrollIndicator={false}>
-          <Text style={type.eyebrow}>{tt("stEyebrow")}</Text>
-          <Text style={[type.display, { marginTop: 10 }]}>{tt("stHeadline")}</Text>
-          <Text style={[type.lead, { marginTop: 8 }]}>{tt("stLead")}</Text>
-
           {/* Language */}
-          <Label text={tt("stLanguage")} />
-          {LANGUAGES.map((l) => (
-            <Radio key={l.code} on={l.code === lang} title={l.nativeName} sub={l.name} onPress={() => chooseLanguage(l.code)} />
-          ))}
+          <Group title={tt("stLanguage")}>
+            <View style={styles.inner}>
+              <Segmented options={LANGUAGES.map((l) => ({ value: l.code, label: l.nativeName }))} value={lang} onChange={chooseLanguage} />
+            </View>
+          </Group>
 
           {/* Voice */}
-          <Label text={tt("stVoice")} />
-          <SwitchCard icon="volume-high-outline" tint={colors.green} title={tt("stReadAloud")} value={settings.soundEnabled} onChange={(v) => update({ soundEnabled: v })} />
-          <SwitchCard
-            icon="repeat-outline"
-            tint={colors.blue}
-            title={tt("stAutoSpeak")}
-            value={settings.autoSpeak}
-            disabled={!settings.soundEnabled}
-            onChange={(v) => update({ autoSpeak: v })}
-          />
-          <Text style={styles.subLabel}>{tt("stSpeed")}</Text>
-          <View style={styles.pills}>
-            {RATES.map((r) => {
-              const on = Math.abs(settings.speechRate - r.value) < 0.03;
-              return (
-                <Pressable key={r.key} onPress={() => update({ speechRate: r.value })} style={[styles.pillBtn, on && styles.pillBtnOn]}>
-                  <Text style={[styles.pillText, on && { color: "white" }]}>{tt(r.key)}</Text>
-                </Pressable>
-              );
-            })}
-            <Pressable onPress={() => speak(tt("stTestPhrase"), lang, true, settings.speechRate)} style={[styles.pillBtn, styles.pillOutline]}>
-              <Ionicons name="play" size={14} color={colors.forestDark} />
-              <Text style={[styles.pillText, { color: colors.forestDark }]}>{tt("stTestVoice")}</Text>
-            </Pressable>
-          </View>
+          <Group title={tt("stVoice")}>
+            <Row icon="volume-high-outline" label={tt("stReadAloud")} trailing={<Toggle value={settings.soundEnabled} onChange={(v) => update({ soundEnabled: v })} />} />
+            <Row
+              icon="repeat-outline"
+              tint={colors.blueDeep}
+              bg={colors.blue}
+              label={tt("stAutoSpeak")}
+              trailing={<Toggle value={settings.autoSpeak} disabled={!settings.soundEnabled} onChange={(v) => update({ autoSpeak: v })} />}
+            />
+            <View style={styles.inner}>
+              <Text style={styles.innerLabel}>{tt("stSpeed")}</Text>
+              <Segmented options={RATES.map((r) => ({ value: r.value, label: tt(r.key) }))} value={nearestRate(settings.speechRate)} onChange={(v) => update({ speechRate: v })} />
+            </View>
+            <Row icon="play-outline" tint={colors.yellowDeep} bg={colors.yellow} label={tt("stTestVoice")} onPress={() => speak(tt("stTestPhrase"), lang, true, settings.speechRate)} />
+          </Group>
 
           {/* Engines */}
-          <Label text={tt("stAi")} />
-          <Text style={styles.note}>{tt("stAiSub")}</Text>
-          <View style={styles.statusRow}>
-            <Status on={voiceOn} label={tt("stStatusVoice")} />
-            <Status on={agentEnabled()} label={tt("stStatusAgent")} />
-            <Status on={isAiConfigured() || aiSceneEnabled()} label={tt("stStatusDrawing")} />
-          </View>
-          {ENGINES.map((e) => {
-            const st = engineState(e);
-            return (
-              <Row key={e.id} onPress={() => openEditor(e)}>
-                <IconSquare icon={e.icon} bg={e.tint} size={48} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>{tt(e.title)}</Text>
-                  <Text style={styles.rowSub}>{tt(e.sub)}</Text>
-                </View>
-                <View style={[styles.state, st.on && styles.stateOn]}>
-                  <Text style={[styles.stateText, st.on && { color: colors.forestDark }]} numberOfLines={1}>
-                    {st.text}
-                  </Text>
-                </View>
-              </Row>
-            );
-          })}
+          <Group title={tt("stAi")} note={tt("stAiSub")}>
+            <View style={[styles.inner, styles.statusRow]}>
+              <Status on={voiceOn} label={tt("stStatusVoice")} />
+              <Status on={agentEnabled()} label={tt("stStatusAgent")} />
+              <Status on={isAiConfigured() || aiSceneEnabled()} label={tt("stStatusDrawing")} />
+            </View>
+            {ENGINES.map((e) => {
+              const st = engineState(e);
+              return (
+                <Row
+                  key={e.id}
+                  icon={e.icon}
+                  tint={e.tint}
+                  bg={e.bg}
+                  label={tt(e.title)}
+                  detail={tt(e.sub)}
+                  onPress={() => openEditor(e)}
+                  trailing={
+                    <Text style={[styles.state, st.on && { color: colors.forest }]} numberOfLines={1}>
+                      {st.text}
+                    </Text>
+                  }
+                />
+              );
+            })}
+          </Group>
 
           {/* Parent */}
-          <Label text={tt("stParent")} />
-          <SwitchCard icon="lock-closed-outline" tint={colors.yellow} title={tt("stLock")} value={pinSet} onChange={toggleLock} />
-          {pinSet && (
-            <Row
-              onPress={() => {
-                setPinValue("");
-                setPinModal(true);
-              }}
-            >
-              <IconSquare icon="keypad-outline" bg={colors.cardMuted} size={48} />
-              <Text style={[styles.rowTitle, { flex: 1 }]}>{tt("stChangePin")}</Text>
-              <Ionicons name={chevron} size={20} color={colors.textLight} />
-            </Row>
-          )}
-          <Text style={styles.note}>{tt("stLockInfo")}</Text>
+          <Group title={tt("stParent")} note={tt("stLockInfo")}>
+            <Row icon="lock-closed-outline" tint={colors.yellowDeep} bg={colors.yellow} label={tt("stLock")} trailing={<Toggle value={pinSet} onChange={toggleLock} />} />
+            {pinSet && (
+              <Row
+                icon="keypad-outline"
+                label={tt("stChangePin")}
+                chevron
+                onPress={() => {
+                  setPinValue("");
+                  setPinModal(true);
+                }}
+              />
+            )}
+          </Group>
 
           {/* Privacy */}
-          <Label text={tt("stPrivacyTitle")} />
-          <SwitchCard
-            icon="document-text-outline"
-            tint={colors.purple}
-            title={tt("stSaveHistory")}
-            value={settings.saveHistory}
-            onChange={(v) => update({ saveHistory: v })}
-          />
-          <Row onPress={onOpenPrivacy}>
-            <IconSquare icon="shield-checkmark-outline" bg={colors.green} size={48} />
-            <Text style={[styles.rowTitle, { flex: 1 }]}>{tt("stPrivacyPolicy")}</Text>
-            <Ionicons name={chevron} size={20} color={colors.textLight} />
-          </Row>
-          <Text style={styles.note}>{tt("stPrivacy")}</Text>
+          <Group title={tt("stPrivacyTitle")} note={tt("stPrivacy")}>
+            <Row
+              icon="document-text-outline"
+              tint={colors.purpleDeep}
+              bg={colors.purple}
+              label={tt("stSaveHistory")}
+              trailing={<Toggle value={settings.saveHistory} onChange={(v) => update({ saveHistory: v })} />}
+            />
+            <Row icon="shield-checkmark-outline" label={tt("stPrivacyPolicy")} chevron onPress={onOpenPrivacy} />
+          </Group>
 
-          {/* Picture library */}
-          <Label text={tt("stLibrary")} />
-          <Row onPress={downloading ? undefined : downloadPictures}>
-            <IconSquare icon="cloud-download-outline" bg={colors.blue} size={48} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.rowTitle}>{downloading ? tt("stDownloading") : tt("stDownload")}</Text>
-              <Text style={styles.rowSub}>{tt("stLibrarySub").replace("{n}", libN.toLocaleString())}</Text>
-            </View>
-            {downloading && <ActivityIndicator color={colors.forest} />}
-          </Row>
+          {/* Library */}
+          <Group title={tt("stLibrary")}>
+            <Row
+              icon="cloud-download-outline"
+              tint={colors.blueDeep}
+              bg={colors.blue}
+              label={downloading ? tt("stDownloading") : tt("stDownload")}
+              detail={tt("stLibrarySub").replace("{n}", libN.toLocaleString())}
+              onPress={downloading ? undefined : downloadPictures}
+              trailing={downloading ? <ActivityIndicator color={colors.forest} /> : undefined}
+            />
+          </Group>
 
           {/* Data */}
-          <Label text={tt("stData")} />
-          <View style={styles.dangerGroup}>
-            <DangerRow icon="time-outline" label={tt("stClearHistory")} onPress={() => confirm(tt("stClearHistory"), tt("stClearHistoryMsg"), clearHistory)} />
-            <DangerRow icon="bar-chart-outline" label={tt("stResetProgress")} onPress={() => confirm(tt("stResetProgress"), tt("stResetProgressMsg"), clearProgress)} />
-            <DangerRow
+          <Group title={tt("stData")}>
+            <Row icon="time-outline" danger label={tt("stClearHistory")} onPress={() => confirm(tt("stClearHistory"), tt("stClearHistoryMsg"), clearHistory)} />
+            <Row icon="trending-up-outline" danger label={tt("stResetProgress")} onPress={() => confirm(tt("stResetProgress"), tt("stResetProgressMsg"), clearProgress)} />
+            <Row
               icon="images-outline"
+              danger
               label={tt("stClearLibrary")}
               onPress={() =>
                 confirm(tt("stClearLibrary"), tt("stClearLibraryMsg"), async () => {
@@ -312,10 +303,10 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
                 })
               }
             />
-            <DangerRow
+            <Row
               icon="refresh-outline"
+              danger
               label={tt("stResetSettings")}
-              last
               onPress={() =>
                 confirm(tt("stResetSettings"), tt("stResetSettingsMsg"), async () => {
                   await clearApiKeys();
@@ -324,24 +315,21 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
                 })
               }
             />
-          </View>
+          </Group>
 
           {/* About */}
-          <Label text={tt("stAbout")} />
-          <Row onPress={onOpenHelp}>
-            <IconSquare icon="book-outline" bg={colors.yellow} size={48} />
-            <Text style={[styles.rowTitle, { flex: 1 }]}>{tt("stHelp")}</Text>
-            <Ionicons name={chevron} size={20} color={colors.textLight} />
-          </Row>
-          <View style={styles.about}>
-            <Logo size={52} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.rowTitle}>BloomLearn</Text>
-              <Text style={styles.rowSub}>{tt("stVersion").replace("{v}", appJson.expo.version)}</Text>
-              <Text style={[styles.rowSub, { marginTop: 8, lineHeight: 20 }]}>{tt("stAboutBody")}</Text>
-              <Text style={[styles.rowSub, { marginTop: 8, fontSize: 12, color: colors.textLight }]}>{tt("stCredits")}</Text>
+          <Group title={tt("stAbout")}>
+            <Row icon="book-outline" tint={colors.yellowDeep} bg={colors.yellow} label={tt("stHelp")} chevron onPress={onOpenHelp} />
+            <View style={[styles.inner, styles.about]}>
+              <Logo size={48} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.aboutName}>BloomLearn</Text>
+                <Text style={styles.aboutMeta}>{tt("stVersion").replace("{v}", appJson.expo.version)}</Text>
+                <Text style={styles.aboutBody}>{tt("stAboutBody")}</Text>
+                <Text style={styles.credits}>{tt("stCredits")}</Text>
+              </View>
             </View>
-          </View>
+          </Group>
         </ScrollView>
       </SafeAreaView>
 
@@ -349,7 +337,6 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
       <Modal visible={pinModal} transparent animationType="fade" onRequestClose={() => setPinModal(false)}>
         <View style={styles.backdrop}>
           <View style={styles.sheet}>
-            <IconSquare icon="lock-closed-outline" bg={colors.yellow} size={56} />
             <Text style={styles.sheetTitle}>{tt("stPinTitle")}</Text>
             <Text style={styles.sheetBody}>{tt("stPinBody")}</Text>
             <TextInput
@@ -371,7 +358,6 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
         <View style={styles.backdrop}>
           {editing && (
             <View style={styles.sheet}>
-              <IconSquare icon={editing.icon} bg={editing.tint} size={56} />
               <Text style={styles.sheetTitle}>{tt(editing.title)}</Text>
               <Text style={styles.sheetBody}>
                 {tt(editing.sub)}. {tt("stAiSub")}
@@ -392,7 +378,7 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
                   />
                 </View>
               ))}
-              <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+              <View style={styles.sheetLinks}>
                 {editing.link ? (
                   <Pressable onPress={() => Linking.openURL(editing.link!)} hitSlop={8}>
                     <Text style={styles.link}>{tt("stGetKey")}</Text>
@@ -415,73 +401,16 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
   );
 }
 
-function Label({ text }: { text: string }) {
-  return <Text style={styles.label}>{text}</Text>;
-}
-
-function Row({ children, onPress }: { children: ReactNode; onPress?: () => void }) {
-  return (
-    <Pressable onPress={onPress} disabled={!onPress} style={({ pressed }) => [styles.row, pressed && { opacity: 0.9 }]}>
-      {children}
-    </Pressable>
-  );
-}
-
-function Radio({ on, title, sub, onPress }: { on: boolean; title: string; sub: string; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} style={[styles.radio, on && styles.radioOn]}>
-      {on ? (
-        <Ionicons name="checkmark-circle" size={26} color={colors.forest} />
-      ) : (
-        <View style={styles.radioEmpty} />
-      )}
-      <View style={{ flex: 1 }}>
-        <Text style={styles.radioTitle}>{title}</Text>
-        <Text style={styles.rowSub}>{sub}</Text>
-      </View>
-    </Pressable>
-  );
-}
-
-function SwitchCard({
-  icon,
-  tint,
-  title,
-  value,
-  onChange,
-  disabled,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  tint: string;
-  title: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-  disabled?: boolean;
-}) {
-  return (
-    <View style={[styles.row, disabled && { opacity: 0.55 }]}>
-      <IconSquare icon={icon} bg={tint} size={48} />
-      <Text style={[styles.rowTitle, { flex: 1 }]}>{title}</Text>
-      <Toggle value={value} onChange={onChange} disabled={disabled} />
-    </View>
-  );
+function nearestRate(rate: number): number {
+  return RATES.reduce((best, r) => (Math.abs(r.value - rate) < Math.abs(best - rate) ? r.value : best), RATES[1].value);
 }
 
 function Status({ on, label }: { on: boolean; label: string }) {
   return (
-    <View style={[styles.status, on && { backgroundColor: colors.lime }]}>
-      <Ionicons name={on ? "checkmark" : "remove"} size={14} color={on ? colors.forestDark : colors.textLight} />
-      <Text style={[styles.statusText, on && { color: colors.forestDark }]}>{label}</Text>
+    <View style={[styles.status, on && { backgroundColor: colors.forestLight }]}>
+      <Ionicons name={on ? "checkmark-circle" : "ellipse-outline"} size={14} color={on ? colors.forest : colors.textLight} />
+      <Text style={[styles.statusText, on && { color: colors.forest }]}>{label}</Text>
     </View>
-  );
-}
-
-function DangerRow({ icon, label, onPress, last }: { icon: keyof typeof Ionicons.glyphMap; label: string; onPress: () => void; last?: boolean }) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.dangerRow, !last && styles.dangerDivider, pressed && { opacity: 0.8 }]}>
-      <Ionicons name={icon} size={22} color={colors.danger} />
-      <Text style={styles.dangerText}>{label}</Text>
-    </Pressable>
   );
 }
 
@@ -499,77 +428,37 @@ function SheetButtons({ cancel, save, onCancel, onSave }: { cancel: string; save
 }
 
 const styles = StyleSheet.create({
-  pad: { paddingHorizontal: 22 },
-  body: { paddingBottom: 48, gap: 12 },
-  label: { fontSize: 17, fontWeight: "700", color: colors.textDark, marginTop: 22, marginBottom: 2 },
-  subLabel: { fontSize: 15, fontWeight: "600", color: colors.textDark, marginTop: 6 },
-  note: { fontSize: 13.5, color: colors.textMid, lineHeight: 20 },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    backgroundColor: colors.card,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  rowTitle: { fontSize: 16.5, fontWeight: "600", color: colors.textDark },
-  rowSub: { fontSize: 13.5, color: colors.textMid, marginTop: 2 },
-  radio: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    backgroundColor: colors.card,
-    borderRadius: 24,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-  },
-  radioOn: { backgroundColor: colors.forestLight, borderColor: colors.forest },
-  radioEmpty: { width: 26, height: 26, borderRadius: 13, borderWidth: 2, borderColor: colors.textLight },
-  radioTitle: { fontSize: 17, fontWeight: "600", color: colors.textDark },
-  pills: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  pillBtn: { flexDirection: "row", alignItems: "center", gap: 6, borderRadius: 999, paddingVertical: 13, paddingHorizontal: 22, backgroundColor: "#e3eadf" },
-  pillBtnOn: { backgroundColor: colors.forest },
-  pillOutline: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
-  pillText: { fontSize: 15, fontWeight: "600", color: colors.forestDark },
+  pad: { paddingHorizontal: 20 },
+  body: { paddingBottom: 40 },
+  inner: { paddingVertical: 14, paddingHorizontal: 16 },
+  innerLabel: { fontSize: 13, fontWeight: "700", color: colors.textMid, marginBottom: 10 },
   statusRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  status: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 12, backgroundColor: colors.cardMuted },
-  statusText: { fontSize: 12.5, fontWeight: "700", color: colors.textMid },
-  state: { maxWidth: 110, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 10, backgroundColor: colors.cardMuted },
-  stateOn: { backgroundColor: colors.lime },
-  stateText: { fontSize: 12, fontWeight: "700", color: colors.textMid },
-  dangerGroup: { backgroundColor: colors.card, borderRadius: radiusLg, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 18 },
-  dangerRow: { flexDirection: "row", alignItems: "center", gap: 14, paddingVertical: 17 },
-  dangerDivider: { borderBottomWidth: 1, borderBottomColor: "#efede5" },
-  dangerText: { fontSize: 16, fontWeight: "600", color: colors.danger },
-  about: {
-    flexDirection: "row",
-    gap: 16,
-    backgroundColor: "#e6ebe1",
-    borderRadius: radiusLg,
-    padding: 18,
-  },
-  backdrop: { flex: 1, backgroundColor: "rgba(20,35,28,0.45)", alignItems: "center", justifyContent: "center", padding: 22 },
-  sheet: { width: "100%", maxWidth: 520, backgroundColor: colors.bg, borderRadius: 30, padding: 24, gap: 12 },
-  sheetTitle: { fontSize: 22, fontWeight: "800", color: colors.textDark, letterSpacing: -0.3, marginTop: 4 },
-  sheetBody: { fontSize: 14, color: colors.textMid, lineHeight: 20 },
-  fieldLabel: { fontSize: 14, fontWeight: "600", color: colors.textDark },
+  status: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 10, backgroundColor: colors.cardMuted },
+  statusText: { fontSize: 12, fontWeight: "700", color: colors.textMid },
+  state: { maxWidth: 96, fontSize: 12, fontWeight: "700", color: colors.textLight },
+  about: { flexDirection: "row", gap: 14 },
+  aboutName: { fontSize: 16, fontWeight: "800", color: colors.textDark },
+  aboutMeta: { fontSize: 12.5, color: colors.textMid, marginTop: 2 },
+  aboutBody: { fontSize: 13, color: colors.textMid, marginTop: 8, lineHeight: 19 },
+  credits: { fontSize: 11.5, color: colors.textLight, marginTop: 8, lineHeight: 16 },
+  backdrop: { flex: 1, backgroundColor: "rgba(31,40,35,0.45)", alignItems: "center", justifyContent: "center", padding: 22 },
+  sheet: { width: "100%", maxWidth: 480, backgroundColor: colors.bg, borderRadius: 24, padding: 22, gap: 12 },
+  sheetTitle: { fontSize: 19, fontWeight: "800", color: colors.textDark },
+  sheetBody: { fontSize: 13.5, color: colors.textMid, lineHeight: 19 },
+  fieldLabel: { fontSize: 13, fontWeight: "700", color: colors.textMid },
   input: {
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 22,
-    paddingHorizontal: 18,
-    paddingVertical: 16,
-    fontSize: 16,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 13,
+    fontSize: 15,
     color: colors.textDark,
   },
-  link: { fontSize: 14.5, fontWeight: "700", color: colors.forest },
-  sheetRow: { flexDirection: "row", gap: 10, marginTop: 6 },
-  sheetBtn: { flex: 1, borderRadius: 22, paddingVertical: 16, alignItems: "center" },
-  sheetBtnText: { fontSize: 16, fontWeight: "700" },
+  sheetLinks: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  link: { fontSize: 14, fontWeight: "700", color: colors.forest },
+  sheetRow: { flexDirection: "row", gap: 10, marginTop: 4 },
+  sheetBtn: { flex: 1, borderRadius: 14, paddingVertical: 14, alignItems: "center" },
+  sheetBtnText: { fontSize: 15, fontWeight: "700" },
 });

@@ -1,58 +1,58 @@
 export const colors = {
   // Base
-  bg: "#f4f2eb",
+  bg: "#f5f0e6",
   card: "#ffffff",
-  cardMuted: "#ecefe6",
-  border: "#e6e4da",
+  cardMuted: "#efe9dd",
+  border: "#e7e0d2",
 
   // Brand
-  forest: "#2e5b47",
-  forestDark: "#1f3d31",
-  forestLight: "#e4ede1",
-  /** Deep green for the hero cards. */
-  deep: "#24453a",
-  /** Soft lime accent: pills, highlights, play buttons. */
-  lime: "#d6e98f",
-  /** Mid green for chart bars and progress fills. */
-  leaf: "#93b86a",
+  forest: "#2d5f4f",
+  forestDark: "#1f4437",
+  forestLight: "#e3ede8",
+  /** Deepest brand green, for strong surfaces. */
+  deep: "#1f4437",
+  /** Warm highlight (the original yellow tile). */
+  lime: "#f3e3bd",
+  /** Soft green for chart bars and progress fills. */
+  leaf: "#7fa898",
 
   // Text
-  textDark: "#1f3a30",
-  textMid: "#6b7b71",
-  textLight: "#9aa59c",
+  textDark: "#2b2a26",
+  textMid: "#6f6a5e",
+  textLight: "#a39d8c",
 
   // Pastel tiles
-  blue: "#cfe5e3",
-  blueDeep: "#4f8a86",
-  yellow: "#f3d68b",
-  yellowDeep: "#b58a1f",
-  green: "#dcebd6",
-  greenDeep: "#4f8a45",
-  pink: "#f2b59b",
-  pinkDeep: "#c25b3f",
-  orange: "#f5dcc4",
+  blue: "#cfe0ec",
+  blueDeep: "#6699bb",
+  yellow: "#f3e3bd",
+  yellowDeep: "#c99a2e",
+  green: "#d9e8d3",
+  greenDeep: "#5c9a58",
+  pink: "#f3d9d9",
+  pinkDeep: "#c96b6b",
+  orange: "#f0ddc4",
   orangeDeep: "#c98a3d",
-  purple: "#e2def0",
-  purpleDeep: "#7a67b0",
+  purple: "#e3d9ef",
+  purpleDeep: "#8a6bc9",
 
   white: "#ffffff",
-  danger: "#c25b3f",
+  danger: "#c44d4d",
 };
 
 export const radius = 20;
 export const radiusSm = 14;
-export const radiusLg = 28;
+export const radiusLg = 24;
 
 /** Shared text styles so every screen reads the same way. */
 export const type = {
-  /** Small spaced caps above a title: "FRIDAY, SEPTEMBER 25". */
-  eyebrow: { fontSize: 12, fontWeight: "700" as const, letterSpacing: 2, color: "#7b8a80", textTransform: "uppercase" as const },
-  /** Big page title. */
-  display: { fontSize: 36, fontWeight: "800" as const, letterSpacing: -1, color: "#1f3a30", lineHeight: 42 },
-  /** Section heading: "A glance at the week". */
-  heading: { fontSize: 24, fontWeight: "800" as const, letterSpacing: -0.5, color: "#1f3a30" },
+  /** Small caps label above a group. */
+  eyebrow: { fontSize: 12, fontWeight: "800" as const, letterSpacing: 1, color: "#a39d8c", textTransform: "uppercase" as const },
+  /** Page title. */
+  display: { fontSize: 28, fontWeight: "800" as const, letterSpacing: -0.5, color: "#2b2a26", lineHeight: 34 },
+  /** Section heading. */
+  heading: { fontSize: 18, fontWeight: "800" as const, color: "#2b2a26" },
   /** Muted line under a title. */
-  lead: { fontSize: 15, color: "#6b7b71", lineHeight: 22 },
-  /** Small caps label under a number. */
-  statLabel: { fontSize: 11, fontWeight: "700" as const, letterSpacing: 1.5, color: "#3d5147", textTransform: "uppercase" as const },
+  lead: { fontSize: 14.5, color: "#6f6a5e", lineHeight: 21 },
+  /** Small label under a number. */
+  statLabel: { fontSize: 12, fontWeight: "600" as const, color: "#6f6a5e" },
 };

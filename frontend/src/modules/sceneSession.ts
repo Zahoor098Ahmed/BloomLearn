@@ -155,6 +155,7 @@ function detectRel(text: string): Rel | null {
   if (/\b(on top of|on)\b/.test(t)) return "on";
   if (/\b(above|over)\b/.test(t)) return "above";
   if (/\b(below|under|underneath|beneath)\b/.test(t)) return "below";
+  if (/\b(beside|next to|near|close to)\b/.test(t)) return "left";
   if (/\b(inside|in the|into)\b/.test(t)) return "inside";
   if (/\b(between|middle|centre|center)\b/.test(t)) return "center";
   return null;

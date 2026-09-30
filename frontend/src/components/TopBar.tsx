@@ -3,31 +3,37 @@ import { View, Text, Pressable, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
 import { isRTL } from "../modules/i18n";
-import { colors, type } from "../theme";
+import { colors } from "../theme";
 
-/** Back arrow on the left, a small spaced label in the middle. */
-export default function TopBar({ label, onBack, right }: { label: string; onBack?: () => void; right?: ReactNode }) {
+/** Round back button with the screen title beside it. */
+export default function TopBar({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
   const { settings } = useSettings();
   return (
     <View style={styles.row}>
-      <View style={styles.side}>
-        {onBack && (
-          <Pressable onPress={onBack} hitSlop={12} style={styles.back}>
-            <Ionicons name={isRTL(settings.language) ? "arrow-forward" : "arrow-back"} size={24} color={colors.textDark} />
-          </Pressable>
-        )}
-      </View>
-      <Text style={styles.label} numberOfLines={1}>
-        {label}
+      {onBack && (
+        <Pressable onPress={onBack} hitSlop={8} style={styles.back} accessibilityRole="button">
+          <Ionicons name={isRTL(settings.language) ? "chevron-forward" : "chevron-back"} size={22} color={colors.textDark} />
+        </Pressable>
+      )}
+      <Text style={styles.title} numberOfLines={1}>
+        {title}
       </Text>
-      <View style={[styles.side, { alignItems: "flex-end" }]}>{right}</View>
+      {right}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", paddingVertical: 14 },
-  side: { width: 48 },
-  back: { width: 40, height: 40, justifyContent: "center" },
-  label: { ...type.eyebrow, flex: 1, textAlign: "center" },
+  row: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12 },
+  back: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  title: { flex: 1, fontSize: 18, fontWeight: "800", color: colors.textDark },
 });

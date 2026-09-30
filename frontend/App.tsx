@@ -15,8 +15,10 @@ import ProgressScreen from "./src/screens/ProgressScreen";
 import SettingsScreen from "./src/screens/SettingsScreen";
 import HelpScreen from "./src/screens/HelpScreen";
 import PrivacyScreen from "./src/screens/PrivacyScreen";
+import SubjectScreen from "./src/screens/SubjectScreen";
+import type { SubjectId } from "./src/modules/curriculum";
 
-type Screen = Tab | "settings" | "help" | "privacy";
+type Screen = Tab | "subject" | "settings" | "help" | "privacy";
 
 const TABS: Screen[] = ["home", "talk", "progress"];
 
@@ -30,7 +32,8 @@ function AppInner() {
 
   // Picture Talk stays mounted once opened, so switching tabs keeps the scene.
   // A new `key` (opening it with a sentence) starts a fresh scene.
-  const [talk, setTalk] = useState<{ key: number; text: string } | null>(null);
+  const [talk, setTalk] = useState<{ key: number; text: string; chapterId?: string; index?: number } | null>(null);
+  const [subjectId, setSubjectId] = useState<SubjectId>("english");
 
   useEffect(() => {
     loadPasscode();
@@ -51,6 +54,16 @@ function AppInner() {
   function openTalk(text?: string) {
     if (text !== undefined || !talk) setTalk((cur) => ({ key: (cur?.key ?? 0) + 1, text: text ?? "" }));
     go("talk");
+  }
+
+  function openChapter(chapterId: string, index = 0) {
+    setTalk((cur) => ({ key: (cur?.key ?? 0) + 1, text: "", chapterId, index }));
+    go("talk");
+  }
+
+  function openSubject(id: SubjectId) {
+    setSubjectId(id);
+    go("subject");
   }
 
   function onTab(tab: Tab) {
@@ -92,7 +105,8 @@ function AppInner() {
     return <WelcomeScreen onGetStarted={() => setScreen("home")} />;
   }
 
-  const isTab = TABS.includes(screen);
+  // The tab bar also shows on a subject page (it belongs to Home).
+  const activeTab: Tab | null = TABS.includes(screen) ? (screen as Tab) : screen === "subject" ? "home" : null;
   const settingsBody = <SettingsScreen onBack={back} onOpenHelp={() => go("help")} onOpenPrivacy={() => go("privacy")} />;
 
   return (
@@ -103,6 +117,7 @@ function AppInner() {
             <SentencePictureScreen
               key={talk.key}
               initialText={talk.text}
+              lesson={talk.chapterId ? { chapterId: talk.chapterId, index: talk.index ?? 0 } : undefined}
               onBack={back}
               onOpenSettings={() => go("settings")}
             />
@@ -111,12 +126,13 @@ function AppInner() {
         {screen === "home" && (
           <HomeScreen
             onOpenTalk={openTalk}
+            onOpenSubject={openSubject}
             onOpenSettings={() => go("settings")}
-            onOpenProgress={() => onTab("progress")}
             onOpenHelp={() => go("help")}
           />
         )}
-        {screen === "progress" && <ProgressScreen onOpenTalk={openTalk} />}
+        {screen === "subject" && <SubjectScreen subjectId={subjectId} onBack={back} onOpenChapter={openChapter} />}
+        {screen === "progress" && <ProgressScreen onOpenSubject={openSubject} onOpenChapter={openChapter} />}
         {/* Parent lock: Settings asks for the passcode when one is set. */}
         {screen === "settings" &&
           (hasPasscode() && !parentUnlocked ? (
@@ -129,7 +145,7 @@ function AppInner() {
         {screen === "help" && <HelpScreen onBack={back} onOpenTalk={openTalk} />}
         {screen === "privacy" && <PrivacyScreen onBack={back} />}
       </View>
-      {isTab && !keyboardOpen && <TabBar active={screen as Tab} onChange={onTab} />}
+      {activeTab && !keyboardOpen && <TabBar active={activeTab} onChange={onTab} />}
     </View>
   );
 }

@@ -55,6 +55,8 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
 
   const l = say(newSession(), "laptop", "cat to the left of the laptop");
   check("2e  works for any objects (laptop/cat)", item(l, "cat")!.x < item(l, "laptop")!.x);
+  const b = say(newSession(), "The book is beside the bag");
+  check("2f  'beside' places the book next to the bag", item(b, "book")?.reference === "bag" && item(b, "book")!.x < item(b, "bag")!.x);
 }
 
 // 3. state command updates an existing object, no new object

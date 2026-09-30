@@ -103,8 +103,19 @@ export async function transcribeAudio(uri: string, langHint?: string): Promise<T
   }
 }
 
-function promptFor(sentence: string): string {
-  return `${sentence.trim()}. ${SENSORY_STYLE_GUIDE}`;
+/**
+ * Style for story problems ("Sara has 5 apples. She gives 2 apples to Ali."):
+ * a warm scene with the characters, instead of one object on white.
+ */
+export const STORY_STYLE_GUIDE =
+  "Warm hand-painted children's storybook illustration of this scene. Friendly, expressive children, " +
+  "soft natural colours, simple outdoor garden background. Show exactly the number of objects the story says, " +
+  "each one clearly visible and easy to count. No text, no numbers, no letters.";
+
+export type ImageStyle = "card" | "story";
+
+function promptFor(sentence: string, style: ImageStyle = "card"): string {
+  return `${sentence.trim()}. ${style === "story" ? STORY_STYLE_GUIDE : SENSORY_STYLE_GUIDE}`;
 }
 
 function hashNum(s: string): number {
@@ -123,12 +134,12 @@ export interface AiImageResult {
 }
 
 /** Generate (or fetch from cache) an illustration for a sentence. */
-export async function generateSentenceImage(sentence: string, force = false): Promise<AiImageResult> {
+export async function generateSentenceImage(sentence: string, force = false, style: ImageStyle = "card"): Promise<AiImageResult> {
   const clean = sentence.trim();
   if (!clean) return { error: "Type or say a sentence first." };
 
   await ensureCache();
-  const key = hash(promptFor(clean));
+  const key = hash(promptFor(clean, style));
   if (!force && cache[key]) return { dataUri: cache[key], cached: true };
 
   if (!isAiConfigured()) return { error: "AI is not connected yet. Add an OpenAI key to turn on real pictures." };
@@ -138,7 +149,8 @@ export async function generateSentenceImage(sentence: string, force = false): Pr
     const res = await fetch(url, {
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "gpt-image-1", prompt: promptFor(clean), size: "1024x1024", n: 1 }),
+      // "story" tells the BloomLearn server not to add its own plain-card style
+      body: JSON.stringify({ model: "gpt-image-1", prompt: promptFor(clean, style), style, size: "1024x1024", n: 1 }),
     });
 
     if (!res.ok) {

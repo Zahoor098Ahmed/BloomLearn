@@ -208,7 +208,8 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
         {organs.map((o, i) => {
           const slot = SLOTS[i];
           return (
-            <View key={o.label}>
+            // fill the stage so the percentage positions below measure against it
+            <View key={o.label} style={StyleSheet.absoluteFill} pointerEvents="none">
               <Connector from={slot} to={{ x: o.ax, y: o.ay }} />
               <View style={[styles.badge, { left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }]}>
                 <Image source={{ uri: asrc(o.id) }} style={styles.badgeImg} resizeMode="contain" />
@@ -221,7 +222,7 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
         })}
 
         {parts.map((p) => (
-          <View key={p.label}>
+          <View key={p.label} style={StyleSheet.absoluteFill} pointerEvents="none">
             <View
               style={[
                 styles.organLine,

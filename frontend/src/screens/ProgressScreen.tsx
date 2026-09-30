@@ -2,35 +2,49 @@ import { useEffect, useState, type ReactNode } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView, Share } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import Svg, { Circle } from "react-native-svg";
 import { useSettings } from "../context/SettingsContext";
-import { t, type TKey } from "../modules/i18n";
+import { t, type TKey, isRTL } from "../modules/i18n";
 import { useResponsive } from "../modules/responsive";
-import { colorHex } from "../modules/sentenceScene";
-import { getProgress, streak, lastWeek, level, badges, dayKey, POSITIONS, LEARN_COLORS, type ProgressData } from "../modules/progress";
-import IconSquare from "../components/IconSquare";
-import SectionHeading from "../components/SectionHeading";
-import { colors, radiusLg, type } from "../theme";
+import { SUBJECT_LIST, chapterById, label, type SubjectId } from "../modules/curriculum";
+import {
+  getProgress,
+  streak,
+  lastWeek,
+  lessonsToday,
+  badges,
+  dayKey,
+  overallReport,
+  subjectReport,
+  type ProgressData,
+} from "../modules/progress";
+import { SUBJECT_LOOK } from "../components/subjectLook";
+import { colors, type } from "../theme";
 
 interface Props {
-  onOpenTalk: (text?: string) => void;
+  onOpenSubject: (id: SubjectId) => void;
+  onOpenChapter: (chapterId: string, index?: number) => void;
 }
 
-const BADGE: Record<string, { label: TKey; icon: keyof typeof Ionicons.glyphMap; bg: string }> = {
-  first: { label: "bdFirst", icon: "leaf-outline", bg: colors.green },
-  ten: { label: "bdTen", icon: "chatbubbles-outline", bg: colors.blue },
-  fifty: { label: "bdFifty", icon: "library-outline", bg: colors.yellow },
-  voice: { label: "bdVoice", icon: "mic-outline", bg: colors.pink },
-  artist: { label: "bdArtist", icon: "image-outline", bg: colors.purple },
-  streak3: { label: "bdStreak3", icon: "flame-outline", bg: colors.orange },
-  positions: { label: "bdPositions", icon: "navigate-outline", bg: colors.blue },
-  colors: { label: "bdColors", icon: "color-palette-outline", bg: colors.green },
+const BADGE: Record<string, { label: TKey; icon: keyof typeof Ionicons.glyphMap; tint: string; bg: string }> = {
+  firstLesson: { label: "bdFirstLesson", icon: "leaf-outline", tint: colors.greenDeep, bg: colors.green },
+  firstChapter: { label: "bdFirstChapter", icon: "bookmark-outline", tint: colors.blueDeep, bg: colors.blue },
+  tenLessons: { label: "bdTenLessons", icon: "ribbon-outline", tint: colors.yellowDeep, bg: colors.yellow },
+  fiftyLessons: { label: "bdFiftyLessons", icon: "trophy-outline", tint: colors.orangeDeep, bg: colors.orange },
+  allSubjects: { label: "bdAllSubjects", icon: "apps-outline", tint: colors.purpleDeep, bg: colors.purple },
+  gradeOne: { label: "bdGradeOne", icon: "school-outline", tint: colors.forest, bg: colors.forestLight },
+  streak3: { label: "bdStreak3", icon: "flame-outline", tint: colors.pinkDeep, bg: colors.pink },
+  streak7: { label: "bdStreak7", icon: "calendar-outline", tint: colors.blueDeep, bg: colors.blue },
 };
 
-export default function ProgressScreen({ onOpenTalk }: Props) {
+const pct = (a: number, b: number) => (b ? Math.round((a / b) * 100) : 0);
+
+export default function ProgressScreen({ onOpenSubject, onOpenChapter }: Props) {
   const { settings } = useSettings();
   const { isTablet } = useResponsive();
   const lang = settings.language;
   const tt = (k: TKey) => t(k, lang);
+  const chevron = isRTL(lang) ? "chevron-back" : "chevron-forward";
 
   const [p, setP] = useState<ProgressData | null>(null);
   useEffect(() => {
@@ -39,28 +53,26 @@ export default function ProgressScreen({ onOpenTalk }: Props) {
 
   if (!p) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
 
-  const lv = level(p);
+  const all = overallReport(p);
+  const reports = SUBJECT_LIST.map((s) => subjectReport(p, s));
   const days = lastWeek(p);
+  const weekTotal = days.reduce((s, d) => s + d.count, 0);
   const maxDay = Math.max(1, ...days.map((d) => d.count));
   const today = dayKey();
-  const positionsDone = POSITIONS.filter((x) => p.positions[x]).length;
-  const colorsDone = LEARN_COLORS.filter((c) => p.colors[c]).length;
-  const words = Object.entries(p.words).sort((a, b) => b[1] - a[1]);
-  const voicePct = p.sentences ? Math.round((p.voiceSentences / p.sentences) * 100) : 0;
-  const pct = (a: number, b: number) => Math.round((a / b) * 100);
+  const earned = badges(p);
+  const last = p.lastLesson ? chapterById(p.lastLesson.chapterId) : null;
 
   async function share() {
-    const text = [
-      `BloomLearn — ${tt("prTitle")}`,
-      `${tt("prLevel").replace("{n}", String(lv.level))}`,
-      `${tt("prSentences")}: ${p!.sentences}`,
-      `${tt("prStreak")}: ${streak(p!)}`,
-      `${tt("prPositions")}: ${positionsDone} / ${POSITIONS.length}`,
-      `${tt("prColours")}: ${colorsDone} / ${LEARN_COLORS.length}`,
-      `${tt("prWords")}: ${words.length}`,
-    ].join("\n");
+    const lines = [
+      `BloomLearn — ${tt("prReportTitle")}`,
+      `${tt("prLessonsDone")}: ${all.done} / ${all.total} (${pct(all.done, all.total)}%)`,
+      `${tt("prChaptersDone")}: ${all.chaptersDone} / ${all.chaptersTotal}`,
+      `${tt("prStreakShort")}: ${streak(p!)}`,
+      "",
+      ...reports.map((r) => `${label(r.subject.title, lang)}: ${r.done} / ${r.total} (${pct(r.done, r.total)}%)`),
+    ];
     try {
-      await Share.share({ message: text });
+      await Share.share({ message: lines.join("\n") });
     } catch {
       /* dismissed */
     }
@@ -70,42 +82,94 @@ export default function ProgressScreen({ onOpenTalk }: Props) {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} showsVerticalScrollIndicator={false}>
-          <Text style={[type.eyebrow, { marginTop: 12 }]}>{tt("prEyebrow")}</Text>
-          <Text style={[type.display, { fontSize: 42, lineHeight: 48, marginTop: 10 }]}>{tt("prTitle")}</Text>
-          <Text style={[type.lead, { marginTop: 8 }]}>{tt("prSub")}</Text>
+          <Text style={[type.display, { marginTop: 10 }]}>{tt("prReportTitle")}</Text>
+          <Text style={[type.lead, { marginTop: 4 }]}>{tt("prReportSub")}</Text>
 
-          {/* Summary */}
-          <View style={styles.summary}>
-            <View style={styles.summaryTop}>
-              <IconSquare icon="ribbon-outline" bg={colors.lime} color={colors.deep} size={60} />
-              <Text style={styles.summaryEyebrow}>{tt("prLevel").replace("{n}", String(lv.level))}</Text>
-            </View>
-            <Text style={styles.summaryNum}>{p.sentences}</Text>
-            <Text style={styles.summaryLabel}>{tt("prSentencesSpoken")}</Text>
-            <View style={styles.summaryDivider} />
-            <View style={{ flexDirection: "row" }}>
-              <View style={{ flex: 1 }}>
-                <Text style={[styles.summaryStat, { color: colors.lime }]}>{streak(p)}</Text>
-                <Text style={styles.summaryStatLabel}>{tt("prStreakShort")}</Text>
-              </View>
-              <View style={styles.summaryVDivider} />
-              <View style={{ flex: 1, paddingStart: 30 }}>
-                <Text style={[styles.summaryStat, { color: colors.pink }]}>{p.aiPictures}</Text>
-                <Text style={styles.summaryStatLabel}>{tt("prPicturesShort")}</Text>
-              </View>
+          {/* Overall */}
+          <View style={[styles.card, styles.overall]}>
+            <Ring value={all.total ? all.done / all.total : 0} size={112}>
+              <Text style={styles.ringNum}>{pct(all.done, all.total)}%</Text>
+              <Text style={styles.ringLabel}>{tt("prComplete")}</Text>
+            </Ring>
+            <View style={{ flex: 1, gap: 10 }}>
+              <OverallLine value={`${all.done} / ${all.total}`} label={tt("prLessonsDone")} />
+              <OverallLine value={`${all.chaptersDone} / ${all.chaptersTotal}`} label={tt("prChaptersDone")} />
             </View>
           </View>
 
-          {/* Week */}
-          <SectionHeading title={tt("prThisWeek")} />
-          <View style={styles.card}>
-            <View style={styles.cardHead}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.cardTitle}>{tt("prRhythm")}</Text>
-                <Text style={styles.cardSub}>{tt("prRhythmSub")}</Text>
+          <View style={styles.statRow}>
+            <MiniStat icon="flame-outline" tint={colors.pinkDeep} bg={colors.pink} value={streak(p)} label={tt("prStreakShort")} />
+            <MiniStat icon="today-outline" tint={colors.greenDeep} bg={colors.green} value={lessonsToday(p)} label={tt("prToday")} />
+            <MiniStat icon="calendar-outline" tint={colors.blueDeep} bg={colors.blue} value={weekTotal} label={tt("prThisWeekShort")} />
+          </View>
+
+          {/* Continue */}
+          {last && p.lastLesson && (
+            <Pressable onPress={() => onOpenChapter(last.chapter.id, p.lastLesson!.index)} style={({ pressed }) => [styles.card, styles.continue, pressed && { opacity: 0.9 }]}>
+              <View style={[styles.continueIcon, { backgroundColor: SUBJECT_LOOK[last.subject.id].bg }]}>
+                <Ionicons name={SUBJECT_LOOK[last.subject.id].icon} size={22} color={SUBJECT_LOOK[last.subject.id].tint} />
               </View>
-              <IconSquare icon="leaf-outline" bg={colors.green} color={colors.forest} size={56} />
-            </View>
+              <View style={{ flex: 1 }}>
+                <Text style={type.eyebrow}>{tt("prContinue")}</Text>
+                <Text style={styles.continueTitle}>{label(last.chapter.title, lang)}</Text>
+                <Text style={styles.continueSub}>
+                  {label(last.subject.title, lang)} · {tt("sbGrade").replace("{n}", String(last.grade))} ·{" "}
+                  {tt("lsLessonOf")
+                    .replace("{i}", String(p.lastLesson.index + 1))
+                    .replace("{n}", String(last.chapter.lessons.length))}
+                </Text>
+              </View>
+              <View style={styles.playBtn}>
+                <Ionicons name="play" size={18} color="white" />
+              </View>
+            </Pressable>
+          )}
+
+          {/* Subjects */}
+          <SectionTitle title={tt("prBySubject")} />
+          <View style={{ gap: 12 }}>
+            {reports.map((r) => {
+              const look = SUBJECT_LOOK[r.subject.id];
+              return (
+                <Pressable key={r.subject.id} onPress={() => onOpenSubject(r.subject.id)} style={({ pressed }) => [styles.card, pressed && { opacity: 0.92 }]}>
+                  <View style={styles.subjectHead}>
+                    <View style={[styles.subjectIcon, { backgroundColor: look.bg }]}>
+                      <Ionicons name={look.icon} size={22} color={look.tint} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.subjectTitle}>{label(r.subject.title, lang)}</Text>
+                      <Text style={styles.subjectSub}>
+                        {tt("prSubjectLine")
+                          .replace("{n}", String(r.done))
+                          .replace("{m}", String(r.total))
+                          .replace("{c}", String(r.chaptersDone))
+                          .replace("{ct}", String(r.chaptersTotal))}
+                      </Text>
+                    </View>
+                    <Text style={[styles.subjectPct, { color: look.tint }]}>{pct(r.done, r.total)}%</Text>
+                    <Ionicons name={chevron} size={18} color={colors.textLight} />
+                  </View>
+                  <View style={styles.gradeRows}>
+                    {r.grades.map((g) => (
+                      <View key={g.grade} style={styles.gradeRow}>
+                        <Text style={styles.gradeLabel}>{tt("sbGrade").replace("{n}", String(g.grade))}</Text>
+                        <View style={styles.gradeTrack}>
+                          <View style={[styles.gradeFill, { width: `${pct(g.done, g.total)}%`, backgroundColor: look.tint }]} />
+                        </View>
+                        <Text style={styles.gradeCount}>
+                          {g.done}/{g.total}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* Week */}
+          <SectionTitle title={tt("prLessonsWeek")} right={`${weekTotal}`} />
+          <View style={styles.card}>
             <View style={styles.chart}>
               {days.map((d) => {
                 const isToday = d.key === today;
@@ -113,94 +177,29 @@ export default function ProgressScreen({ onOpenTalk }: Props) {
                   <View key={d.key} style={styles.barCol}>
                     <Text style={styles.barNum}>{d.count || ""}</Text>
                     <View style={styles.barArea}>
-                      <View
-                        style={[
-                          styles.bar,
-                          d.count
-                            ? { height: `${Math.max(18, (d.count / maxDay) * 100)}%`, backgroundColor: isToday ? colors.forest : colors.leaf }
-                            : styles.barEmpty,
-                        ]}
-                      />
+                      {d.count ? (
+                        <View style={[styles.bar, { height: `${Math.max(12, (d.count / maxDay) * 100)}%`, backgroundColor: isToday ? colors.forest : colors.leaf }]} />
+                      ) : (
+                        <View style={styles.barDot} />
+                      )}
                     </View>
-                    <Text style={[styles.barDay, isToday && { color: colors.textDark, fontWeight: "800" }]}>{weekday(d.date, lang)}</Text>
+                    <Text style={[styles.barDay, isToday && styles.barDayToday]}>{weekday(d.date, lang)}</Text>
                   </View>
                 );
               })}
             </View>
           </View>
 
-          {/* Closer look */}
-          <SectionHeading title={tt("prCloser")} />
-          <View style={{ gap: 14 }}>
-            <MeterCard
-              tint={colors.pink}
-              title={tt("prLevel").replace("{n}", String(lv.level))}
-              sub={tt("prToNext")
-                .replace("{n}", String(lv.need - lv.into))
-                .replace("{m}", String(lv.level + 1))}
-              value={pct(lv.into, lv.need)}
-            />
-            <MeterCard tint={colors.blue} title={tt("prPositions")} sub={`${positionsDone} / ${POSITIONS.length}`} value={pct(positionsDone, POSITIONS.length)}>
-              <View style={styles.chips}>
-                {POSITIONS.map((pos) => {
-                  const done = !!p.positions[pos];
-                  return (
-                    <Pressable key={pos} onPress={() => onOpenTalk(`The cat is ${pos} the box`)} style={[styles.chip, done && styles.chipOn]}>
-                      {done && <Ionicons name="checkmark" size={14} color={colors.forestDark} />}
-                      <Text style={[styles.chipText, done && { color: colors.forestDark }]}>{pos}</Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </MeterCard>
-            <MeterCard tint={colors.yellow} title={tt("prColours")} sub={`${colorsDone} / ${LEARN_COLORS.length}`} value={pct(colorsDone, LEARN_COLORS.length)}>
-              <View style={styles.dots}>
-                {LEARN_COLORS.map((c) => {
-                  const done = !!p.colors[c];
-                  const hex = colorHex(c) ?? "#ccc";
-                  return (
-                    <Pressable key={c} onPress={() => onOpenTalk(`A ${c} ball`)} hitSlop={4}>
-                      <View style={[styles.dot, { borderColor: hex }, done && { backgroundColor: hex }, c === "white" && { borderColor: colors.border }]} />
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </MeterCard>
-            <MeterCard
-              tint={colors.green}
-              title={tt("prSpoken")}
-              sub={tt("prVoiceSub").replace("{v}", String(p.voiceSentences)).replace("{n}", String(p.sentences))}
-              value={voicePct}
-            />
-            <View style={styles.card}>
-              <View style={styles.meterHead}>
-                <View style={[styles.meterSwatch, { backgroundColor: colors.purple }]} />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.meterTitle}>{tt("prWords")}</Text>
-                  <Text style={styles.cardSub}>{words.length ? String(words.length) : tt("prNoWords")}</Text>
-                </View>
-              </View>
-              {words.length > 0 && (
-                <View style={[styles.chips, { marginTop: 14 }]}>
-                  {words.slice(0, 20).map(([w, n]) => (
-                    <View key={w} style={styles.chip}>
-                      <Text style={styles.chipText}>{w}</Text>
-                      <Text style={styles.chipCount}>{n}</Text>
-                    </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          </View>
-
           {/* Badges */}
-          <SectionHeading title={tt("prBadges")} />
+          <SectionTitle title={tt("prBadges")} right={`${earned.filter((b) => b.earned).length}/${earned.length}`} />
           <View style={styles.badgeGrid}>
-            {badges(p).map((b) => {
+            {earned.map((b) => {
               const def = BADGE[b.id];
               return (
                 <View key={b.id} style={styles.badge}>
-                  <IconSquare icon={b.earned ? def.icon : "lock-closed-outline"} bg={b.earned ? def.bg : colors.cardMuted} color={b.earned ? colors.textDark : colors.textLight} size={52} round />
+                  <View style={[styles.badgeIcon, { backgroundColor: b.earned ? def.bg : colors.cardMuted }]}>
+                    <Ionicons name={b.earned ? def.icon : "lock-closed-outline"} size={22} color={b.earned ? def.tint : colors.textLight} />
+                  </View>
                   <Text style={[styles.badgeLabel, !b.earned && { color: colors.textLight }]} numberOfLines={2}>
                     {tt(def.label)}
                   </Text>
@@ -209,18 +208,14 @@ export default function ProgressScreen({ onOpenTalk }: Props) {
             })}
           </View>
 
-          {/* Care note */}
-          <View style={[styles.card, styles.careCard]}>
-            <IconSquare icon="information-outline" bg={colors.yellow} size={56} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.cardTitle}>{tt("prCareTitle")}</Text>
-              <Text style={[styles.cardSub, { lineHeight: 21 }]}>{tt("prCareBody")}</Text>
-            </View>
+          <View style={styles.noteRow}>
+            <Ionicons name="information-circle-outline" size={18} color={colors.textLight} />
+            <Text style={styles.noteText}>{tt("prReportNote")}</Text>
           </View>
 
           <Pressable onPress={share} style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]}>
-            <Ionicons name="share-outline" size={22} color={colors.forestDark} />
-            <Text style={styles.shareText}>{tt("prShare")}</Text>
+            <Ionicons name="share-outline" size={20} color={colors.forest} />
+            <Text style={styles.shareText}>{tt("prShareReport")}</Text>
           </Pressable>
         </ScrollView>
       </SafeAreaView>
@@ -228,21 +223,62 @@ export default function ProgressScreen({ onOpenTalk }: Props) {
   );
 }
 
-function MeterCard({ tint, title, sub, value, children }: { tint: string; title: string; sub: string; value: number; children?: ReactNode }) {
+function Ring({ value, size, children }: { value: number; size: number; children: ReactNode }) {
+  const stroke = 10;
+  const r = (size - stroke) / 2;
+  const c = 2 * Math.PI * r;
   return (
-    <View style={styles.card}>
-      <View style={styles.meterHead}>
-        <View style={[styles.meterSwatch, { backgroundColor: tint }]} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.meterTitle}>{title}</Text>
-          <Text style={styles.cardSub}>{sub}</Text>
-        </View>
-        <Text style={styles.meterPct}>{value}%</Text>
-      </View>
-      <View style={styles.track}>
-        <View style={[styles.fill, { width: `${Math.min(100, value)}%` }]} />
-      </View>
+    <View style={{ width: size, height: size, alignItems: "center", justifyContent: "center" }}>
+      <Svg width={size} height={size} style={StyleSheet.absoluteFill}>
+        <Circle cx={size / 2} cy={size / 2} r={r} stroke={colors.forestLight} strokeWidth={stroke} fill="none" />
+        {value > 0 && (
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            stroke={colors.forest}
+            strokeWidth={stroke}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={`${c} ${c}`}
+            strokeDashoffset={c * (1 - Math.min(1, Math.max(0.02, value)))}
+            transform={`rotate(-90 ${size / 2} ${size / 2})`}
+          />
+        )}
+      </Svg>
       {children}
+    </View>
+  );
+}
+
+function OverallLine({ value, label }: { value: string; label: string }) {
+  return (
+    <View>
+      <Text style={styles.overallValue}>{value}</Text>
+      <Text style={styles.overallLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function MiniStat({ icon, tint, bg, value, label }: { icon: keyof typeof Ionicons.glyphMap; tint: string; bg: string; value: number; label: string }) {
+  return (
+    <View style={styles.mini}>
+      <View style={[styles.miniIcon, { backgroundColor: bg }]}>
+        <Ionicons name={icon} size={18} color={tint} />
+      </View>
+      <Text style={styles.miniValue}>{value}</Text>
+      <Text style={type.statLabel} numberOfLines={2}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function SectionTitle({ title, right }: { title: string; right?: string }) {
+  return (
+    <View style={styles.sectionRow}>
+      <Text style={[type.eyebrow, { flex: 1 }]}>{title}</Text>
+      {!!right && <Text style={styles.sectionRight}>{right}</Text>}
     </View>
   );
 }
@@ -256,65 +292,71 @@ function weekday(d: Date, lang: string): string {
 }
 
 const styles = StyleSheet.create({
-  body: { paddingHorizontal: 22, paddingTop: 18, paddingBottom: 36 },
-  bodyTablet: { maxWidth: 760, alignSelf: "center", width: "100%" },
-  summary: { marginTop: 24, backgroundColor: colors.deep, borderRadius: 34, padding: 24 },
-  summaryTop: { flexDirection: "row", alignItems: "center", gap: 18 },
-  summaryEyebrow: { color: "rgba(255,255,255,0.85)", fontSize: 13, fontWeight: "700", letterSpacing: 2, textTransform: "uppercase" },
-  summaryNum: { color: "white", fontSize: 64, fontWeight: "800", marginTop: 16, letterSpacing: -1 },
-  summaryLabel: { color: "rgba(255,255,255,0.85)", fontSize: 16, marginTop: 2 },
-  summaryDivider: { height: 1, backgroundColor: "rgba(255,255,255,0.12)", marginVertical: 22 },
-  summaryVDivider: { width: 1, backgroundColor: "rgba(255,255,255,0.15)" },
-  summaryStat: { fontSize: 30, fontWeight: "800" },
-  summaryStatLabel: { color: "rgba(255,255,255,0.75)", fontSize: 11.5, fontWeight: "700", letterSpacing: 1.5, marginTop: 8, textTransform: "uppercase" },
-  card: { backgroundColor: colors.card, borderRadius: radiusLg, borderWidth: 1, borderColor: colors.border, padding: 22 },
-  cardHead: { flexDirection: "row", alignItems: "flex-start", gap: 12 },
-  cardTitle: { fontSize: 19, fontWeight: "700", color: colors.textDark },
-  cardSub: { fontSize: 14.5, color: colors.textMid, marginTop: 4 },
-  chart: { flexDirection: "row", height: 190, marginTop: 20 },
-  barCol: { flex: 1, alignItems: "center", gap: 8 },
-  barNum: { fontSize: 13, color: colors.textMid, height: 16 },
-  barArea: { flex: 1, width: 34, justifyContent: "flex-end" },
-  bar: { width: "100%", borderRadius: 17 },
-  barEmpty: { height: 10, backgroundColor: "#dfe8d6" },
-  barDay: { fontSize: 13, color: colors.textMid },
-  meterHead: { flexDirection: "row", alignItems: "center", gap: 16 },
-  meterSwatch: { width: 56, height: 56, borderRadius: 18 },
-  meterTitle: { fontSize: 18, fontWeight: "700", color: colors.textDark },
-  meterPct: { fontSize: 22, fontWeight: "800", color: colors.forest },
-  track: { height: 8, borderRadius: 4, backgroundColor: "#eceee6", marginTop: 20, overflow: "hidden" },
-  fill: { height: "100%", borderRadius: 4, backgroundColor: colors.leaf },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 16 },
-  chip: { flexDirection: "row", alignItems: "center", gap: 5, borderRadius: 999, paddingVertical: 8, paddingHorizontal: 14, backgroundColor: colors.cardMuted },
-  chipOn: { backgroundColor: colors.lime },
-  chipText: { fontSize: 13.5, fontWeight: "600", color: colors.textMid },
-  chipCount: { fontSize: 12, fontWeight: "700", color: colors.textLight },
-  dots: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 16 },
-  dot: { width: 28, height: 28, borderRadius: 14, borderWidth: 3, backgroundColor: "white" },
-  badgeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 6 },
+  body: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 32 },
+  bodyTablet: { maxWidth: 720, alignSelf: "center", width: "100%" },
+  card: { backgroundColor: colors.card, borderRadius: 22, borderWidth: 1, borderColor: colors.border, padding: 18 },
+  overall: { marginTop: 18, flexDirection: "row", alignItems: "center", gap: 20 },
+  ringNum: { fontSize: 26, fontWeight: "800", color: colors.textDark },
+  ringLabel: { fontSize: 11, fontWeight: "700", color: colors.textMid, textTransform: "uppercase", letterSpacing: 1 },
+  overallValue: { fontSize: 24, fontWeight: "800", color: colors.forest },
+  overallLabel: { fontSize: 13, color: colors.textMid },
+  statRow: { flexDirection: "row", gap: 10, marginTop: 12 },
+  mini: { flex: 1, backgroundColor: colors.card, borderRadius: 20, borderWidth: 1, borderColor: colors.border, padding: 14, gap: 4 },
+  miniIcon: { width: 34, height: 34, borderRadius: 11, alignItems: "center", justifyContent: "center", marginBottom: 6 },
+  miniValue: { fontSize: 22, fontWeight: "800", color: colors.textDark },
+  continue: { marginTop: 12, flexDirection: "row", alignItems: "center", gap: 14 },
+  continueIcon: { width: 46, height: 46, borderRadius: 15, alignItems: "center", justifyContent: "center" },
+  continueTitle: { fontSize: 16.5, fontWeight: "800", color: colors.textDark, marginTop: 2 },
+  continueSub: { fontSize: 12.5, color: colors.textMid, marginTop: 2 },
+  playBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.forest, alignItems: "center", justifyContent: "center" },
+  sectionRow: { flexDirection: "row", alignItems: "center", marginTop: 26, marginBottom: 10, marginHorizontal: 4 },
+  sectionRight: { fontSize: 13, fontWeight: "800", color: colors.forest },
+  subjectHead: { flexDirection: "row", alignItems: "center", gap: 12 },
+  subjectIcon: { width: 42, height: 42, borderRadius: 14, alignItems: "center", justifyContent: "center" },
+  subjectTitle: { fontSize: 16.5, fontWeight: "800", color: colors.textDark },
+  subjectSub: { fontSize: 12.5, color: colors.textMid, marginTop: 2 },
+  subjectPct: { fontSize: 18, fontWeight: "800" },
+  gradeRows: { marginTop: 14, gap: 8 },
+  gradeRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  gradeLabel: { width: 62, fontSize: 12.5, fontWeight: "600", color: colors.textMid },
+  gradeTrack: { flex: 1, height: 7, borderRadius: 4, backgroundColor: colors.cardMuted, overflow: "hidden" },
+  gradeFill: { height: "100%", borderRadius: 4 },
+  gradeCount: { width: 42, textAlign: "right", fontSize: 12, fontWeight: "700", color: colors.textMid },
+  chart: { flexDirection: "row", height: 150 },
+  barCol: { flex: 1, alignItems: "center", gap: 6 },
+  barNum: { fontSize: 12, fontWeight: "700", color: colors.textMid, height: 15 },
+  barArea: { flex: 1, width: 22, justifyContent: "flex-end", alignItems: "center" },
+  bar: { width: "100%", borderRadius: 8 },
+  barDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
+  barDay: { fontSize: 12, color: colors.textLight, fontWeight: "600" },
+  barDayToday: { color: colors.forest, fontWeight: "800" },
+  badgeGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   badge: {
     width: "22.5%",
     flexGrow: 1,
     alignItems: "center",
     gap: 8,
     backgroundColor: colors.card,
-    borderRadius: 24,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: colors.border,
-    paddingVertical: 16,
-    paddingHorizontal: 6,
+    paddingVertical: 14,
+    paddingHorizontal: 4,
   },
-  badgeLabel: { fontSize: 12, fontWeight: "600", color: colors.textDark, textAlign: "center" },
-  careCard: { flexDirection: "row", gap: 18, marginTop: 24 },
+  badgeIcon: { width: 46, height: 46, borderRadius: 23, alignItems: "center", justifyContent: "center" },
+  badgeLabel: { fontSize: 11.5, fontWeight: "700", color: colors.textDark, textAlign: "center" },
+  noteRow: { flexDirection: "row", gap: 8, marginTop: 22, marginHorizontal: 4 },
+  noteText: { flex: 1, fontSize: 12.5, color: colors.textMid, lineHeight: 18 },
   shareBtn: {
-    marginTop: 18,
+    marginTop: 16,
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#e6ebe1",
-    borderRadius: 26,
-    paddingVertical: 20,
+    borderRadius: 18,
+    borderWidth: 1.5,
+    borderColor: colors.forest,
+    paddingVertical: 15,
   },
-  shareText: { fontSize: 17, fontWeight: "700", color: colors.forestDark },
+  shareText: { fontSize: 15.5, fontWeight: "700", color: colors.forest },
 });

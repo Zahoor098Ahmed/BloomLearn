@@ -76,8 +76,6 @@ export type TKey =
   | 'hmGoodMorning'
   | 'hmGoodAfternoon'
   | 'hmGoodEvening'
-  | 'hmHeroTitle'
-  | 'hmHeroBody'
   | 'hmHeroBtn'
   | 'hmSetupTitle'
   | 'hmSetupBody'
@@ -154,27 +152,8 @@ export type TKey =
   | 'lnSlide4Sub'
   | 'lnTrust'
   | 'tabProgress'
-  | 'prTitle'
-  | 'prSub'
-  | 'prLevel'
-  | 'prToNext'
-  | 'prSentences'
-  | 'prSpoken'
-  | 'prStreak'
-  | 'prThisWeek'
-  | 'prPositions'
-  | 'prColours'
-  | 'prWords'
-  | 'prNoWords'
   | 'prBadges'
-  | 'bdFirst'
-  | 'bdTen'
-  | 'bdFifty'
-  | 'bdVoice'
-  | 'bdArtist'
   | 'bdStreak3'
-  | 'bdPositions'
-  | 'bdColors'
   | 'pgDefaultTitle'
   | 'pgEnterPasscodeSub'
   | 'pgWrongPasscode'
@@ -205,41 +184,56 @@ export type TKey =
   | 'pvChildBody'
   | 'pvControlTitle'
   | 'pvControlBody'
-  | 'hmBrandSub'
-  | 'hmGreetingSub'
-  | 'hmHeroPill'
-  | 'hmHeroFooter'
-  | 'hmPractice'
-  | 'hmPracticeSub'
-  | 'hmSeeProgress'
-  | 'acPositions'
-  | 'acPositionsSub'
-  | 'acColours'
-  | 'acColoursSub'
-  | 'acThings'
-  | 'acThingsSub'
-  | 'hmWeek'
   | 'prStreakShort'
-  | 'prPicturesShort'
   | 'hmLocal'
-  | 'prEyebrow'
-  | 'prSentencesSpoken'
-  | 'prRhythm'
-  | 'prRhythmSub'
-  | 'prCloser'
-  | 'prVoiceSub'
-  | 'prCareTitle'
-  | 'prCareBody'
-  | 'prShare'
-  | 'stEyebrow'
-  | 'stHeadline'
-  | 'stLead'
-  | 'hpHeadline'
-  | 'pvEyebrow'
-  | 'pvHeadline'
-  | 'wlHeadline'
-  | 'hmHowTo'
-  | 'stLibrarySub';
+  | 'stLibrarySub'
+  | 'hrKicker'
+  | 'hrTitle'
+  | 'hrBody'
+  | 'hrHow'
+  | 'hmSubjects'
+  | 'hmSubjectMeta'
+  | 'sbChooseGrade'
+  | 'sbGrade'
+  | 'sbChapters'
+  | 'sbLessonsDone'
+  | 'sbComingSoon'
+  | 'sbEnglishBlurb'
+  | 'sbMathBlurb'
+  | 'sbScienceBlurb'
+  | 'lsLessonOf'
+  | 'lsPrevious'
+  | 'lsNext'
+  | 'lsShowAnswer'
+  | 'lsAnswer'
+  | 'lsAllLessons'
+  | 'sbSource'
+  | 'prReportTitle'
+  | 'prReportSub'
+  | 'prComplete'
+  | 'prLessonsDone'
+  | 'prChaptersDone'
+  | 'prToday'
+  | 'prThisWeekShort'
+  | 'prContinue'
+  | 'prBySubject'
+  | 'prSubjectLine'
+  | 'prLessonsWeek'
+  | 'prReportNote'
+  | 'prShareReport'
+  | 'bdFirstLesson'
+  | 'bdFirstChapter'
+  | 'bdTenLessons'
+  | 'bdFiftyLessons'
+  | 'bdAllSubjects'
+  | 'bdGradeOne'
+  | 'bdStreak7'
+  | 'lsTapToSee'
+  | 'lsPrevShort'
+  | 'lsNextShort'
+  | 'spStoryDrawing'
+  | 'spStoryNeedsEngine'
+  | 'spStoryFailed';
 
 type TMap = Record<TKey, string>;
 type AllTranslations = { 'en-US': TMap } & Partial<Record<LanguageCode, Partial<TMap>>>;
@@ -292,8 +286,6 @@ const T: AllTranslations = {
     hmGoodMorning: "Good morning",
     hmGoodAfternoon: "Good afternoon",
     hmGoodEvening: "Good evening",
-    hmHeroTitle: "Say it.\nSee it bloom.",
-    hmHeroBody: "Speak a sentence and BloomLearn draws it, one small word at a time.",
     hmHeroBtn: "Start talking",
     hmSetupTitle: "Turn on voice on this phone",
     hmSetupBody: "Turning speech into text on a phone needs an OpenAI key or a BloomLearn server. Add one in Settings — or use your keyboard's microphone.",
@@ -370,27 +362,8 @@ const T: AllTranslations = {
     lnSlide4Sub: "Sentences are read aloud, so children learn words, colours and positions.",
     lnTrust: "Made for children, parents and teachers",
     tabProgress: "Progress",
-    prTitle: "Progress",
-    prSub: "A gentle look back at practice, not a test.",
-    prLevel: "Level {n}",
-    prToNext: "{n} more sentences to reach level {m}",
-    prSentences: "Sentences",
-    prSpoken: "Spoken by voice",
-    prStreak: "Day streak",
-    prThisWeek: "This week",
-    prPositions: "Positions learned",
-    prColours: "Colours used",
-    prWords: "Words used",
-    prNoWords: "Words appear here as you say sentences like \"the cat is on the table\".",
     prBadges: "Badges",
-    bdFirst: "First sentence",
-    bdTen: "10 sentences",
-    bdFifty: "50 sentences",
-    bdVoice: "5 by voice",
-    bdArtist: "First AI picture",
     bdStreak3: "3-day streak",
-    bdPositions: "All positions",
-    bdColors: "5 colours",
     pgDefaultTitle: "Parent area",
     pgEnterPasscodeSub: "Enter the 4-digit passcode",
     pgWrongPasscode: "Wrong passcode — try again",
@@ -421,41 +394,56 @@ const T: AllTranslations = {
     pvChildBody: "Use BloomLearn together with your child. Turn on the parent lock so only you can change keys, language and data.",
     pvControlTitle: "You are in control",
     pvControlBody: "In Settings you can stop saving history, clear history, reset progress, clear the picture library and remove every key. Uninstalling the app deletes everything.",
-    hmBrandSub: "Speak · See · Learn",
-    hmGreetingSub: "There is room for one new sentence today.",
-    hmHeroPill: "A gentle place to speak",
-    hmHeroFooter: "{n} sentences · {m} today",
-    hmPractice: "Things to practise",
-    hmPracticeSub: "Tap play to start with a ready sentence.",
-    hmSeeProgress: "Progress",
-    acPositions: "Where is it?",
-    acPositionsSub: "under · on · behind · inside",
-    acColours: "Colour words",
-    acColoursSub: "a red ball · a blue bird",
-    acThings: "Name things",
-    acThingsSub: "cat · table · apple · tree",
-    hmWeek: "A glance at the week",
     prStreakShort: "Day streak",
-    prPicturesShort: "AI pictures",
     hmLocal: "Your practice is saved only on this device",
-    prEyebrow: "Small words, steady growth",
-    prSentencesSpoken: "sentences spoken so far",
-    prRhythm: "Practice rhythm",
-    prRhythmSub: "Sentences · last 7 days",
-    prCloser: "A closer look",
-    prVoiceSub: "{v} of {n} sentences said out loud",
-    prCareTitle: "Use with care",
-    prCareBody: "These are simple practice summaries from this device. They are not a test or a clinical measure.",
-    prShare: "Share progress",
-    stEyebrow: "Make it yours",
-    stHeadline: "Settings",
-    stLead: "Language, voice, parent lock and privacy.",
-    hpHeadline: "Speak, see,\nand learn.",
-    pvEyebrow: "Safe by design",
-    pvHeadline: "Your privacy",
-    wlHeadline: "Let's make room\nfor a new bloom.",
-    hmHowTo: "How to use BloomLearn",
     stLibrarySub: "{n} pictures saved on this device",
+    hrKicker: "Picture Talk",
+    hrTitle: "Speak. See. Learn.",
+    hrBody: "Say a sentence and watch it turn into a picture — then learn English, Math and Science the same way.",
+    hrHow: "How it works",
+    hmSubjects: "Subjects",
+    hmSubjectMeta: "Grades 1–5 · {n} chapters",
+    sbChooseGrade: "Choose a grade",
+    sbGrade: "Grade {n}",
+    sbChapters: "Chapters",
+    sbLessonsDone: "{n} of {m} lessons",
+    sbComingSoon: "Chapters for Grade {n} are coming soon.",
+    sbEnglishBlurb: "Words, colours and where things are — with a picture for every sentence.",
+    sbMathBlurb: "Numbers, shapes and word problems — with a picture for every question.",
+    sbScienceBlurb: "Living things, your body, materials, forces and space.",
+    lsLessonOf: "Lesson {i} of {n}",
+    lsPrevious: "Previous lesson",
+    lsNext: "Next lesson",
+    lsShowAnswer: "Show answer",
+    lsAnswer: "Answer",
+    lsAllLessons: "All lessons in this chapter",
+    sbSource: "Chapter topics follow Pakistan's Single National Curriculum (2020) and the Cambridge Primary curriculum. Lessons are written for BloomLearn, not copied from any textbook — check them with your school book.",
+    prReportTitle: "Learning report",
+    prReportSub: "How your child is doing in English, Math and Science.",
+    prComplete: "done",
+    prLessonsDone: "Lessons done",
+    prChaptersDone: "Chapters finished",
+    prToday: "Lessons today",
+    prThisWeekShort: "This week",
+    prContinue: "Continue learning",
+    prBySubject: "By subject",
+    prSubjectLine: "{n} of {m} lessons · {c} of {ct} chapters",
+    prLessonsWeek: "Lessons this week",
+    prReportNote: "A lesson counts as done when your child opens it in a chapter. This is a practice summary from this device, not a school grade or a test.",
+    prShareReport: "Share report",
+    bdFirstLesson: "First lesson",
+    bdFirstChapter: "First chapter",
+    bdTenLessons: "10 lessons",
+    bdFiftyLessons: "50 lessons",
+    bdAllSubjects: "All 3 subjects",
+    bdGradeOne: "Grade 1 subject done",
+    bdStreak7: "7-day streak",
+    lsTapToSee: "Tap ? to see the answer",
+    lsPrevShort: "Previous",
+    lsNextShort: "Next lesson",
+    spStoryDrawing: "Drawing the story…",
+    spStoryNeedsEngine: "A real picture of the story needs an AI engine — add a free Pollinations token or an OpenAI key in Settings. The counting picture below always works.",
+    spStoryFailed: "Could not draw the story right now. The counting picture below still shows the sum.",
   },
   'ar-SA': {
     save: 'حفظ',
@@ -504,8 +492,6 @@ const T: AllTranslations = {
     hmGoodMorning: "صباح الخير",
     hmGoodAfternoon: "مساء الخير",
     hmGoodEvening: "مساء الخير",
-    hmHeroTitle: "قلها.\nوشاهدها تزهر.",
-    hmHeroBody: "قل جملة وسيرسمها BloomLearn، كلمة صغيرة بعد أخرى.",
     hmHeroBtn: "ابدأ الكلام",
     hmSetupTitle: "شغّل الصوت على هذا الهاتف",
     hmSetupBody: "تحويل الكلام إلى نص على الهاتف يحتاج إلى مفتاح OpenAI أو خادم BloomLearn. أضفه في الإعدادات — أو استخدم ميكروفون لوحة المفاتيح.",
@@ -582,27 +568,8 @@ const T: AllTranslations = {
     lnSlide4Sub: "تُقرأ الجمل بصوت عالٍ، فيتعلم الأطفال الكلمات والألوان والأماكن.",
     lnTrust: "صُمم للأطفال والأهل والمعلمين",
     tabProgress: "التقدم",
-    prTitle: "التقدم",
-    prSub: "نظرة لطيفة على التدريب، وليست اختباراً.",
-    prLevel: "المستوى {n}",
-    prToNext: "{n} جمل أخرى للوصول إلى المستوى {m}",
-    prSentences: "الجمل",
-    prSpoken: "بالصوت",
-    prStreak: "أيام متتالية",
-    prThisWeek: "هذا الأسبوع",
-    prPositions: "الأماكن المتعلَّمة",
-    prColours: "الألوان المستخدمة",
-    prWords: "الكلمات المستخدمة",
-    prNoWords: "تظهر الكلمات هنا عندما تقول جملاً مثل \"the cat is on the table\".",
     prBadges: "الشارات",
-    bdFirst: "أول جملة",
-    bdTen: "10 جمل",
-    bdFifty: "50 جملة",
-    bdVoice: "5 بالصوت",
-    bdArtist: "أول صورة ذكية",
     bdStreak3: "3 أيام متتالية",
-    bdPositions: "كل الأماكن",
-    bdColors: "5 ألوان",
     pgDefaultTitle: "منطقة الوالدين",
     pgEnterPasscodeSub: "أدخل رمز المرور المكوّن من 4 أرقام",
     pgWrongPasscode: "رمز مرور خاطئ — حاول مرة أخرى",
@@ -633,41 +600,56 @@ const T: AllTranslations = {
     pvChildBody: "استخدم BloomLearn مع طفلك. شغّل قفل الوالدين حتى تكون وحدك من يغيّر المفاتيح واللغة والبيانات.",
     pvControlTitle: "أنت المتحكم",
     pvControlBody: "في الإعدادات يمكنك إيقاف حفظ السجل، ومسح السجل، وإعادة ضبط التقدم، ومسح مكتبة الصور، وإزالة كل المفاتيح. حذف التطبيق يمسح كل شيء.",
-    hmBrandSub: "تكلّم · شاهد · تعلّم",
-    hmGreetingSub: "هناك متسع لجملة جديدة اليوم.",
-    hmHeroPill: "مكان لطيف للكلام",
-    hmHeroFooter: "{n} جمل · {m} اليوم",
-    hmPractice: "أشياء للتدرّب",
-    hmPracticeSub: "اضغط تشغيل لتبدأ بجملة جاهزة.",
-    hmSeeProgress: "التقدم",
-    acPositions: "أين هو؟",
-    acPositionsSub: "under · on · behind · inside",
-    acColours: "كلمات الألوان",
-    acColoursSub: "a red ball · a blue bird",
-    acThings: "سمِّ الأشياء",
-    acThingsSub: "cat · table · apple · tree",
-    hmWeek: "نظرة على الأسبوع",
     prStreakShort: "أيام متتالية",
-    prPicturesShort: "صور ذكية",
     hmLocal: "تدريبك محفوظ على هذا الجهاز فقط",
-    prEyebrow: "كلمات صغيرة، نمو ثابت",
-    prSentencesSpoken: "جملة قيلت حتى الآن",
-    prRhythm: "إيقاع التدريب",
-    prRhythmSub: "الجمل · آخر 7 أيام",
-    prCloser: "نظرة أقرب",
-    prVoiceSub: "{v} من {n} جمل قيلت بصوت عالٍ",
-    prCareTitle: "استخدم بعناية",
-    prCareBody: "هذه ملخصات تدريب بسيطة من هذا الجهاز. ليست اختباراً ولا قياساً طبياً.",
-    prShare: "شارك التقدم",
-    stEyebrow: "اجعله لك",
-    stHeadline: "الإعدادات",
-    stLead: "اللغة والصوت وقفل الوالدين والخصوصية.",
-    hpHeadline: "تكلّم، شاهد،\nوتعلّم.",
-    pvEyebrow: "آمن من الأساس",
-    pvHeadline: "خصوصيتك",
-    wlHeadline: "لنصنع مكاناً\nلزهرة جديدة.",
-    hmHowTo: "طريقة استخدام BloomLearn",
     stLibrarySub: "{n} صورة محفوظة على هذا الجهاز",
+    hrKicker: "الكلام المصوّر",
+    hrTitle: "تكلّم. شاهد. تعلّم.",
+    hrBody: "قل جملة وشاهدها تتحول إلى صورة — ثم تعلّم الإنجليزية والرياضيات والعلوم بنفس الطريقة.",
+    hrHow: "كيف يعمل",
+    hmSubjects: "المواد",
+    hmSubjectMeta: "الصفوف 1–5 · {n} فصلاً",
+    sbChooseGrade: "اختر الصف",
+    sbGrade: "الصف {n}",
+    sbChapters: "الفصول",
+    sbLessonsDone: "{n} من {m} دروس",
+    sbComingSoon: "فصول الصف {n} قادمة قريباً.",
+    sbEnglishBlurb: "كلمات وألوان وأماكن الأشياء — مع صورة لكل جملة.",
+    sbMathBlurb: "الأعداد والأشكال والمسائل الكلامية — مع صورة لكل سؤال.",
+    sbScienceBlurb: "الكائنات الحية وجسمك والمواد والقوى والفضاء.",
+    lsLessonOf: "الدرس {i} من {n}",
+    lsPrevious: "الدرس السابق",
+    lsNext: "الدرس التالي",
+    lsShowAnswer: "أظهر الإجابة",
+    lsAnswer: "الإجابة",
+    lsAllLessons: "كل دروس هذا الفصل",
+    sbSource: "مواضيع الفصول تتبع المنهج الوطني الموحد في باكستان (2020) ومنهج كامبريدج للمرحلة الابتدائية. الدروس مكتوبة لتطبيق BloomLearn وليست منسوخة من أي كتاب مدرسي — راجعها مع كتاب مدرستك.",
+    prReportTitle: "تقرير التعلّم",
+    prReportSub: "كيف يتقدّم طفلك في الإنجليزية والرياضيات والعلوم.",
+    prComplete: "مكتمل",
+    prLessonsDone: "الدروس المنجزة",
+    prChaptersDone: "الفصول المكتملة",
+    prToday: "دروس اليوم",
+    prThisWeekShort: "هذا الأسبوع",
+    prContinue: "تابع التعلّم",
+    prBySubject: "حسب المادة",
+    prSubjectLine: "{n} من {m} دروس · {c} من {ct} فصول",
+    prLessonsWeek: "دروس هذا الأسبوع",
+    prReportNote: "يُحسب الدرس منجزاً عندما يفتحه طفلك داخل الفصل. هذا ملخص تدريب من هذا الجهاز، وليس درجة مدرسية أو اختباراً.",
+    prShareReport: "شارك التقرير",
+    bdFirstLesson: "أول درس",
+    bdFirstChapter: "أول فصل",
+    bdTenLessons: "10 دروس",
+    bdFiftyLessons: "50 درساً",
+    bdAllSubjects: "المواد الثلاث",
+    bdGradeOne: "مادة الصف الأول",
+    bdStreak7: "7 أيام متتالية",
+    lsTapToSee: "اضغط ؟ لترى الإجابة",
+    lsPrevShort: "السابق",
+    lsNextShort: "الدرس التالي",
+    spStoryDrawing: "جارٍ رسم القصة…",
+    spStoryNeedsEngine: "صورة حقيقية للقصة تحتاج إلى محرك ذكاء اصطناعي — أضف رمز Pollinations مجانياً أو مفتاح OpenAI في الإعدادات. صورة العدّ في الأسفل تعمل دائماً.",
+    spStoryFailed: "تعذّر رسم القصة الآن. صورة العدّ في الأسفل ما زالت تُظهر المسألة.",
   },
 };
 

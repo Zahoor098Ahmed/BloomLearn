@@ -2,22 +2,21 @@ import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
-import { t, type TKey, isRTL } from "../modules/i18n";
+import { t, type TKey } from "../modules/i18n";
 import TopBar from "../components/TopBar";
-import IconSquare from "../components/IconSquare";
-import SectionHeading from "../components/SectionHeading";
-import { colors, radiusLg, type } from "../theme";
+import Group, { Row } from "../components/Group";
+import { colors } from "../theme";
 
 interface Props {
   onBack: () => void;
   onOpenTalk: (text?: string) => void;
 }
 
-const STEPS: { icon: keyof typeof Ionicons.glyphMap; title: TKey; body: TKey; tint: string }[] = [
-  { icon: "mic-outline", title: "hpStep1Title", body: "hpStep1Body", tint: colors.green },
-  { icon: "chatbubble-outline", title: "hpStep2Title", body: "hpStep2Body", tint: colors.blue },
-  { icon: "add-circle-outline", title: "hpStep3Title", body: "hpStep3Body", tint: colors.yellow },
-  { icon: "image-outline", title: "hpStep4Title", body: "hpStep4Body", tint: colors.pink },
+const STEPS: { icon: keyof typeof Ionicons.glyphMap; title: TKey; body: TKey; tint: string; bg: string }[] = [
+  { icon: "mic-outline", title: "hpStep1Title", body: "hpStep1Body", tint: colors.greenDeep, bg: colors.green },
+  { icon: "chatbubble-outline", title: "hpStep2Title", body: "hpStep2Body", tint: colors.blueDeep, bg: colors.blue },
+  { icon: "add-circle-outline", title: "hpStep3Title", body: "hpStep3Body", tint: colors.yellowDeep, bg: colors.yellow },
+  { icon: "image-outline", title: "hpStep4Title", body: "hpStep4Body", tint: colors.pinkDeep, bg: colors.pink },
 ];
 
 const EXAMPLE_KEYS: TKey[] = ["spExample1", "spExample2", "spExample3", "spExample4", "spExample5"];
@@ -31,43 +30,41 @@ export default function HelpScreen({ onBack, onOpenTalk }: Props) {
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
         <View style={styles.pad}>
-          <TopBar label={tt("hpTitle")} onBack={onBack} />
+          <TopBar title={tt("hpTitle")} onBack={onBack} />
         </View>
         <ScrollView contentContainerStyle={[styles.pad, styles.body]} showsVerticalScrollIndicator={false}>
-          <Text style={type.eyebrow}>{tt("hpSub")}</Text>
-          <Text style={[type.display, { marginTop: 10 }]}>{tt("hpHeadline")}</Text>
-
-          <View style={{ gap: 12, marginTop: 18 }}>
+          <Group title={tt("hpSub")}>
             {STEPS.map((s, i) => (
-              <View key={s.title} style={styles.card}>
-                <IconSquare icon={s.icon} bg={s.tint} size={52} />
+              <View key={s.title} style={styles.step}>
+                <View style={[styles.stepIcon, { backgroundColor: s.bg }]}>
+                  <Ionicons name={s.icon} size={20} color={s.tint} />
+                </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={type.eyebrow}>{String(i + 1).padStart(2, "0")}</Text>
-                  <Text style={styles.cardTitle}>{tt(s.title)}</Text>
-                  <Text style={styles.cardBody}>{tt(s.body)}</Text>
+                  <Text style={styles.stepTitle}>
+                    {i + 1}. {tt(s.title)}
+                  </Text>
+                  <Text style={styles.stepBody}>{tt(s.body)}</Text>
                 </View>
               </View>
             ))}
-          </View>
+          </Group>
 
-          <SectionHeading title={tt("hpWorksWith")} />
-          <Text style={styles.plain}>{tt("hpWorksWithBody")}</Text>
+          <Group title={tt("hpWorksWith")}>
+            <Text style={styles.text}>{tt("hpWorksWithBody")}</Text>
+          </Group>
 
-          <SectionHeading title={tt("hpNeedsTitle")} />
-          <Text style={styles.plain}>{tt("hpNeedsBody")}</Text>
+          <Group title={tt("hpNeedsTitle")}>
+            <Text style={styles.text}>{tt("hpNeedsBody")}</Text>
+          </Group>
 
-          <SectionHeading title={tt("spTrySentence")} />
-          <View style={{ gap: 10 }}>
+          <Group title={tt("spTrySentence")}>
             {EXAMPLE_KEYS.map((k) => (
-              <Pressable key={k} onPress={() => onOpenTalk(tt(k))} style={({ pressed }) => [styles.example, pressed && { opacity: 0.9 }]}>
-                <Text style={styles.exampleText}>{tt(k)}</Text>
-                <Ionicons name={isRTL(lang) ? "arrow-back" : "arrow-forward"} size={20} color={colors.forest} />
-              </Pressable>
+              <Row key={k} icon="chatbubble-ellipses-outline" label={tt(k)} chevron onPress={() => onOpenTalk(tt(k))} />
             ))}
-          </View>
+          </Group>
 
           <Pressable onPress={() => onOpenTalk()} style={({ pressed }) => [styles.start, pressed && { opacity: 0.9 }]}>
-            <Ionicons name="mic-outline" size={22} color="white" />
+            <Ionicons name="mic" size={20} color="white" />
             <Text style={styles.startText}>{tt("hmHeroBtn")}</Text>
           </Pressable>
         </ScrollView>
@@ -77,42 +74,22 @@ export default function HelpScreen({ onBack, onOpenTalk }: Props) {
 }
 
 const styles = StyleSheet.create({
-  pad: { paddingHorizontal: 22 },
-  body: { paddingBottom: 48 },
-  card: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
-    backgroundColor: colors.card,
-    borderRadius: radiusLg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 20,
-  },
-  cardTitle: { fontSize: 18, fontWeight: "700", color: colors.textDark, marginTop: 4 },
-  cardBody: { fontSize: 14.5, color: colors.textMid, lineHeight: 21, marginTop: 4 },
-  plain: { fontSize: 15, color: colors.textMid, lineHeight: 23 },
-  example: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: colors.card,
-    borderRadius: 22,
-    borderWidth: 1,
-    borderColor: colors.border,
-    paddingVertical: 18,
-    paddingHorizontal: 20,
-  },
-  exampleText: { flex: 1, fontSize: 15.5, fontWeight: "600", color: colors.textDark },
+  pad: { paddingHorizontal: 20 },
+  body: { paddingBottom: 40 },
+  step: { flexDirection: "row", alignItems: "flex-start", gap: 14, padding: 16 },
+  stepIcon: { width: 40, height: 40, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  stepTitle: { fontSize: 15.5, fontWeight: "800", color: colors.textDark },
+  stepBody: { fontSize: 13.5, color: colors.textMid, lineHeight: 20, marginTop: 3 },
+  text: { fontSize: 14, color: colors.textMid, lineHeight: 21, padding: 16 },
   start: {
-    marginTop: 26,
+    marginTop: 24,
     flexDirection: "row",
-    gap: 12,
+    gap: 10,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.forest,
-    borderRadius: 26,
-    paddingVertical: 20,
+    borderRadius: 18,
+    paddingVertical: 16,
   },
-  startText: { color: "white", fontSize: 17, fontWeight: "700" },
+  startText: { color: "white", fontSize: 16, fontWeight: "800" },
 });

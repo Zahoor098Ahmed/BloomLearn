@@ -11,7 +11,9 @@ const SENSORY_STYLE_GUIDE =
 
 /**
  * POST /images/generations
- * body: { prompt, size?, model?, style? }  ("style":"word" tunes the prompt for a single-word card)
+ * body: { prompt, size?, model?, style? }
+ *   "word"  – tunes the prompt for a single-word card
+ *   "story" – a story-problem scene; the app already wrote the full prompt, so it is sent as is
  * Mirrors the OpenAI images response shape: { data: [{ b64_json }] }
  */
 imagesRouter.post("/images/generations", async (req, res) => {
@@ -20,10 +22,13 @@ imagesRouter.post("/images/generations", async (req, res) => {
   const raw = String(req.body?.prompt || "").trim();
   if (!raw) return res.status(400).json({ error: "prompt is required." });
 
+  const style = req.body?.style;
   const prompt =
-    req.body?.style === "word"
+    style === "word"
       ? `A single clear picture of "${raw}" for a communication card. ${SENSORY_STYLE_GUIDE}`
-      : `${raw}. ${SENSORY_STYLE_GUIDE}`;
+      : style === "story"
+        ? raw
+        : `${raw}. ${SENSORY_STYLE_GUIDE}`;
 
   try {
     const upstream = await fetch(`${config.openaiBase}/images/generations`, {

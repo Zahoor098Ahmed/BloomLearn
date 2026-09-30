@@ -13,10 +13,10 @@ interface TabBarProps {
   onChange: (tab: Tab) => void;
 }
 
-const TABS: { key: Tab; icon: keyof typeof Ionicons.glyphMap; label: TKey }[] = [
-  { key: "home", icon: "sunny-outline", label: "tabHome" },
-  { key: "talk", icon: "mic-outline", label: "tabTalk" },
-  { key: "progress", icon: "bar-chart-outline", label: "tabProgress" },
+const TABS: { key: Tab; icon: keyof typeof Ionicons.glyphMap; iconOn: keyof typeof Ionicons.glyphMap; label: TKey }[] = [
+  { key: "home", icon: "home-outline", iconOn: "home", label: "tabHome" },
+  { key: "talk", icon: "mic-outline", iconOn: "mic", label: "tabTalk" },
+  { key: "progress", icon: "trending-up-outline", iconOn: "trending-up", label: "tabProgress" },
 ];
 
 export default function TabBar({ active, onChange }: TabBarProps) {
@@ -25,11 +25,11 @@ export default function TabBar({ active, onChange }: TabBarProps) {
   const { isTablet } = useResponsive();
 
   return (
-    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 10) }]}>
       <View style={[styles.inner, isTablet && styles.innerTablet]}>
         {TABS.map((tab) => {
           const on = active === tab.key;
-          const tint = on ? colors.forestDark : colors.textLight;
+          const tint = on ? colors.forest : colors.textLight;
           return (
             <Pressable
               key={tab.key}
@@ -38,7 +38,7 @@ export default function TabBar({ active, onChange }: TabBarProps) {
               accessibilityRole="tab"
               accessibilityState={{ selected: on }}
             >
-              <Ionicons name={tab.icon} size={26} color={tint} />
+              <Ionicons name={on ? tab.iconOn : tab.icon} size={24} color={tint} />
               <Text style={[styles.label, { color: tint, fontWeight: on ? "700" : "500" }]} numberOfLines={1}>
                 {t(tab.label, settings.language)}
               </Text>
@@ -51,15 +51,9 @@ export default function TabBar({ active, onChange }: TabBarProps) {
 }
 
 const styles = StyleSheet.create({
-  bar: {
-    backgroundColor: colors.card,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingTop: 12,
-    width: "100%",
-  },
+  bar: { backgroundColor: colors.card, borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10, width: "100%" },
   inner: { flexDirection: "row", width: "100%" },
-  innerTablet: { maxWidth: 640, alignSelf: "center" },
-  item: { flex: 1, alignItems: "center", gap: 5 },
-  label: { fontSize: 13 },
+  innerTablet: { maxWidth: 560, alignSelf: "center" },
+  item: { flex: 1, alignItems: "center", gap: 4 },
+  label: { fontSize: 12 },
 });

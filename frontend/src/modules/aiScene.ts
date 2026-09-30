@@ -95,6 +95,15 @@ export function composeSceneUrl(prompt: string, seed: number): string {
   return `${POLLINATIONS}/${p}${tail(seed)}`;
 }
 
+/**
+ * Image URL for a story problem ("Sara has 5 apples. She gives 2 apples to
+ * Ali.") in a warm storybook style — the story text already carries its style.
+ */
+export function composeStoryUrl(prompt: string, seed: number): string {
+  const p = encodeURIComponent(prompt.trim());
+  return `${POLLINATIONS}/${p}${tail(seed)}`;
+}
+
 export interface SavedScene {
   url: string;
   cached: boolean;

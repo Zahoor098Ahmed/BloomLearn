@@ -6,29 +6,24 @@ import { useSettings } from "../context/SettingsContext";
 import { t, type TKey, isRTL } from "../modules/i18n";
 import { useResponsive } from "../modules/responsive";
 import { isAiConfigured } from "../modules/aiImage";
-import { getProgress, todayCount, streak, lastWeek, POSITIONS, LEARN_COLORS, type ProgressData } from "../modules/progress";
+import { getProgress, lessonsDone, type ProgressData } from "../modules/progress";
+import { SUBJECT_LIST, GRADES, chaptersFor, chapterCount, lessonCount, label, type SubjectId } from "../modules/curriculum";
 import Logo from "../components/Logo";
-import IconSquare from "../components/IconSquare";
-import SectionHeading from "../components/SectionHeading";
-import { colors, radiusLg, type } from "../theme";
+import { SUBJECT_LOOK } from "../components/subjectLook";
+import { colors, type } from "../theme";
 
 interface Props {
   onOpenTalk: (text?: string) => void;
+  onOpenSubject: (id: SubjectId) => void;
   onOpenSettings: () => void;
-  onOpenProgress: () => void;
   onOpenHelp: () => void;
 }
 
-const EXAMPLE_KEYS: TKey[] = ["spExample1", "spExample2", "spExample3", "spExample4", "spExample5"];
-
-const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
-
-export default function HomeScreen({ onOpenTalk, onOpenSettings, onOpenProgress, onOpenHelp }: Props) {
+export default function HomeScreen({ onOpenTalk, onOpenSubject, onOpenSettings, onOpenHelp }: Props) {
   const { settings } = useSettings();
   const { isTablet } = useResponsive();
   const lang = settings.language;
   const tt = (k: TKey) => t(k, lang);
-  const rtl = isRTL(lang);
 
   const [p, setP] = useState<ProgressData | null>(null);
   useEffect(() => {
@@ -37,151 +32,89 @@ export default function HomeScreen({ onOpenTalk, onOpenSettings, onOpenProgress,
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? tt("hmGoodMorning") : hour < 17 ? tt("hmGoodAfternoon") : tt("hmGoodEvening");
-  const date = safeDate(lang);
 
   // Phones need an OpenAI key or the BloomLearn server for voice-to-text.
   const needsVoiceSetup = Platform.OS !== "web" && !isAiConfigured();
-
-  const positionsDone = p ? POSITIONS.filter((x) => p.positions[x]).length : 0;
-  const colorsDone = p ? LEARN_COLORS.filter((c) => p.colors[c]).length : 0;
-  const weekTotal = p ? lastWeek(p).reduce((s, d) => s + d.count, 0) : 0;
-
-  const ACTIVITIES: {
-    icon: keyof typeof Ionicons.glyphMap;
-    tint: string;
-    play: string;
-    title: TKey;
-    sub: TKey;
-    metric: TKey;
-    value: string;
-    go: () => void;
-  }[] = [
-    {
-      icon: "navigate-outline",
-      tint: colors.pink,
-      play: colors.lime,
-      title: "acPositions",
-      sub: "acPositionsSub",
-      metric: "prPositions",
-      value: `${positionsDone} / ${POSITIONS.length}`,
-      go: () => onOpenTalk(`The cat is ${pick(POSITIONS)} the box`),
-    },
-    {
-      icon: "color-palette-outline",
-      tint: colors.blue,
-      play: colors.pink,
-      title: "acColours",
-      sub: "acColoursSub",
-      metric: "prColours",
-      value: `${colorsDone} / ${LEARN_COLORS.length}`,
-      go: () => onOpenTalk(`A ${pick(LEARN_COLORS)} ball`),
-    },
-    {
-      icon: "paw-outline",
-      tint: colors.yellow,
-      play: colors.lime,
-      title: "acThings",
-      sub: "acThingsSub",
-      metric: "prWords",
-      value: String(p ? Object.keys(p.words).length : 0),
-      go: () => onOpenTalk(tt(pick(EXAMPLE_KEYS))),
-    },
-  ];
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} showsVerticalScrollIndicator={false}>
-          {/* Brand row */}
-          <View style={styles.brandRow}>
-            <Logo size={52} />
+          {/* Top row */}
+          <View style={styles.top}>
+            <Logo size={46} />
             <View style={{ flex: 1 }}>
+              <Text style={styles.greeting}>{greeting}</Text>
               <Text style={styles.brand}>BloomLearn</Text>
-              <Text style={[type.eyebrow, { fontSize: 11 }]}>{tt("hmBrandSub")}</Text>
             </View>
-            <Pressable onPress={onOpenSettings} style={styles.squareBtn} accessibilityLabel={tt("stTitle")}>
-              <Ionicons name="options-outline" size={24} color={colors.forest} />
+            <Pressable onPress={onOpenSettings} style={styles.roundBtn} accessibilityLabel={tt("stTitle")}>
+              <Ionicons name="settings-outline" size={21} color={colors.textDark} />
             </Pressable>
           </View>
 
-          {/* Greeting */}
-          <Text style={[type.eyebrow, { marginTop: 26 }]}>{date}</Text>
-          <Text style={[type.display, { marginTop: 8 }]}>{greeting}.</Text>
-          <Text style={[type.lead, { marginTop: 8 }]}>{tt("hmGreetingSub")}</Text>
-
           {/* Hero */}
           <View style={styles.hero}>
-            <View style={styles.ringBig} />
-            <View style={styles.ringSmall} />
-            <View style={styles.heroTop}>
-              <View style={styles.pill}>
-                <View style={styles.pillDot} />
-                <Text style={styles.pillText}>{tt("hmHeroPill")}</Text>
-              </View>
-              <Ionicons name="flower-outline" size={32} color={colors.lime} />
+            <View style={[styles.blob, { backgroundColor: colors.yellow, width: 110, height: 110, top: -42, right: -32 }]} />
+            <View style={[styles.blob, { backgroundColor: colors.pink, width: 46, height: 46, top: 56, right: 22 }]} />
+            <View style={[styles.blob, { backgroundColor: colors.blue, width: 26, height: 26, top: 22, right: 92 }]} />
+
+            <Text style={styles.heroKicker}>{tt("hrKicker")}</Text>
+            <Text style={styles.heroTitle}>{tt("hrTitle")}</Text>
+            <Text style={styles.heroBody}>{tt("hrBody")}</Text>
+
+            <View style={styles.heroActions}>
+              <Pressable onPress={() => onOpenTalk()} style={({ pressed }) => [styles.heroMain, pressed && { opacity: 0.9 }]}>
+                <Ionicons name="mic" size={20} color={colors.forest} />
+                <Text style={styles.heroMainText}>{tt("hmHeroBtn")}</Text>
+              </Pressable>
+              <Pressable onPress={onOpenHelp} style={({ pressed }) => [styles.heroGhost, pressed && { opacity: 0.8 }]}>
+                <Text style={styles.heroGhostText}>{tt("hrHow")}</Text>
+              </Pressable>
             </View>
-            <Text style={styles.heroTitle}>{tt("hmHeroTitle")}</Text>
-            <Text style={styles.heroBody}>{tt("hmHeroBody")}</Text>
-            <Pressable onPress={() => onOpenTalk()} style={({ pressed }) => [styles.heroBtn, pressed && { opacity: 0.9 }]}>
-              <Ionicons name={rtl ? "arrow-back" : "arrow-forward"} size={22} color={colors.forestDark} />
-              <Text style={styles.heroBtnText}>{tt("hmHeroBtn")}</Text>
-            </Pressable>
-            <Text style={styles.heroFoot}>
-              {tt("hmHeroFooter")
-                .replace("{n}", String(p?.sentences ?? 0))
-                .replace("{m}", String(p ? todayCount(p) : 0))}
-            </Text>
           </View>
 
           {needsVoiceSetup && (
             <Pressable onPress={onOpenSettings} style={styles.notice}>
-              <IconSquare icon="key-outline" bg={colors.yellow} size={40} />
+              <View style={[styles.noticeIcon, { backgroundColor: colors.yellow }]}>
+                <Ionicons name="key-outline" size={20} color={colors.yellowDeep} />
+              </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.noticeTitle}>{tt("hmSetupTitle")}</Text>
                 <Text style={styles.noticeBody}>{tt("hmSetupBody")}</Text>
               </View>
+              <Ionicons name="chevron-forward" size={18} color={colors.textLight} />
             </Pressable>
           )}
 
-          {/* Practice */}
-          <SectionHeading title={tt("hmPractice")} subtitle={tt("hmPracticeSub")} action={tt("hmSeeProgress")} onAction={onOpenProgress} />
-          <View style={{ gap: 14 }}>
-            {ACTIVITIES.map((a) => (
-              <Pressable key={a.title} onPress={a.go} style={({ pressed }) => [styles.card, pressed && { opacity: 0.92 }]}>
-                <View style={styles.cardTop}>
-                  <IconSquare icon={a.icon} bg={a.tint} size={60} round />
+          {/* Subjects */}
+          <Text style={[type.eyebrow, styles.label]}>{tt("hmSubjects")}</Text>
+          <View style={{ gap: 12 }}>
+            {SUBJECT_LIST.map((s) => {
+              const look = SUBJECT_LOOK[s.id];
+              const total = lessonCount(s);
+              const done = p ? GRADES.reduce((n, g) => n + chaptersFor(s, g).reduce((m, c) => m + lessonsDone(p, c.id), 0), 0) : 0;
+              const chapters = chapterCount(s);
+              return (
+                <Pressable key={s.id} onPress={() => onOpenSubject(s.id)} style={({ pressed }) => [styles.subject, { backgroundColor: look.bg }, pressed && { opacity: 0.9 }]}>
+                  <View style={styles.subjectIcon}>
+                    <Ionicons name={look.icon} size={28} color={look.tint} />
+                  </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={styles.cardTitle}>{tt(a.title)}</Text>
-                    <Text style={styles.cardSub}>{tt(a.sub)}</Text>
+                    <Text style={styles.subjectTitle}>{label(s.title, lang)}</Text>
+                    <Text style={styles.subjectSub}>{tt("hmSubjectMeta").replace("{n}", String(chapters))}</Text>
+                    <View style={styles.track}>
+                      <View style={[styles.fill, { width: `${total ? (done / total) * 100 : 0}%`, backgroundColor: look.tint }]} />
+                    </View>
+                    <Text style={styles.subjectCount}>{tt("sbLessonsDone").replace("{n}", String(done)).replace("{m}", String(total))}</Text>
                   </View>
-                  <View style={[styles.playBtn, { backgroundColor: a.play }]}>
-                    <Ionicons name="play" size={22} color={colors.textDark} style={rtl ? { transform: [{ scaleX: -1 }] } : undefined} />
-                  </View>
-                </View>
-                <View style={styles.cardFoot}>
-                  <Text style={styles.cardMetric}>{tt(a.metric)}</Text>
-                  <Text style={styles.cardValue}>{a.value}</Text>
-                </View>
-              </Pressable>
-            ))}
+                  <Ionicons name={isRTL(lang) ? "chevron-back" : "chevron-forward"} size={22} color={look.tint} />
+                </Pressable>
+              );
+            })}
           </View>
 
-          {/* Week */}
-          <SectionHeading title={tt("hmWeek")} />
-          <View style={styles.stats}>
-            <Stat icon="chatbubble-outline" value={weekTotal} label={tt("prSentences")} bg={colors.green} />
-            <Stat icon="flame-outline" value={p ? streak(p) : 0} label={tt("prStreakShort")} bg={colors.pink} />
-            <Stat icon="image-outline" value={p?.aiPictures ?? 0} label={tt("prPicturesShort")} bg={colors.yellow} />
-          </View>
-
-          <Pressable onPress={onOpenHelp} style={styles.helpRow}>
-            <IconSquare icon="book-outline" bg={colors.green} size={40} />
-            <Text style={styles.helpText}>{tt("hmHowTo")}</Text>
-            <Ionicons name={rtl ? "chevron-back" : "chevron-forward"} size={20} color={colors.textLight} />
-          </Pressable>
-
-          <View style={styles.localPill}>
-            <Ionicons name="shield-checkmark-outline" size={20} color={colors.forest} />
+          <View style={styles.localRow}>
+            <Ionicons name="lock-closed-outline" size={14} color={colors.textLight} />
             <Text style={styles.localText}>{tt("hmLocal")}</Text>
           </View>
         </ScrollView>
@@ -190,133 +123,62 @@ export default function HomeScreen({ onOpenTalk, onOpenSettings, onOpenProgress,
   );
 }
 
-function Stat({ icon, value, label, bg }: { icon: keyof typeof Ionicons.glyphMap; value: number; label: string; bg: string }) {
-  return (
-    <View style={[styles.stat, { backgroundColor: bg }]}>
-      <Ionicons name={icon} size={24} color={colors.textDark} />
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={type.statLabel} numberOfLines={1}>
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function safeDate(lang: string): string {
-  try {
-    return new Date().toLocaleDateString(lang, { weekday: "long", month: "long", day: "numeric" });
-  } catch {
-    return new Date().toDateString();
-  }
-}
-
 const styles = StyleSheet.create({
-  body: { paddingHorizontal: 22, paddingTop: 18, paddingBottom: 36, gap: 0 },
-  bodyTablet: { maxWidth: 760, alignSelf: "center", width: "100%" },
-  brandRow: { flexDirection: "row", alignItems: "center", gap: 14 },
-  brand: { fontSize: 22, fontWeight: "800", color: colors.textDark, letterSpacing: -0.4, marginBottom: 3 },
-  squareBtn: {
-    width: 56,
-    height: 56,
-    borderRadius: 18,
+  body: { paddingHorizontal: 20, paddingTop: 14, paddingBottom: 32 },
+  bodyTablet: { maxWidth: 720, alignSelf: "center", width: "100%" },
+  top: { flexDirection: "row", alignItems: "center", gap: 12 },
+  greeting: { fontSize: 13.5, color: colors.textMid },
+  brand: { fontSize: 21, fontWeight: "800", color: colors.textDark, letterSpacing: -0.3 },
+  roundBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: colors.card,
     borderWidth: 1,
     borderColor: colors.border,
     alignItems: "center",
     justifyContent: "center",
   },
-  hero: { marginTop: 24, backgroundColor: colors.deep, borderRadius: 34, padding: 24, overflow: "hidden" },
-  ringBig: {
-    position: "absolute",
-    right: -90,
-    top: 60,
-    width: 240,
-    height: 240,
-    borderRadius: 120,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  ringSmall: {
-    position: "absolute",
-    right: -40,
-    top: 110,
-    width: 150,
-    height: 150,
-    borderRadius: 75,
-    borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.08)",
-  },
-  heroTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  pill: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.lime, borderRadius: 999, paddingVertical: 9, paddingHorizontal: 16 },
-  pillDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.deep },
-  pillText: { fontSize: 11.5, fontWeight: "800", letterSpacing: 1.5, color: colors.deep },
-  heroTitle: { marginTop: 22, color: "white", fontSize: 34, fontWeight: "800", letterSpacing: -1, lineHeight: 40 },
-  heroBody: { marginTop: 12, color: "rgba(255,255,255,0.85)", fontSize: 16, lineHeight: 23, maxWidth: 440 },
-  heroBtn: {
-    marginTop: 22,
+  hero: { marginTop: 20, backgroundColor: colors.forest, borderRadius: 28, padding: 22, overflow: "hidden" },
+  blob: { position: "absolute", borderRadius: 999, opacity: 0.85 },
+  heroKicker: { color: "rgba(255,255,255,0.8)", fontSize: 12, fontWeight: "800", letterSpacing: 1, textTransform: "uppercase" },
+  heroTitle: { marginTop: 10, color: "white", fontSize: 30, fontWeight: "800", letterSpacing: -0.5, lineHeight: 36, maxWidth: 210 },
+  heroBody: { marginTop: 12, color: "rgba(255,255,255,0.85)", fontSize: 14.5, lineHeight: 21, maxWidth: 420 },
+  heroActions: { flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 20 },
+  heroMain: {
     flexDirection: "row",
-    gap: 14,
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#e6ece2",
-    borderRadius: 26,
-    paddingVertical: 18,
+    gap: 8,
+    backgroundColor: "white",
+    borderRadius: 999,
+    paddingVertical: 13,
+    paddingHorizontal: 20,
   },
-  heroBtnText: { color: colors.forestDark, fontSize: 17, fontWeight: "700" },
-  heroFoot: { marginTop: 18, color: "rgba(255,255,255,0.75)", fontSize: 13 },
+  heroMainText: { color: colors.forest, fontSize: 15, fontWeight: "800" },
+  heroGhost: { borderRadius: 999, borderWidth: 1.5, borderColor: "rgba(255,255,255,0.5)", paddingVertical: 12, paddingHorizontal: 18, justifyContent: "center" },
+  heroGhostText: { color: "white", fontSize: 14.5, fontWeight: "700" },
   notice: {
-    marginTop: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    backgroundColor: colors.card,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 16,
-  },
-  noticeTitle: { fontSize: 15, fontWeight: "700", color: colors.textDark },
-  noticeBody: { fontSize: 13, color: colors.textMid, marginTop: 3, lineHeight: 19 },
-  card: { backgroundColor: colors.card, borderRadius: radiusLg, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 22, paddingTop: 22 },
-  cardTop: { flexDirection: "row", alignItems: "center", gap: 18 },
-  cardTitle: { fontSize: 19, fontWeight: "700", color: colors.textDark },
-  cardSub: { fontSize: 14.5, color: colors.textMid, marginTop: 4 },
-  playBtn: { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center" },
-  cardFoot: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderTopWidth: 1,
-    borderTopColor: "#efede5",
-    marginTop: 20,
-    paddingVertical: 16,
-  },
-  cardMetric: { fontSize: 14.5, color: colors.textMid },
-  cardValue: { fontSize: 15, fontWeight: "700", color: colors.forest },
-  stats: { flexDirection: "row", gap: 12, marginTop: 6 },
-  stat: { flex: 1, borderRadius: 26, padding: 18, gap: 10, minHeight: 150, justifyContent: "space-between" },
-  statValue: { fontSize: 30, fontWeight: "800", color: colors.textDark, letterSpacing: -0.5 },
-  helpRow: {
-    marginTop: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    backgroundColor: colors.card,
-    borderRadius: 24,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: 14,
-  },
-  helpText: { flex: 1, fontSize: 16, fontWeight: "700", color: colors.textDark },
-  localPill: {
     marginTop: 14,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "#e6ebe1",
+    backgroundColor: colors.card,
     borderRadius: 20,
-    paddingVertical: 16,
-    paddingHorizontal: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 14,
   },
-  localText: { fontSize: 14, color: colors.forestDark, flex: 1 },
+  noticeIcon: { width: 40, height: 40, borderRadius: 12, alignItems: "center", justifyContent: "center" },
+  noticeTitle: { fontSize: 15, fontWeight: "700", color: colors.textDark },
+  noticeBody: { fontSize: 13, color: colors.textMid, marginTop: 2, lineHeight: 18 },
+  label: { marginTop: 26, marginBottom: 10, marginHorizontal: 4 },
+  subject: { flexDirection: "row", alignItems: "center", gap: 16, borderRadius: 24, padding: 18 },
+  subjectIcon: { width: 58, height: 58, borderRadius: 18, backgroundColor: "rgba(255,255,255,0.75)", alignItems: "center", justifyContent: "center" },
+  subjectTitle: { fontSize: 19, fontWeight: "800", color: colors.textDark },
+  subjectSub: { fontSize: 13, color: colors.textMid, marginTop: 2 },
+  track: { height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.7)", marginTop: 10, overflow: "hidden" },
+  fill: { height: "100%", borderRadius: 3 },
+  subjectCount: { fontSize: 11.5, color: colors.textMid, marginTop: 5, fontWeight: "600" },
+  localRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 22 },
+  localText: { fontSize: 12.5, color: colors.textLight },
 });
