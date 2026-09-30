@@ -154,10 +154,10 @@ function speakWord(text: string, lang: LanguageCode, rate: number): Promise<void
     // safety timeout so a stuck speech engine never hangs playback
     const timer = setTimeout(finish, 5000);
 
-    // Language safety: If text is pure ASCII/Latin and language is set to Arabic/Urdu,
+    // Language safety: If text is pure ASCII/Latin and language is set to Arabic,
     // fallback to English voice so Android Google TTS doesn't crash or go completely silent.
     const isAscii = /^[\x00-\x7F\s.,!?'"-]+$/.test(text);
-    const speechLang = isAscii && (lang === "ur-PK" || lang === "ar-SA") ? "en-US" : lang;
+    const speechLang = isAscii && lang === "ar-SA" ? "en-US" : lang;
 
     try {
       Speech.speak(text, {

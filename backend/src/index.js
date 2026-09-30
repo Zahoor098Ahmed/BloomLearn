@@ -32,10 +32,9 @@ app.use((err, _req, res, _next) => {
 });
 
 app.listen(config.port, () => {
-  console.log(`KiddoCare backend listening on http://localhost:${config.port}`);
+  console.log(`BloomLearn backend listening on http://localhost:${config.port}`);
   console.log(`  health : GET  /health`);
   console.log(`  image  : POST /images/generations   { prompt, style? }`);
-  console.log(`  search : GET  /images/search?q=&source=arasaac|pixabay`);
   console.log(`  speech : POST /audio/transcriptions  (multipart: file)`);
   console.log(`  scene  : GET  /scene/:prompt?seed=&width=&height=  (free image engine)`);
 });

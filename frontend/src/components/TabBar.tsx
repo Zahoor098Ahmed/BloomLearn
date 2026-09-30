@@ -1,48 +1,46 @@
 import { View, Text, Pressable, StyleSheet } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import type { TabScreen } from "../types";
+import { useSettings } from "../context/SettingsContext";
+import { t, type TKey } from "../modules/i18n";
 import { colors } from "../theme";
 import { useResponsive } from "../modules/responsive";
 
+export type Tab = "home" | "talk" | "progress";
+
 interface TabBarProps {
-  active: TabScreen;
-  onChange: (tab: TabScreen) => void;
-  labels: Record<TabScreen, string>;
+  active: Tab;
+  onChange: (tab: Tab) => void;
 }
 
-const TABS: { key: TabScreen; icon: keyof typeof Ionicons.glyphMap }[] = [
-  { key: "home", icon: "home" },
-  { key: "speak", icon: "chatbubble-ellipses" },
-  { key: "schedule", icon: "calendar" },
-  { key: "games", icon: "game-controller" },
-  { key: "progress", icon: "stats-chart" },
+const TABS: { key: Tab; icon: keyof typeof Ionicons.glyphMap; label: TKey }[] = [
+  { key: "home", icon: "sunny-outline", label: "tabHome" },
+  { key: "talk", icon: "mic-outline", label: "tabTalk" },
+  { key: "progress", icon: "bar-chart-outline", label: "tabProgress" },
 ];
 
-export default function TabBar({ active, onChange, labels }: TabBarProps) {
-  const { isSmallPhone, isTablet } = useResponsive();
-  const iconSize = isSmallPhone ? 20 : isTablet ? 24 : 22;
-  const labelFontSize = isSmallPhone ? 10 : isTablet ? 12 : 11;
+export default function TabBar({ active, onChange }: TabBarProps) {
+  const { settings } = useSettings();
+  const insets = useSafeAreaInsets();
+  const { isTablet } = useResponsive();
 
   return (
-    <View style={styles.bar}>
-      <View style={[styles.innerContainer, isTablet && styles.innerContainerTablet]}>
+    <View style={[styles.bar, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+      <View style={[styles.inner, isTablet && styles.innerTablet]}>
         {TABS.map((tab) => {
-          const isActive = active === tab.key;
+          const on = active === tab.key;
+          const tint = on ? colors.forestDark : colors.textLight;
           return (
-            <Pressable key={tab.key} onPress={() => onChange(tab.key)} style={styles.item}>
-              <Ionicons name={tab.icon} size={iconSize} color={isActive ? colors.forest : colors.textLight} />
-              <Text
-                style={[
-                  styles.label,
-                  {
-                    color: isActive ? colors.forest : colors.textLight,
-                    fontWeight: isActive ? "700" : "500",
-                    fontSize: labelFontSize,
-                  },
-                ]}
-                numberOfLines={1}
-              >
-                {labels[tab.key]}
+            <Pressable
+              key={tab.key}
+              onPress={() => onChange(tab.key)}
+              style={styles.item}
+              accessibilityRole="tab"
+              accessibilityState={{ selected: on }}
+            >
+              <Ionicons name={tab.icon} size={26} color={tint} />
+              <Text style={[styles.label, { color: tint, fontWeight: on ? "700" : "500" }]} numberOfLines={1}>
+                {t(tab.label, settings.language)}
               </Text>
             </Pressable>
           );
@@ -57,19 +55,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.card,
     borderTopWidth: 1,
     borderTopColor: colors.border,
-    paddingTop: 8,
-    paddingBottom: 10,
+    paddingTop: 12,
     width: "100%",
   },
-  innerContainer: {
-    flexDirection: "row",
-    width: "100%",
-  },
-  innerContainerTablet: {
-    maxWidth: 640,
-    alignSelf: "center",
-  },
-  item: { flex: 1, alignItems: "center", gap: 3 },
-  label: { fontSize: 11 },
+  inner: { flexDirection: "row", width: "100%" },
+  innerTablet: { maxWidth: 640, alignSelf: "center" },
+  item: { flex: 1, alignItems: "center", gap: 5 },
+  label: { fontSize: 13 },
 });
-

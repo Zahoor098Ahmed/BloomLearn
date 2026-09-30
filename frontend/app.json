@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "KiddoCare",
+    "name": "BloomLearn",
     "slug": "zahoor",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -11,39 +11,23 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "KiddoCare uses the camera so a parent can add a photo for a communication tile.",
-        "NSMicrophoneUsageDescription": "KiddoCare uses the microphone so a child can speak a word or sentence.",
-        "NSSpeechRecognitionUsageDescription": "KiddoCare turns a spoken word or sentence into text and a matching picture, on the device.",
-        "NSPhotoLibraryUsageDescription": "KiddoCare lets a parent pick a photo from the gallery for a communication tile."
+        "NSMicrophoneUsageDescription": "BloomLearn uses the microphone so you can speak a sentence and see it as a picture.",
+        "NSSpeechRecognitionUsageDescription": "BloomLearn turns a spoken sentence into text and a matching picture."
       }
     },
     "android": {
-      "package": "com.timeglobaltech.kiddocare",
-      "versionCode": 20,
+      "package": "com.timeglobaltech.bloomlearn",
+      "versionCode": 1,
       "permissions": [
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "android.permission.READ_MEDIA_IMAGES"
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "plugins": [
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "KiddoCare uses the camera so a parent can add a photo for a communication tile."
-        }
-      ],
       "expo-font",
       [
         "expo-audio",
         {
-          "microphonePermission": "KiddoCare uses the microphone so a parent can record a voice for a communication word."
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "KiddoCare lets a parent pick a photo from the gallery for a communication tile."
+          "microphonePermission": "BloomLearn uses the microphone so you can speak a sentence and see it as a picture."
         }
       ],
       "expo-secure-store"

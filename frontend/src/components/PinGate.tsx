@@ -6,6 +6,7 @@ import { loadPasscode, hasPasscode, checkPasscode, setPasscode } from "../module
 import { colors, radius } from "../theme";
 import { useSettings } from "../context/SettingsContext";
 import { t } from "../modules/i18n";
+import IconSquare from "./IconSquare";
 
 /**
  * Blocks its children until the 4-digit parent passcode is entered. A child
@@ -17,10 +18,13 @@ import { t } from "../modules/i18n";
 export default function PinGate({
   children,
   onCancel,
+  onUnlock,
   title,
 }: {
   children: React.ReactNode;
   onCancel: () => void;
+  /** Called once the right passcode is entered. */
+  onUnlock?: () => void;
   title?: string;
 }) {
   const { settings } = useSettings();
@@ -58,6 +62,7 @@ export default function PinGate({
             setFirstEntry(null);
             setEntry("");
             setUnlocked(true);
+            onUnlock?.();
           });
         } else {
           setError(true);
@@ -69,8 +74,10 @@ export default function PinGate({
     }
 
     setTimeout(() => {
-      if (checkPasscode(next)) setUnlocked(true);
-      else {
+      if (checkPasscode(next)) {
+        setUnlocked(true);
+        onUnlock?.();
+      } else {
         setError(true);
         setEntry("");
       }
@@ -91,11 +98,11 @@ export default function PinGate({
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={styles.wrap} edges={["top", "bottom"]}>
         <Pressable onPress={onCancel} style={styles.back} hitSlop={10}>
-          <Ionicons name="arrow-back" size={20} color={colors.textMid} />
+          <Ionicons name="arrow-back" size={24} color={colors.textDark} />
         </Pressable>
 
         <View style={styles.center}>
-          <Ionicons name="lock-closed" size={30} color={colors.forest} />
+          <IconSquare icon="lock-closed-outline" bg={colors.yellow} size={64} />
           <Text style={styles.title}>{resolvedTitle}</Text>
           <Text style={styles.sub}>{subtitle}</Text>
 
@@ -132,15 +139,15 @@ const styles = StyleSheet.create({
   wrap: { flex: 1, padding: 20 },
   back: { width: 40, height: 40, alignItems: "center", justifyContent: "center" },
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: 10 },
-  title: { fontSize: 20, fontWeight: "800", color: colors.textDark, marginTop: 6 },
-  sub: { fontSize: 13, color: colors.textMid },
+  title: { fontSize: 28, fontWeight: "800", color: colors.textDark, marginTop: 10, letterSpacing: -0.5 },
+  sub: { fontSize: 15, color: colors.textMid, textAlign: "center", paddingHorizontal: 20 },
   dots: { flexDirection: "row", gap: 16, marginTop: 18, marginBottom: 6 },
   dot: { width: 14, height: 14, borderRadius: 7, borderWidth: 2, borderColor: colors.border },
   dotFull: { backgroundColor: colors.forest, borderColor: colors.forest },
   dotError: { borderColor: colors.pinkDeep },
   errText: { color: colors.pinkDeep, fontSize: 12, fontWeight: "600" },
   pad: { width: 260, flexDirection: "row", flexWrap: "wrap", gap: 12, marginTop: 20, justifyContent: "center" },
-  key: { width: 72, height: 60, alignItems: "center", justifyContent: "center", borderRadius: radius },
+  key: { width: 76, height: 64, alignItems: "center", justifyContent: "center", borderRadius: radius },
   keyNum: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border },
   keyText: { fontSize: 24, fontWeight: "700", color: colors.textDark },
 });

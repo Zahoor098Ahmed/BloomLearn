@@ -1,6 +1,6 @@
-# KiddoCare Backend (Express)
+# BloomLearn Backend (Express)
 
-A thin API that keeps the OpenAI (and Pixabay) keys **off the device**. The
+A thin API that keeps the OpenAI key **off the device**. The
 mobile app talks to this instead of calling OpenAI directly.
 
 ```
@@ -11,7 +11,7 @@ backend/
 │   ├── middleware/auth.js    "Authorization: Bearer <APP_TOKEN>" check
 │   └── routes/
 │       ├── health.js         GET  /health              (public)
-│       ├── images.js         POST /images/generations  + GET /images/search
+│       ├── images.js         POST /images/generations
 │       └── audio.js          POST /audio/transcriptions (Whisper)
 ├── .env.example
 ├── Dockerfile
@@ -39,7 +39,6 @@ curl http://localhost:8787/health
 |---|---|---|---|
 | GET  | `/health` | – | status JSON (no auth) |
 | POST | `/images/generations` | `{ "prompt": "juice", "style": "word" }` | `{ data: [{ b64_json }] }` — same shape as OpenAI |
-| GET  | `/images/search` | `?q=cat&source=arasaac` (or `pixabay`) | `{ hits: [{ id, thumb, full, source }] }` |
 | POST | `/audio/transcriptions` | multipart: `file` (audio), optional `language` | `{ text: "juice" }` |
 
 All except `/health` require `Authorization: Bearer <APP_TOKEN>` when `APP_TOKEN` is set.
@@ -58,12 +57,11 @@ Then restart the Expo dev server (or rebuild the APK). With the proxy URL set th
 
 | App feature | Endpoint it calls |
 |---|---|
-| Picture search (ARASAAC / Pixabay) | `GET  <url>/images/search` |
 | Add-by-Voice "AI made" · Picture Talk AI | `POST <url>/images/generations` |
 | Picture Talk free AI fallback | `GET  <url>/scene/:prompt` |
 | Voice-to-text (record → transcribe) | `POST <url>/audio/transcriptions` |
 
-…and sends no OpenAI/Pixabay key of its own — they stay in `backend/.env`.
+…and sends no OpenAI key of its own — they stay in `backend/.env`.
 
 Leave `EXPO_PUBLIC_AI_PROXY_URL` blank and the app runs fully offline (instant
 SVG scenes, symbol search, device TTS) or with a direct in-app OpenAI key.
@@ -86,8 +84,8 @@ cd frontend && npm start
 Any Node host works — Render, Railway, Fly.io, a VPS, or Docker:
 
 ```bash
-docker build -t kiddocare-backend .
-docker run -p 8787:8787 --env-file .env kiddocare-backend
+docker build -t bloomlearn-backend .
+docker run -p 8787:8787 --env-file .env bloomlearn-backend
 ```
 
 Set a **hard spending limit** on the OpenAI key in the OpenAI dashboard.

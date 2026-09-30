@@ -15,6 +15,8 @@ import { transcribeAudio } from "./aiImage";
 export interface VoiceHandlers {
   lang?: string; // BCP-47, e.g. "en-US", "ar-SA", "ur-PK"
   onPartial?: (text: string) => void;
+  /** Native only: recording, then turning the recording into text. */
+  onStatus?: (status: "listening" | "processing") => void;
   onFinal?: (text: string) => void;
   onError?: (message: string) => void;
   onEnd?: () => void;
@@ -105,7 +107,7 @@ export async function startListening(h: VoiceHandlers): Promise<boolean> {
     if (ok) {
       nativeRecording = true;
       listening = true;
-      h.onPartial?.("Listening… 🎙️");
+      h.onStatus?.("listening");
       return true;
     }
   } catch (err: any) {
@@ -138,7 +140,7 @@ export async function stopListening(): Promise<void> {
     try {
       const uri = await stopRecordingTemp();
       if (uri && handlers) {
-        handlers.onPartial?.("Processing speech… ⏳");
+        handlers.onStatus?.("processing");
         const langHint = (handlers.lang || "en").split("-")[0];
         const res = await transcribeAudio(uri, langHint);
         if (res.text) {

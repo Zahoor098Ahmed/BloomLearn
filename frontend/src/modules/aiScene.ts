@@ -1,17 +1,20 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { SceneGraph } from "../types";
+import { getKey } from "./apiKeys";
 
 // Scene images go straight to Pollinations. The anonymous tier is now heavily
-// rate-limited (HTTP 429), so set EXPO_PUBLIC_POLLINATIONS_TOKEN in .env with a
-// free token from https://auth.pollinations.ai for reliable generation. Without
-// a token the caller falls back to a library picture.
+// rate-limited (HTTP 429), so add a free token from https://auth.pollinations.ai
+// in Settings (or EXPO_PUBLIC_POLLINATIONS_TOKEN in .env) for reliable
+// generation. Without a token the caller falls back to a library picture.
 const POLLINATIONS = "https://image.pollinations.ai/prompt";
-const PTOKEN = process.env.EXPO_PUBLIC_POLLINATIONS_TOKEN ?? "";
 
-export const aiSceneEnabled = !!PTOKEN;
+export function aiSceneEnabled(): boolean {
+  return !!getKey("pollinations");
+}
 
 function tail(seed: number): string {
-  const t = PTOKEN ? `&token=${encodeURIComponent(PTOKEN)}&referrer=${encodeURIComponent(PTOKEN)}` : "";
+  const token = getKey("pollinations");
+  const t = token ? `&token=${encodeURIComponent(token)}&referrer=${encodeURIComponent(token)}` : "";
   return `?width=768&height=768&nologo=true&seed=${seed % 1_000_000}&model=flux${t}`;
 }
 
@@ -45,7 +48,7 @@ function promptFromGraph(g: SceneGraph): string {
   return parts.join(", ");
 }
 
-const CACHE_KEY = "kiddocare_scene_ai_cache";
+const CACHE_KEY = "bloomlearn_scene_ai_cache";
 let cache: Record<string, string> = {};
 let loaded = false;
 

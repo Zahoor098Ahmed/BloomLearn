@@ -1,41 +1,30 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getKey } from "./apiKeys";
 
 /**
- * AI picture generation for Picture Talk.
+ * AI picture generation and speech-to-text for Picture Talk.
  *
- * Pure `fetch` — no native module, so it works in every build. The OpenAI key
- * is read from (in order):
- *   1. a key the caregiver pastes in-app (stored on device), or
- *   2. the EXPO_PUBLIC_OPENAI_API_KEY build-time env var, or
- *   3. a backend proxy URL (set AI_PROXY_URL) that holds the key server-side.
+ * Pure `fetch` — no native module, so it works in every build. Requests go to
+ * the BloomLearn backend when a backend URL is set in Settings (the OpenAI key
+ * then stays on the server), otherwise straight to OpenAI with the key saved in
+ * Settings (or the EXPO_PUBLIC_OPENAI_API_KEY build-time env var).
  *
  * Generated images are cached by prompt so repeat sentences are instant and
  * work offline afterwards.
  */
 
-const KEY_STORE = "kiddocare_openai_key";
-const IMG_STORE = "kiddocare_ai_image_cache";
-
-/**
- * Optional backend proxy (see /backend). Set AI_PROXY_URL to the base URL of
- * that server (no trailing path) and the app will call
- *   <AI_PROXY_URL>/images/generations
- *   <AI_PROXY_URL>/audio/transcriptions
- * with `Authorization: Bearer <AI_PROXY_TOKEN>` and NO OpenAI key of its own.
- */
-export const AI_PROXY_URL: string = process.env.EXPO_PUBLIC_AI_PROXY_URL ?? "";
-export const AI_PROXY_TOKEN: string = process.env.EXPO_PUBLIC_AI_PROXY_TOKEN ?? "";
-
-const ENV_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? "";
+const IMG_STORE = "bloomlearn_ai_image_cache";
 
 /** Resolve an endpoint + auth headers for a given OpenAI path. */
 function endpointFor(path: string): { url: string; headers: Record<string, string> } {
-  if (AI_PROXY_URL) {
+  const proxyUrl = getKey("proxyUrl");
+  if (proxyUrl) {
     const headers: Record<string, string> = {};
-    if (AI_PROXY_TOKEN) headers.Authorization = `Bearer ${AI_PROXY_TOKEN}`;
-    return { url: `${AI_PROXY_URL.replace(/\/$/, "")}${path}`, headers };
+    const token = getKey("proxyToken");
+    if (token) headers.Authorization = `Bearer ${token}`;
+    return { url: `${proxyUrl.replace(/\/$/, "")}${path}`, headers };
   }
-  return { url: `https://api.openai.com/v1${path}`, headers: { Authorization: `Bearer ${activeKey()}` } };
+  return { url: `https://api.openai.com/v1${path}`, headers: { Authorization: `Bearer ${getKey("openai")}` } };
 }
 
 export const SENSORY_STYLE_GUIDE =
@@ -44,7 +33,6 @@ export const SENSORY_STYLE_GUIDE =
   "No gloss, no reflections, no 3D shine, no text. Consistent simple style suitable " +
   "for a child with autism.";
 
-let inMemoryKey: string | null = null;
 let cache: Record<string, string> = {};
 let cacheLoaded = false;
 
@@ -59,35 +47,20 @@ async function ensureCache() {
   cacheLoaded = true;
 }
 
-export async function loadStoredKey(): Promise<void> {
+/** Forget every cached AI picture. */
+export async function clearAiCache(): Promise<void> {
+  cache = {};
+  cacheLoaded = true;
   try {
-    inMemoryKey = await AsyncStorage.getItem(KEY_STORE);
-  } catch {
-    inMemoryKey = null;
-  }
-}
-
-export async function setStoredKey(key: string): Promise<void> {
-  inMemoryKey = key.trim() || null;
-  try {
-    if (inMemoryKey) await AsyncStorage.setItem(KEY_STORE, inMemoryKey);
-    else await AsyncStorage.removeItem(KEY_STORE);
+    await AsyncStorage.removeItem(IMG_STORE);
   } catch {
     /* ignore */
   }
 }
 
-function activeKey(): string {
-  return (inMemoryKey || ENV_KEY || "").trim();
-}
-
-/** The OpenAI key in use (shared by image generation and speech-to-text). */
-export function getOpenAiKey(): string {
-  return activeKey();
-}
-
+/** true when AI pictures and speech-to-text can run (backend URL or OpenAI key). */
 export function isAiConfigured(): boolean {
-  return !!AI_PROXY_URL || !!activeKey();
+  return !!getKey("proxyUrl") || !!getKey("openai");
 }
 
 export interface TranscriptResult {
@@ -110,7 +83,7 @@ export async function transcribeAudio(uri: string, langHint?: string): Promise<T
     form.append("file", { uri, name: "speech.m4a", type: "audio/m4a" } as unknown as Blob);
     form.append("model", "whisper-1");
     if (langHint) form.append("language", langHint);
-    form.append("prompt", "A single short everyday word for a picture card, e.g. juice, apple, happy.");
+    form.append("prompt", "A short everyday sentence describing a picture, e.g. The black cat is under the table.");
 
     const { url, headers } = endpointFor("/audio/transcriptions");
     const res = await fetch(url, { method: "POST", headers, body: form });
@@ -197,59 +170,4 @@ export async function generateSentenceImage(sentence: string, force = false): Pr
 export async function cachedImageFor(sentence: string): Promise<string | undefined> {
   await ensureCache();
   return cache[hash(promptFor(sentence.trim()))];
-}
-
-/**
- * AI-generate a single-word picture card (used by "Add by Voice" as an
- * alternative to searched stock images). Same OpenAI seam and cache.
- */
-export async function generateWordImage(word: string, force = false): Promise<AiImageResult> {
-  const clean = word.trim();
-  if (!clean) return { error: "Say or type a word first." };
-
-  await ensureCache();
-  const prompt =
-    `A single clear picture of "${clean}" for a communication card. ${SENSORY_STYLE_GUIDE}`;
-  const key = hash(`word:${prompt}`);
-  if (!force && cache[key]) return { dataUri: cache[key], cached: true };
-
-  // No OpenAI key: use the free scene engine (Pollinations, via the backend
-  // /scene route when connected, or directly). Stable seed = same word, same image.
-  if (!activeKey()) {
-    const seed = hashNum(`word:${clean}`) % 1000000;
-    const p = encodeURIComponent(`${clean}, single object. ${SENSORY_STYLE_GUIDE}`);
-    return { dataUri: `https://image.pollinations.ai/prompt/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
-  }
-
-  try {
-    const { url, headers } = endpointFor("/images/generations");
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { ...headers, "Content-Type": "application/json" },
-      body: JSON.stringify({ model: "gpt-image-1", prompt, style: "word", size: "1024x1024", n: 1 }),
-    });
-    if (!res.ok) {
-      if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
-      if (res.status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
-      if (res.status === 503) {
-        // backend has no key — fall through to the free engine
-        const seed = hashNum(`word:${clean}`) % 1000000;
-        const p = encodeURIComponent(`${clean}, single object. ${SENSORY_STYLE_GUIDE}`);
-        return { dataUri: `https://image.pollinations.ai/prompt/${p}?width=640&height=640&nologo=true&seed=${seed}&model=flux` };
-      }
-      return { error: `Image service error (${res.status}).` };
-    }
-    const json = (await res.json()) as { data?: { b64_json?: string; url?: string }[] };
-    const item = json.data?.[0];
-    const dataUri = item?.b64_json ? `data:image/png;base64,${item.b64_json}` : item?.url;
-    if (!dataUri) return { error: "The image service returned no picture." };
-
-    cache[key] = dataUri;
-    const keys = Object.keys(cache);
-    if (keys.length > 12) delete cache[keys[0]];
-    AsyncStorage.setItem(IMG_STORE, JSON.stringify(cache)).catch(() => {});
-    return { dataUri };
-  } catch {
-    return { error: "Could not reach the image service. Check the internet connection." };
-  }
 }

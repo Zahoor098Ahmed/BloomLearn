@@ -2,12 +2,11 @@ import * as SecureStore from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 /**
- * 4-digit admin passcode that gates the edit tools and the exit from kiosk
- * mode. Stored in the device keystore (SecureStore); falls back to AsyncStorage
+ * 4-digit parent passcode that locks Settings (Parent lock). Stored in the device keystore (SecureStore); falls back to AsyncStorage
  * if SecureStore is unavailable.
  */
 
-const STORE_KEY = "kiddocare_admin_pin";
+const STORE_KEY = "bloomlearn_parent_pin";
 
 let cached: string | null = null;
 let loaded = false;

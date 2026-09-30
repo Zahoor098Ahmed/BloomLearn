@@ -6,17 +6,28 @@
  * the teacher or child says is understood, not just the built-in vocabulary.
  * Without a key the app falls back to the on-device rule parser (applyUtterance).
  *
- *   EXPO_PUBLIC_GROQ_API_KEY=gsk_...      (preferred — fast, generous free tier)
- *   EXPO_PUBLIC_OPENAI_API_KEY=sk-...     (also works)
+ * Keys are set in Settings (a Groq key is preferred — fast, generous free tier;
+ * an OpenAI key also works).
  */
 
 import type { SceneSession, SceneOp } from "./sceneSession";
+import { getKey } from "./apiKeys";
 
-const GROQ_KEY = process.env.EXPO_PUBLIC_GROQ_API_KEY ?? "";
-const OPENAI_KEY = process.env.EXPO_PUBLIC_OPENAI_API_KEY ?? "";
+export function agentEnabled(): boolean {
+  return !!getKey("groq") || !!getKey("openai");
+}
 
-export const agentEnabled = !!GROQ_KEY || !!OPENAI_KEY;
-export const agentName = GROQ_KEY ? "Groq" : OPENAI_KEY ? "OpenAI" : "on-device";
+export function agentName(): string {
+  return getKey("groq") ? "Groq" : getKey("openai") ? "OpenAI" : "on-device";
+}
+
+/** Chat endpoint, model and key for the configured LLM. */
+function llm() {
+  const groq = getKey("groq");
+  return groq
+    ? { url: "https://api.groq.com/openai/v1/chat/completions", model: "openai/gpt-oss-20b", key: groq }
+    : { url: "https://api.openai.com/v1/chat/completions", model: "gpt-4o-mini", key: getKey("openai") };
+}
 
 const SYSTEM = `You convert one short spoken phrase from a teacher or child into edit operations for a children's picture scene.
 Reply with ONLY a JSON array of operations. No prose, no markdown fences.
@@ -80,16 +91,14 @@ function extractArray(text: string): SceneOp[] | null {
 }
 
 async function groqChat(system: string, user: string, maxTokens = 400): Promise<string | null> {
-  if (!agentEnabled) return null;
-  const url = GROQ_KEY
-    ? "https://api.groq.com/openai/v1/chat/completions"
-    : "https://api.openai.com/v1/chat/completions";
+  if (!agentEnabled()) return null;
+  const { url, model, key } = llm();
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_KEY || OPENAI_KEY}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify({
-        model: GROQ_KEY ? "openai/gpt-oss-20b" : "gpt-4o-mini",
+        model,
         temperature: 0,
         max_tokens: maxTokens,
         reasoning_effort: "low",
@@ -126,12 +135,10 @@ export async function describeScene(session: SceneSession): Promise<string | nul
 
 /** Ask the LLM for scene ops. Returns null on any failure so the caller falls back. */
 export async function parseUtteranceLLM(utterance: string, session: SceneSession): Promise<SceneOp[] | null> {
-  if (!agentEnabled) return null;
-  const url = GROQ_KEY
-    ? "https://api.groq.com/openai/v1/chat/completions"
-    : "https://api.openai.com/v1/chat/completions";
+  if (!agentEnabled()) return null;
+  const { url, model, key } = llm();
   const body = {
-    model: GROQ_KEY ? "openai/gpt-oss-20b" : "gpt-4o-mini",
+    model,
     temperature: 0,
     max_tokens: 600,
     reasoning_effort: "low",
@@ -143,7 +150,7 @@ export async function parseUtteranceLLM(utterance: string, session: SceneSession
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${GROQ_KEY || OPENAI_KEY}` },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
       body: JSON.stringify(body),
     });
     if (!res.ok) return null;

@@ -1,44 +1,47 @@
-# KiddoCare (React Native + Expo)
+# BloomLearn (React Native + Expo)
 
-A React Native app built with Expo, TypeScript, and function components. Converted from an earlier Figma Make React + Vite web scaffold — same screens and logic, rebuilt with React Native primitives (`View`/`Text`/`Pressable`/`StyleSheet`) instead of DOM/Tailwind.
+A React Native app built with Expo, TypeScript, and function components. The child or teacher speaks (or types) a sentence and BloomLearn shows it as a picture ("Picture Talk"). Around it: a welcome/language screen (English or Arabic), Home, Progress, Settings (parent lock + privacy), Help and a privacy policy.
 
 ## Repo layout
 
 The app lives in **`frontend/`**. Run every command (`npm`, `npx expo`, `npx eas-cli`, `tsc`) from inside `frontend/`. All paths below are relative to `frontend/`.
 
-**`backend/`** is a small Express (JavaScript, ESM) API that proxies OpenAI (image generation + Whisper speech-to-text) and image search so keys never ship in the app. `cd backend && npm install && npm run dev`. The app uses it only when `AI_PROXY_URL` is set in `frontend/src/modules/aiImage.ts` — otherwise it calls OpenAI directly with an in-app key, and the demo runs fully offline with neither.
+**`backend/`** is a small Express (JavaScript, ESM) API that proxies OpenAI (image generation + Whisper speech-to-text) and the `/scene` image engine so keys never ship in the app. `cd backend && npm install && npm run dev`. The app uses it only when a backend URL is set (Settings, or `EXPO_PUBLIC_AI_PROXY_URL`) — otherwise it calls OpenAI directly with an in-app key, and the instant scene runs fully offline with neither.
+
+**`content-pipeline/`** builds the offline book-picture vocabulary (`src/modules/bookVocab.generated.ts` + `assets/bookVocab/`).
 
 ## Development
 
 - `cd frontend`, then `npm install` and `npm start` (or `npm run android` / `npm run ios` / `npm run web`) to launch the Expo dev server.
-- Requires the Expo Go app (or a dev build) to preview. Native modules (audio, haptics, secure-store, image-picker) only work in a dev build / the EAS APK, not Expo Go.
+- `npm run typecheck` and `npm run test:scene` check the code.
+- Native audio recording only works in a dev build / the EAS APK, not Expo Go.
 
 ## Project Structure
 
 - `index.ts` - Registers the root component with Expo
-- `App.tsx` - Screen router (simple state-based navigation, no navigation library)
+- `App.tsx` - State-based router: Welcome (first run) → tabs Home / Talk / Progress, plus Settings (behind the parent lock when a passcode is set), Help and Privacy. Picture Talk stays mounted so the scene survives tab switches; Android back steps back through screens
 - `app.json` - Expo app config (name, permissions, plugins)
-- `src/theme.ts` - Color palette and spacing constants (replaces the old CSS custom properties)
-- `src/types.ts` - Shared domain types (child profiles, diagnoses, content tags, settings)
-- `src/context/SettingsContext.tsx` - App settings (language, accessibility) persisted via AsyncStorage
-- `src/modules/storage.ts` - AsyncStorage-backed child/settings persistence (in-memory cache + async writes)
-- `src/modules/tts.ts` - Text-to-speech via `expo-speech`
-- `src/modules/faceEngine.ts` - Cosine-similarity face-embedding matching (embedding capture happens in the screens via `expo-camera`)
-- `src/modules/i18n.ts` / `src/modules/contentFilter.ts` - Translations and content filtering (unchanged pure logic)
-- `src/components/` - `Mascot` (react-native-svg), `ScreenWrapper`, `BigButton`, `Card`
-- `src/screens/` - One file per app screen
-
-## Dependencies
-
-- Runtime: Expo SDK 52, React Native 0.76, React 18
-- Camera: `expo-camera`
-- Speech: `expo-speech`
-- Storage: `@react-native-async-storage/async-storage`
-- Graphics: `react-native-svg`, `expo-linear-gradient`
+- `src/theme.ts` - Color palette and spacing constants
+- `src/types.ts` - Shared types (settings, scene graph)
+- `src/context/SettingsContext.tsx` - App settings (language — English or Arabic only, read-aloud, speech speed, history on/off, onboarding) persisted via AsyncStorage
+- `src/screens/SentencePictureScreen.tsx` - Picture Talk: mic/text input, scene, AI picture
+- `src/screens/WelcomeScreen.tsx` / `HomeScreen.tsx` / `ProgressScreen.tsx` / `SettingsScreen.tsx` / `HelpScreen.tsx` / `PrivacyScreen.tsx` - The other screens
+- `src/components/TabBar.tsx` / `Logo.tsx` / `PinGate.tsx` - Shared chrome; PinGate is the parent passcode keypad
+- `src/modules/apiKeys.ts` - OpenAI / Groq / Pollinations keys and backend URL, editable in Settings (falls back to `EXPO_PUBLIC_*` env vars)
+- `src/modules/history.ts` - Recent sentences (only saved while "Save sentence history" is on)
+- `src/modules/progress.ts` - Learning progress: sentences per day, streak, levels, positions/colours/words used, badges
+- `src/modules/passcode.ts` - 4-digit parent passcode (SecureStore)
+- `src/components/SceneStage.tsx` / `SceneComposer.tsx` - Draw the understood scene
+- `src/modules/voice.ts` / `audio.ts` - Live speech recognition, with record + Whisper fallback
+- `src/modules/sentenceScene.ts` / `sceneSession.ts` / `sceneAgent.ts` - Sentence → scene understanding (rule parser, optional LLM agent)
+- `src/modules/imageLibrary.ts` / `aacPictograms.ts` / `bookVocab.ts` - Picture lookup and on-device library
+- `src/modules/aiImage.ts` / `aiScene.ts` - AI picture generation (OpenAI / Pollinations)
+- `src/modules/tts.ts` - Read aloud via `expo-speech`
+- `src/modules/i18n.ts` - Translations
 
 ## Styling
 
-No Tailwind/CSS here — use `StyleSheet.create` and the shared color tokens in `src/theme.ts`. Prefer the `BigButton` and `Card` components over ad-hoc styled `Pressable`/`View` for consistency with the existing screens.
+No Tailwind/CSS here — use `StyleSheet.create` and the shared color tokens in `src/theme.ts`.
 
 ## Code quality
 

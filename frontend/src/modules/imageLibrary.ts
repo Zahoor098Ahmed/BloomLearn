@@ -18,7 +18,7 @@ import type { SceneGraph } from "../types";
  * free ARASAAC set (30,000+ pictograms) and grows with use.
  */
 
-const INDEX_KEY = "kiddocare_library_index";
+const INDEX_KEY = "bloomlearn_library_index";
 const DIR = `${FileSystem.documentDirectory}library/`;
 
 export type LibrarySource = "arasaac" | "opensymbols" | "mulberry" | "ai" | "photo" | "manual" | "book";

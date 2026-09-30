@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Modal, Alert } from "react-native";
+import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Alert, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
@@ -8,7 +8,7 @@ import { speak } from "../modules/tts";
 import { t, TKey } from "../modules/i18n";
 import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES, findWordEmoji } from "../modules/sentenceScene";
 import { getPictogramUrl } from "../modules/aacPictograms";
-import { loadStoredKey, setStoredKey, getOpenAiKey, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
+import { isAiConfigured, generateSentenceImage, transcribeAudio } from "../modules/aiImage";
 import { sceneImageUrl, composeSceneUrl, aiSceneEnabled } from "../modules/aiScene";
 import { lookupImage, saveImage, libraryCount, prewarmLibrary, dictionaryWords } from "../modules/imageLibrary";
 import { bookVocabSize } from "../modules/bookVocab";
@@ -27,33 +27,37 @@ import {
 import { agentEnabled, agentName, parseUtteranceLLM, describeScene } from "../modules/sceneAgent";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
+import { addHistory } from "../modules/history";
+import { recordSentence, recordAiPicture } from "../modules/progress";
 import SceneComposer from "../components/SceneComposer";
 import SceneStage from "../components/SceneStage";
 import { colors, radius } from "../theme";
 
 interface Props {
+  /** Sentence to start with (from Home or My Pictures). */
+  initialText?: string;
   onBack: () => void;
+  onOpenSettings: () => void;
 }
 
 const EXAMPLE_KEYS: TKey[] = ["spExample1", "spExample2", "spExample3", "spExample4", "spExample5"];
 
 type ImgSource = "library" | "library-new" | "ai-saved";
 
-export default function SentencePictureScreen({ onBack }: Props) {
+export default function SentencePictureScreen({ initialText = "", onBack, onOpenSettings }: Props) {
   const { isTablet } = useResponsive();
   const { settings } = useSettings();
   const lang = settings.language;
   const tt = (k: TKey) => t(k, lang);
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText);
 
   const [img, setImg] = useState<{ uri: string; source: ImgSource } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
-  const [openaiReady, setOpenaiReady] = useState(false);
-  const [keyModal, setKeyModal] = useState(false);
-  const [keyInput, setKeyInput] = useState("");
   const [recording, setRecording] = useState(false);
   const [sttBusy, setSttBusy] = useState(false);
+  // true when the current sentence came from the microphone (for Progress)
+  const fromVoiceRef = useRef(false);
   const [libN, setLibN] = useState(0);
   const [wordsN, setWordsN] = useState(0);
   const [buildMode, setBuildMode] = useState(true);
@@ -105,7 +109,6 @@ export default function SentencePictureScreen({ onBack }: Props) {
   const aiTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    loadStoredKey().then(() => setOpenaiReady(!!getOpenAiKey()));
     libraryCount().then(setLibN);
     // Fill the library from the curated word list in the background, refreshing
     // the count as it grows.
@@ -141,7 +144,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
       // Agent route: an LLM turns free speech into scene ops. Falls back to the
       // on-device rule parser when there's no key or the call fails.
       let ops = null;
-      if (agentEnabled) {
+      if (agentEnabled()) {
         setAgentThinking(true);
         ops = await parseUtteranceLLM(q, fresh ? newSession() : sessionRef.current);
         setAgentThinking(false);
@@ -154,6 +157,28 @@ export default function SentencePictureScreen({ onBack }: Props) {
     }, 600);
     return () => clearTimeout(t);
   }, [text, buildMode]);
+
+  // Once the sentence has settled (not while still listening), count it in
+  // Progress and — unless the parent turned history off — remember it.
+  useEffect(() => {
+    const q = text.trim();
+    if (q.length < 3 || recording) return;
+    const timer = setTimeout(() => {
+      recordSentence(q, fromVoiceRef.current);
+      if (settings.saveHistory) addHistory(q);
+    }, 2500);
+    return () => clearTimeout(timer);
+  }, [text, recording]);
+
+  function typeText(value: string) {
+    fromVoiceRef.current = false;
+    setText(value);
+  }
+
+  function voiceText(value: string) {
+    fromVoiceRef.current = true;
+    setText(value);
+  }
 
   // Give every object in the built scene its own library picture, and — when a
   // Pollinations token is set — redraw the whole scene as one real picture.
@@ -175,7 +200,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
   // Turn the built scene into one real picture (needs a Pollinations token).
   async function drawSceneWithAi(scene = session) {
-    if (!aiSceneEnabled) {
+    if (!aiSceneEnabled()) {
       setAiError(tt("spNoPollinationsToken"));
       return;
     }
@@ -184,6 +209,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
     const prompt = (await describeScene(scene)) ?? sessionPrompt(scene);
     const url = composeSceneUrl(prompt, scene.seed);
     setImg({ uri: url, source: "ai-saved" });
+    recordAiPicture();
     saveImage(prompt, url, { source: "ai", tags: scene.items.map((i) => i.type) }).catch(() => {});
     if (aiTimer.current) clearTimeout(aiTimer.current);
     setTimeout(() => setAiLoading(false), 6000);
@@ -227,7 +253,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
     setAiError(null);
 
     let generated: string | undefined;
-    if (openaiReady) {
+    if (isAiConfigured()) {
       const res = await generateSentenceImage(text, false);
       if (res.error) {
         setAiLoading(false);
@@ -235,7 +261,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
         return;
       }
       generated = res.dataUri;
-    } else if (aiSceneEnabled) {
+    } else if (aiSceneEnabled()) {
       generated = sceneImageUrl(text, graph); // Pollinations with token
     } else {
       setAiLoading(false);
@@ -252,6 +278,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
     const entry = await saveImage(text, generated, { source: "ai", tags: graph.subject ? [graph.subject.type] : [] });
     // keep the spinner until the <Image> actually loads (Pollinations can be slow)
     setImg({ uri: entry?.uri ?? generated, source: "ai-saved" });
+    recordAiPicture();
     if (aiTimer.current) clearTimeout(aiTimer.current);
     setTimeout(() => setAiLoading(false), 5000); // reveal even if onLoadEnd is quiet
     aiTimer.current = setTimeout(() => {
@@ -266,6 +293,19 @@ export default function SentencePictureScreen({ onBack }: Props) {
     Alert.alert(tt("spSpeakKeyboardTitle"), tt("spSpeakKeyboardMsg"));
   }
 
+  // Phones turn speech into text with Whisper, which needs an OpenAI key or the
+  // BloomLearn server — offer Settings or the keyboard microphone instead.
+  function voiceSetupNeeded() {
+    Alert.alert(tt("hmSetupTitle"), tt("hmSetupBody"), [
+      { text: tt("spSpeakKeyboardTitle"), onPress: keyboardMicHint },
+      { text: tt("hmSetupBtn"), onPress: onOpenSettings },
+    ]);
+  }
+
+  function readBack(sentence: string) {
+    if (settings.autoSpeak && sentence.trim()) speak(sentence, lang, settings.soundEnabled, settings.speechRate);
+  }
+
   async function toggleMic() {
     if (recording) {
       setRecording(false);
@@ -278,20 +318,38 @@ export default function SentencePictureScreen({ onBack }: Props) {
       setSttBusy(true);
       const res = await transcribeAudio(uri, (lang || "en-US").split("-")[0]);
       setSttBusy(false);
-      if (res.text) setText(res.text);
-      else if (res.unavailable) keyboardMicHint();
+      if (res.text) {
+        voiceText(res.text);
+        readBack(res.text);
+      } else if (res.unavailable) keyboardMicHint();
       else Alert.alert(tt("spDidntCatchTitle"), res.error ?? tt("spTryAgainType"));
       return;
     }
 
-    // Free live voice — updates the sentence (and picture) word by word.
+    if (Platform.OS !== "web" && !isAiConfigured()) return voiceSetupNeeded();
+
+    // Live voice — updates the sentence (and picture) as you talk.
     if (voiceAvailable()) {
+      let heard = "";
       const started = await startListening({
         lang: lang || "en-US",
-        onPartial: (t) => t && setText(t),
-        onFinal: (t) => t && setText(t),
-        onEnd: () => setRecording(false),
-        onError: () => setRecording(false),
+        onPartial: (t) => t && voiceText(t),
+        onFinal: (t) => {
+          if (!t) return;
+          heard = t;
+          voiceText(t);
+        },
+        onStatus: (st) => setSttBusy(st === "processing"),
+        onEnd: () => {
+          setRecording(false);
+          setSttBusy(false);
+          readBack(heard);
+        },
+        onError: (msg) => {
+          setRecording(false);
+          setSttBusy(false);
+          if (Platform.OS !== "web") Alert.alert(tt("spDidntCatchTitle"), msg || tt("spTryAgainType"));
+        },
       });
       if (started) {
         setRecording(true);
@@ -303,13 +361,6 @@ export default function SentencePictureScreen({ onBack }: Props) {
     const ok = await startRecording();
     if (!ok) return keyboardMicHint();
     setRecording(true);
-  }
-
-  async function saveKey() {
-    await setStoredKey(keyInput);
-    setOpenaiReady(!!getOpenAiKey());
-    setKeyModal(false);
-    setKeyInput("");
   }
 
   const pct = Math.round(graph.confidence * 100);
@@ -327,8 +378,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <View style={styles.header}>
           <View style={[styles.headerInner, isTablet && styles.headerInnerTablet]}>
-            <Pressable onPress={onBack} style={styles.backBtn}>
-              <Ionicons name="arrow-back" size={18} color="white" />
+            <Pressable onPress={onBack} style={styles.backBtn} hitSlop={10} accessibilityLabel={tt("back")}>
+              <Ionicons name="arrow-back" size={24} color={colors.textDark} />
             </Pressable>
             <View style={{ flex: 1 }}>
               <Text style={styles.headerTitle}>{tt("spHeaderTitle")}</Text>
@@ -341,8 +392,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
                   : tt("spHeaderSubDefault")}
               </Text>
             </View>
-            <Pressable onPress={() => setKeyModal(true)} style={styles.backBtn}>
-              <Ionicons name={openaiReady ? "sparkles" : "sparkles-outline"} size={18} color="white" />
+            <Pressable onPress={onOpenSettings} style={styles.squareBtn} accessibilityLabel={tt("stTitle")}>
+              <Ionicons name="options-outline" size={22} color={colors.forest} />
             </Pressable>
           </View>
         </View>
@@ -379,7 +430,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
               </View>
             )}
             <View style={[styles.sourceBadge, img ? styles.sourceAi : styles.sourceInstant]}>
-              <Ionicons name={img ? "images" : "flash"} size={11} color="white" />
+              <Ionicons name={img ? "image-outline" : "flash-outline"} size={12} color="white" />
               <Text style={styles.sourceBadgeText}>{badgeLabel}</Text>
             </View>
           </View>
@@ -388,8 +439,8 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
           <View style={styles.buildRow}>
             <View style={[styles.buildToggle, styles.buildToggleOn]}>
-              <Ionicons name="color-wand" size={15} color="white" />
-              <Text style={[styles.buildToggleText, { color: "white" }]}>
+              <Ionicons name="chatbubbles-outline" size={16} color={colors.forestDark} />
+              <Text style={styles.buildToggleText}>
                 {tt("spKeepTalkingOn")}
               </Text>
             </View>
@@ -404,20 +455,20 @@ export default function SentencePictureScreen({ onBack }: Props) {
               }}
               style={styles.buildReset}
             >
-              <Ionicons name="refresh" size={15} color={colors.forestDark} />
+              <Ionicons name="refresh-outline" size={16} color={colors.forestDark} />
               <Text style={styles.buildToggleText}>{tt("spStartOver")}</Text>
             </Pressable>
             {buildMode && !!session.items.length && (
               <Pressable onPress={() => drawSceneWithAi()} disabled={aiLoading} style={styles.buildReset}>
-                <Ionicons name="sparkles" size={15} color={colors.forestDark} />
-                <Text style={styles.buildToggleText}>{aiSceneEnabled ? tt("spRedraw") : tt("spRealPicture")}</Text>
+                <Ionicons name="brush-outline" size={16} color={colors.forestDark} />
+                <Text style={styles.buildToggleText}>{aiSceneEnabled() ? tt("spRedraw") : tt("spRealPicture")}</Text>
               </Pressable>
             )}
           </View>
           {buildMode && (
             <Text style={styles.micHint}>
-              {agentEnabled
-                ? tt("spMicHintAgent").replace("{agent}", agentName)
+              {agentEnabled()
+                ? tt("spMicHintAgent").replace("{agent}", agentName())
                 : tt("spMicHintNoAgent")}
             </Text>
           )}
@@ -427,16 +478,16 @@ export default function SentencePictureScreen({ onBack }: Props) {
               {img ? (
                 <>
                   <Pressable onPress={() => setImg(null)} style={[styles.aiBtn, { backgroundColor: colors.cardMuted }]}>
-                    <Ionicons name="flash" size={15} color={colors.textMid} />
+                    <Ionicons name="flash-outline" size={16} color={colors.textMid} />
                     <Text style={[styles.aiBtnText, { color: colors.textMid }]}>{tt("spInstantScene")}</Text>
                   </Pressable>
                   <Pressable onPress={makeAiPicture} disabled={aiLoading} style={styles.aiRegenBtn}>
-                    <Ionicons name="refresh" size={16} color={colors.forestDark} />
+                    <Ionicons name="refresh-outline" size={18} color={colors.forestDark} />
                   </Pressable>
                 </>
               ) : (
                 <Pressable onPress={makeAiPicture} disabled={aiLoading} style={[styles.aiBtn, aiLoading && { opacity: 0.5 }]}>
-                  <Ionicons name="sparkles" size={16} color="white" />
+                  <Ionicons name="brush-outline" size={18} color="white" />
                   <Text style={styles.aiBtnText}>{tt("spMakeFullPicture")}</Text>
                 </Pressable>
               )}
@@ -484,21 +535,21 @@ export default function SentencePictureScreen({ onBack }: Props) {
 
           <TextInput
             value={text}
-            onChangeText={setText}
+            onChangeText={typeText}
             placeholder={tt("spTypeSentencePlaceholder")}
             placeholderTextColor={colors.textLight}
             style={styles.input}
             multiline
           />
           <Pressable onPress={toggleMic} disabled={sttBusy} style={[styles.micRow, recording && styles.micRowOn]}>
-            {sttBusy ? <ActivityIndicator color="white" /> : <Ionicons name={recording ? "stop" : "mic"} size={20} color="white" />}
+            {sttBusy ? <ActivityIndicator color="white" /> : <Ionicons name={recording ? "stop" : "mic-outline"} size={22} color="white" />}
             <Text style={styles.micRowText}>{recording ? tt("spListeningTapStop") : sttBusy ? tt("spTurningSpeechToText") : tt("spSpeakSentence")}</Text>
           </Pressable>
           <Text style={styles.micHint}>{tt("spKeyboardMicHint2")}</Text>
 
           <View style={styles.actionRow}>
-            <Pressable onPress={() => speak(text, lang, settings.soundEnabled)} style={styles.speakBtn}>
-              <Ionicons name="volume-medium" size={16} color="white" />
+            <Pressable onPress={() => speak(text, lang, settings.soundEnabled, settings.speechRate)} style={styles.speakBtn}>
+              <Ionicons name="volume-medium-outline" size={18} color={colors.forestDark} />
               <Text style={styles.speakBtnText}>{tt("spReadAloud")}</Text>
             </Pressable>
             <Pressable onPress={() => setText("")} style={styles.clearBtn}>
@@ -511,7 +562,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
             {EXAMPLE_KEYS.map((ek) => {
               const e = tt(ek);
               return (
-                <Pressable key={ek} onPress={() => setText(e)} style={styles.example}>
+                <Pressable key={ek} onPress={() => typeText(e)} style={styles.example}>
                   <Text style={styles.exampleText}>{e}</Text>
                 </Pressable>
               );
@@ -521,7 +572,7 @@ export default function SentencePictureScreen({ onBack }: Props) {
           <Text style={styles.sectionLabel}>{tt("spScienceConcepts")}</Text>
           <View style={styles.exampleWrap}>
             {CONCEPTS.map((c) => (
-              <Pressable key={c.key} onPress={() => setText(c.title)} style={[styles.example, { backgroundColor: colors.forestLight }]}>
+              <Pressable key={c.key} onPress={() => typeText(c.title)} style={[styles.example, { backgroundColor: colors.forestLight }]}>
                 <Text style={[styles.exampleText, { color: colors.forestDark }]}>{c.title}</Text>
               </Pressable>
             ))}
@@ -535,33 +586,6 @@ export default function SentencePictureScreen({ onBack }: Props) {
         </ScrollView>
       </SafeAreaView>
 
-      <Modal visible={keyModal} transparent animationType="fade" onRequestClose={() => setKeyModal(false)}>
-        <View style={styles.modalBackdrop}>
-          <View style={[styles.modalCard, isTablet && styles.modalCardTablet]}>
-            <Text style={styles.modalTitle}>{tt("spModalTitle")}</Text>
-            <Text style={styles.modalBody}>
-              {tt("spModalBody")}
-            </Text>
-            <TextInput
-              value={keyInput}
-              onChangeText={setKeyInput}
-              placeholder={tt("spKeyPlaceholder")}
-              placeholderTextColor={colors.textLight}
-              autoCapitalize="none"
-              secureTextEntry
-              style={styles.keyInput}
-            />
-            <View style={styles.modalRow}>
-              <Pressable onPress={() => setKeyModal(false)} style={[styles.modalBtn, { backgroundColor: colors.cardMuted }]}>
-                <Text style={{ color: colors.textMid, fontWeight: "700" }}>{t("cancel", lang)}</Text>
-              </Pressable>
-              <Pressable onPress={saveKey} style={[styles.modalBtn, { backgroundColor: colors.forest }]}>
-                <Text style={{ color: "white", fontWeight: "700" }}>{t("save", lang)}</Text>
-              </Pressable>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </View>
   );
 }
@@ -642,12 +666,9 @@ function Feature({ label, absentLabel, present, glyph }: { label: string; absent
 
 const styles = StyleSheet.create({
   header: {
-    backgroundColor: colors.forest,
-    paddingHorizontal: 20,
+    paddingHorizontal: 22,
     paddingTop: 12,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
+    paddingBottom: 6,
   },
   headerInner: {
     width: "100%",
@@ -659,10 +680,20 @@ const styles = StyleSheet.create({
     maxWidth: 820,
     alignSelf: "center",
   },
-  backBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.2)", alignItems: "center", justifyContent: "center" },
-  headerTitle: { color: "white", fontSize: 20, fontWeight: "800" },
-  headerSub: { color: "rgba(255,255,255,0.75)", fontSize: 12, marginTop: 2 },
-  body: { padding: 20, gap: 14, paddingBottom: 40 },
+  backBtn: { width: 36, height: 40, justifyContent: "center" },
+  squareBtn: {
+    width: 52,
+    height: 52,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerTitle: { color: colors.textDark, fontSize: 28, fontWeight: "800", letterSpacing: -0.6 },
+  headerSub: { color: colors.textMid, fontSize: 13, marginTop: 3 },
+  body: { paddingHorizontal: 22, paddingTop: 12, gap: 14, paddingBottom: 40 },
   bodyTablet: {
     maxWidth: 820,
     alignSelf: "center",
@@ -677,7 +708,7 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 320 / 236,
     backgroundColor: "#ffffff",
-    borderRadius: 14,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
@@ -686,7 +717,7 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 320 / 236,
     backgroundColor: "#ffffff",
-    borderRadius: 14,
+    borderRadius: 24,
     borderWidth: 1,
     borderColor: colors.border,
   },
@@ -696,8 +727,8 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     bottom: 0,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    borderRadius: 14,
+    backgroundColor: "rgba(20,35,28,0.45)",
+    borderRadius: 24,
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
@@ -705,60 +736,58 @@ const styles = StyleSheet.create({
   stageOverlayText: { color: "white", fontWeight: "600", fontSize: 12.5 },
   sourceBadge: {
     position: "absolute",
-    top: 8,
-    left: 8,
+    top: 12,
+    left: 12,
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
   },
-  sourceInstant: { backgroundColor: colors.blueDeep },
-  sourceAi: { backgroundColor: colors.purpleDeep },
-  sourceBadgeText: { color: "white", fontSize: 10, fontWeight: "800", letterSpacing: 0.3 },
-  aiError: { color: colors.pinkDeep, fontSize: 12, marginTop: -6 },
+  sourceInstant: { backgroundColor: colors.forest },
+  sourceAi: { backgroundColor: colors.deep },
+  sourceBadgeText: { color: "white", fontSize: 10.5, fontWeight: "700", letterSpacing: 1, textTransform: "uppercase" },
+  aiError: { color: colors.danger, fontSize: 13, marginTop: -4, lineHeight: 19 },
   aiRow: { flexDirection: "row", gap: 10 },
   buildRow: { flexDirection: "row", gap: 8, flexWrap: "wrap" },
   buildToggle: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    gap: 7,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 999,
-    borderWidth: 1.5,
-    borderColor: colors.forest,
     backgroundColor: colors.card,
   },
-  buildToggleOn: { backgroundColor: colors.forest, borderColor: colors.forest },
-  buildToggleText: { fontSize: 12.5, fontWeight: "700", color: colors.forestDark },
+  buildToggleOn: { backgroundColor: colors.lime },
+  buildToggleText: { fontSize: 13.5, fontWeight: "700", color: colors.forestDark },
   buildReset: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    gap: 7,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
     borderRadius: 999,
-    backgroundColor: colors.cardMuted,
+    backgroundColor: "#e3eadf",
   },
   aiBtn: {
     flex: 1,
     flexDirection: "row",
-    gap: 8,
+    gap: 10,
     backgroundColor: colors.forest,
-    borderRadius: radius,
-    paddingVertical: 14,
+    borderRadius: 24,
+    paddingVertical: 17,
     alignItems: "center",
     justifyContent: "center",
   },
-  aiBtnText: { color: "white", fontWeight: "800", fontSize: 14 },
-  aiRegenBtn: { width: 48, backgroundColor: colors.forestLight, borderRadius: radius, alignItems: "center", justifyContent: "center" },
+  aiBtnText: { color: "white", fontWeight: "700", fontSize: 15.5 },
+  aiRegenBtn: { width: 56, backgroundColor: colors.lime, borderRadius: 20, alignItems: "center", justifyContent: "center" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 999,
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
@@ -766,54 +795,55 @@ const styles = StyleSheet.create({
   chipEmoji: { fontSize: 13 },
   chipOn: { backgroundColor: colors.forest },
   chipOff: { backgroundColor: colors.cardMuted },
-  chipText: { fontSize: 12, fontWeight: "700" },
+  chipText: { fontSize: 13, fontWeight: "700" },
   understood: { fontSize: 11.5, color: colors.textMid, marginTop: -4 },
-  captionCard: { backgroundColor: colors.forestLight, borderRadius: radius, padding: 14 },
+  captionCard: { backgroundColor: colors.forestLight, borderRadius: 24, padding: 18 },
   captionTitle: { fontSize: 14, fontWeight: "800", color: colors.forestDark },
   captionBody: { fontSize: 12.5, color: colors.textDark, marginTop: 4, lineHeight: 18 },
   input: {
     backgroundColor: colors.card,
-    borderWidth: 2,
+    borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius,
-    padding: 14,
-    fontSize: 15,
+    borderRadius: 24,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    fontSize: 16,
     color: colors.textDark,
-    minHeight: 60,
+    minHeight: 70,
     textAlignVertical: "top",
   },
   micRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    gap: 10,
+    gap: 12,
     backgroundColor: colors.forest,
-    borderRadius: radius,
-    paddingVertical: 15,
-    marginTop: 4,
+    borderRadius: 26,
+    paddingVertical: 20,
+    marginTop: 2,
   },
   micRowOn: { backgroundColor: colors.pinkDeep },
-  micRowText: { color: "white", fontWeight: "800", fontSize: 15 },
-  micHint: { fontSize: 11.5, color: colors.textMid, marginTop: 4, lineHeight: 16 },
+  micRowText: { color: "white", fontWeight: "700", fontSize: 17 },
+  micHint: { fontSize: 13, color: colors.textMid, marginTop: 2, lineHeight: 19 },
   actionRow: { flexDirection: "row", gap: 10 },
   speakBtn: {
     flex: 1,
     flexDirection: "row",
-    gap: 8,
-    backgroundColor: colors.blueDeep,
-    borderRadius: radius,
-    paddingVertical: 14,
+    gap: 10,
+    backgroundColor: colors.lime,
+    borderRadius: 24,
+    paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
   },
-  speakBtnText: { color: "white", fontWeight: "800" },
-  clearBtn: { flex: 1, backgroundColor: colors.cardMuted, borderRadius: radius, paddingVertical: 14, alignItems: "center", justifyContent: "center" },
-  clearBtnText: { color: colors.textMid, fontWeight: "700" },
-  sectionLabel: { fontSize: 12, fontWeight: "800", color: colors.textLight, letterSpacing: 1, marginTop: 6 },
-  exampleWrap: { gap: 8 },
-  example: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: radius, paddingVertical: 12, paddingHorizontal: 14 },
-  exampleText: { fontSize: 13, color: colors.textDark, fontWeight: "600" },
-  hint: { fontSize: 11, color: colors.textLight, lineHeight: 17, marginTop: 6 },
+  speakBtnText: { color: colors.forestDark, fontWeight: "700", fontSize: 15.5 },
+  clearBtn: { flex: 1, backgroundColor: "#e3eadf", borderRadius: 24, paddingVertical: 16, alignItems: "center", justifyContent: "center" },
+  clearBtnText: { color: colors.forestDark, fontWeight: "700", fontSize: 15.5 },
+  sectionLabel: { fontSize: 12, fontWeight: "700", color: "#7b8a80", letterSpacing: 2, marginTop: 14, textTransform: "uppercase" },
+  exampleWrap: { gap: 10 },
+  example: { backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border, borderRadius: 22, paddingVertical: 16, paddingHorizontal: 18 },
+  exampleText: { fontSize: 15, color: colors.textDark, fontWeight: "600" },
+  hint: { fontSize: 12.5, color: colors.textMid, lineHeight: 19, marginTop: 10 },
   concept: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12, padding: 16 },
   conceptRow: { flexDirection: "row", gap: 18, alignItems: "flex-end", flexWrap: "wrap", justifyContent: "center" },
   feature: { alignItems: "center", gap: 4 },
@@ -822,23 +852,4 @@ const styles = StyleSheet.create({
   backbone: { width: 34, height: 4, borderRadius: 2, backgroundColor: colors.pinkDeep },
   noBackbone: { color: colors.textLight, fontSize: 14 },
   conceptNote: { fontSize: 12, color: colors.textMid, fontWeight: "600" },
-  modalBackdrop: { flex: 1, backgroundColor: "rgba(0,0,0,0.4)", alignItems: "center", justifyContent: "center", padding: 24 },
-  modalCard: { width: "100%", backgroundColor: colors.bg, borderRadius: radius, padding: 20 },
-  modalCardTablet: {
-    maxWidth: 540,
-    padding: 24,
-  },
-  modalTitle: { fontSize: 17, fontWeight: "800", color: colors.textDark, marginBottom: 8 },
-  modalBody: { fontSize: 12.5, color: colors.textMid, lineHeight: 18, marginBottom: 12 },
-  keyInput: {
-    backgroundColor: colors.card,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: radius,
-    padding: 12,
-    fontSize: 14,
-    color: colors.textDark,
-  },
-  modalRow: { flexDirection: "row", gap: 10, marginTop: 14 },
-  modalBtn: { flex: 1, borderRadius: radius, paddingVertical: 12, alignItems: "center" },
 });

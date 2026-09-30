@@ -1,659 +1,322 @@
-import { useMemo, useState } from "react";
-import { View, Text, Pressable, StyleSheet, ScrollView } from "react-native";
+import { useEffect, useState } from "react";
+import { View, Text, Pressable, StyleSheet, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
-import type { ChildProfile, TabScreen, TherapyGoal } from "../types";
 import { useSettings } from "../context/SettingsContext";
-import { speak } from "../modules/tts";
-import { tapFeedback } from "../modules/haptics";
-import { t, wordLabel, type TKey } from "../modules/i18n";
-import { getUsage, recordScheduleAdherence, updateChild } from "../modules/storage";
+import { t, type TKey, isRTL } from "../modules/i18n";
 import { useResponsive } from "../modules/responsive";
-import LangBadge from "../components/LangBadge";
-import TabBar from "../components/TabBar";
-import { colors, radius, radiusLg } from "../theme";
+import { isAiConfigured } from "../modules/aiImage";
+import { getProgress, todayCount, streak, lastWeek, POSITIONS, LEARN_COLORS, type ProgressData } from "../modules/progress";
+import Logo from "../components/Logo";
+import IconSquare from "../components/IconSquare";
+import SectionHeading from "../components/SectionHeading";
+import { colors, radiusLg, type } from "../theme";
 
 interface Props {
-  child: ChildProfile;
-  tab: TabScreen;
-  onTabChange: (tab: TabScreen) => void;
-  onOpenMore: () => void;
-  onOpenPictureTalk: () => void;
-  labels: Record<TabScreen, string>;
+  onOpenTalk: (text?: string) => void;
+  onOpenSettings: () => void;
+  onOpenProgress: () => void;
+  onOpenHelp: () => void;
 }
 
-type QuickItem = {
-  labelKey: TKey;
-  icon: keyof typeof Ionicons.glyphMap;
-  bg: string;
-  iconColor: string;
-  go: (p: Props) => void;
-};
+const EXAMPLE_KEYS: TKey[] = ["spExample1", "spExample2", "spExample3", "spExample4", "spExample5"];
 
-const QUICK_ACCESS: QuickItem[] = [
-  { labelKey: "qCommunicate", icon: "chatbubble-ellipses", bg: colors.blue, iconColor: colors.blueDeep, go: (p) => p.onTabChange("speak") },
-  { labelKey: "todaysSchedule", icon: "calendar", bg: colors.yellow, iconColor: colors.yellowDeep, go: (p) => p.onTabChange("schedule") },
-  { labelKey: "qPictureTalk", icon: "image", bg: colors.forestLight, iconColor: colors.forest, go: (p) => p.onOpenPictureTalk() },
-  { labelKey: "qActivities", icon: "shapes", bg: colors.green, iconColor: colors.greenDeep, go: (p) => p.onTabChange("games") },
-];
+const pick = <T,>(list: readonly T[]): T => list[Math.floor(Math.random() * list.length)];
 
-const TODAY_PREVIEW = [
-  { icon: "🍳", labelKey: "sBreakfast" as TKey, time: "08:00", state: "done" as const, color: colors.yellow },
-  { icon: "🧩", labelKey: "sPlayTime" as TKey, time: "09:00", state: "done" as const, color: colors.green },
-  { icon: "💬", labelKey: "sAacSession" as TKey, time: "10:30", state: "now" as const, color: colors.blue },
-  { icon: "🍽️", labelKey: "sLunch" as TKey, time: "12:00", state: "upcoming" as const, color: colors.orange },
-];
-
-export default function HomeScreen(props: Props) {
-  const { child, tab, onTabChange, onOpenMore, onOpenPictureTalk, labels } = props;
+export default function HomeScreen({ onOpenTalk, onOpenSettings, onOpenProgress, onOpenHelp }: Props) {
   const { settings } = useSettings();
-  const { isSmallPhone, isTablet, isLargeTablet } = useResponsive();
+  const { isTablet } = useResponsive();
   const lang = settings.language;
+  const tt = (k: TKey) => t(k, lang);
+  const rtl = isRTL(lang);
+
+  const [p, setP] = useState<ProgressData | null>(null);
+  useEffect(() => {
+    getProgress().then((d) => setP({ ...d }));
+  }, []);
+
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? t("morning", lang) : hour < 17 ? t("afternoon", lang) : t("evening", lang);
-  const nextUp = TODAY_PREVIEW.find((i) => i.state === "now") ?? TODAY_PREVIEW.find((i) => i.state === "upcoming");
+  const greeting = hour < 12 ? tt("hmGoodMorning") : hour < 17 ? tt("hmGoodAfternoon") : tt("hmGoodEvening");
+  const date = safeDate(lang);
 
-  const usage = useMemo(() => getUsage(child.id), [child.id]);
-  const weekWords = usage.wordsByDay.reduce((s, v) => s + v, 0);
+  // Phones need an OpenAI key or the BloomLearn server for voice-to-text.
+  const needsVoiceSetup = Platform.OS !== "web" && !isAiConfigured();
 
-  const [scheduleItems, setScheduleItems] = useState(TODAY_PREVIEW);
+  const positionsDone = p ? POSITIONS.filter((x) => p.positions[x]).length : 0;
+  const colorsDone = p ? LEARN_COLORS.filter((c) => p.colors[c]).length : 0;
+  const weekTotal = p ? lastWeek(p).reduce((s, d) => s + d.count, 0) : 0;
 
-  function toggleScheduleItem(idx: number) {
-    tapFeedback();
-    setScheduleItems((prev) => {
-      const next = prev.map((item, i) => {
-        if (i !== idx) return item;
-        const nextState: "done" | "now" | "upcoming" = item.state === "done" ? "upcoming" : "done";
-        speak(
-          t(item.labelKey, lang) + (nextState === "done" ? ". Finished! Great job!" : ""),
-          lang,
-          settings.soundEnabled
-        );
-        return { ...item, state: nextState };
-      });
-      const doneCount = next.filter((i) => i.state === "done").length;
-      const percent = Math.round((doneCount / next.length) * 100);
-      recordScheduleAdherence(child.id, percent);
-      if (next[idx].state === "done") {
-        updateChild({ ...child, stars: (child.stars ?? 0) + 1 });
-      }
-      return next;
-    });
-  }
-
-  function handleOpenScheduleItem(item: (typeof TODAY_PREVIEW)[number]) {
-    tapFeedback();
-    speak(t(item.labelKey, lang), lang, settings.soundEnabled);
-    if (item.labelKey === "sAacSession") {
-      onTabChange("speak");
-    } else {
-      onTabChange("schedule");
-    }
-  }
-
-  // Active Doctor Therapy Goal
-  const activeTherapyGoal: TherapyGoal = useMemo(() => {
-    if (child.therapyGoals && child.therapyGoals.length > 0) {
-      const incomplete = child.therapyGoals.find((g) => !g.completed);
-      if (incomplete) return incomplete;
-      return child.therapyGoals[0];
-    }
-    return {
-      id: "default_speech",
-      title: t("defaultSpeechGoalTitle", lang),
-      category: "speech",
-      targetCount: 3,
-      currentCount: Math.min(3, weekWords),
-      unit: t("unitWords", lang),
-      completed: weekWords >= 3,
-      prescribedBy: t("doctorsDailyGoal", lang),
-      assignedDate: new Date().toISOString(),
-    };
-  }, [child.therapyGoals, weekWords, lang]);
-
-  const therapyProgressPct = Math.min(
-    100,
-    Math.round((activeTherapyGoal.currentCount / activeTherapyGoal.targetCount) * 100)
-  );
-
-  const [selectedMood, setSelectedMood] = useState<string | null>(null);
-
-  function handleSelectMood(moodLabel: string, emoji: string) {
-    tapFeedback();
-    setSelectedMood(moodLabel);
-    speak(`${t("sayIAmFeeling", lang)} ${wordLabel(moodLabel, lang)}!`, lang, settings.soundEnabled);
-  }
-
-  function handleUrgentNeed(label: string, phraseKey: TKey) {
-    tapFeedback();
-    speak(t(phraseKey, lang), lang, settings.soundEnabled);
-  }
+  const ACTIVITIES: {
+    icon: keyof typeof Ionicons.glyphMap;
+    tint: string;
+    play: string;
+    title: TKey;
+    sub: TKey;
+    metric: TKey;
+    value: string;
+    go: () => void;
+  }[] = [
+    {
+      icon: "navigate-outline",
+      tint: colors.pink,
+      play: colors.lime,
+      title: "acPositions",
+      sub: "acPositionsSub",
+      metric: "prPositions",
+      value: `${positionsDone} / ${POSITIONS.length}`,
+      go: () => onOpenTalk(`The cat is ${pick(POSITIONS)} the box`),
+    },
+    {
+      icon: "color-palette-outline",
+      tint: colors.blue,
+      play: colors.pink,
+      title: "acColours",
+      sub: "acColoursSub",
+      metric: "prColours",
+      value: `${colorsDone} / ${LEARN_COLORS.length}`,
+      go: () => onOpenTalk(`A ${pick(LEARN_COLORS)} ball`),
+    },
+    {
+      icon: "paw-outline",
+      tint: colors.yellow,
+      play: colors.lime,
+      title: "acThings",
+      sub: "acThingsSub",
+      metric: "prWords",
+      value: String(p ? Object.keys(p.words).length : 0),
+      go: () => onOpenTalk(tt(pick(EXAMPLE_KEYS))),
+    },
+  ];
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
-        <View style={styles.header}>
-          <View style={[styles.headerInner, isTablet && styles.headerInnerTablet]}>
-            <View style={styles.headerTop}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                <View style={styles.avatar}>
-                  <Text style={{ fontSize: 22 }}>{child.age <= 6 ? "🧒" : "🧑"}</Text>
-                </View>
-                <View>
-                  <Text style={styles.greeting}>{greeting}</Text>
-                  <Text style={styles.name}>{child.name}</Text>
-                </View>
-              </View>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <View style={styles.starBadgeHeader}>
-                  <Ionicons name="star" size={13} color="#f59e0b" />
-                  <Text style={styles.starBadgeHeaderText}>{child.stars ?? 0}</Text>
-                </View>
-                <LangBadge dark />
-                <Pressable onPress={onOpenMore} style={styles.settingsBtn} hitSlop={6}>
-                  <Ionicons name="settings-outline" size={18} color="white" />
-                </Pressable>
-              </View>
-            </View>
-
-            {/* {nextUp && (
-              <Pressable onPress={() => onTabChange("schedule")} style={styles.nextUpRow}>
-                <View style={styles.nextUpIconWrap}>
-                  <Text style={{ fontSize: 20 }}>{nextUp.icon}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.nextUpLabel}>{nextUp.state === "now" ? t("happeningNow", lang) : t("nextLabel", lang)} · {nextUp.time}</Text>
-                  <Text style={styles.nextUpTitle}>{t(nextUp.labelKey, lang)}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color="rgba(255,255,255,0.7)" />
-              </Pressable>
-            )} */}
-          </View>
-        </View>
-
         <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} showsVerticalScrollIndicator={false}>
-          {/* Doctor's Daily Therapy Target Card */}
-          <Pressable
-            onPress={() => {
-              if (activeTherapyGoal.category === "speech") onTabChange("speak");
-              else if (activeTherapyGoal.category === "occupational") onTabChange("schedule");
-              else if (activeTherapyGoal.category === "sensory") onOpenPictureTalk();
-              else onTabChange("games");
-            }}
-            style={styles.therapyBanner}
-          >
-            <View style={styles.therapyBannerHeader}>
-              <View style={styles.therapyBadgeWrap}>
-                <Ionicons name="flag" size={14} color="white" />
-                <Text style={styles.therapyBadgeText}>{t("therapyTargetBadge", lang)}</Text>
-              </View>
-              <View style={styles.therapyStarReward}>
-                <Ionicons name="star" size={12} color="#b45309" />
-                <Text style={styles.therapyStarText}>+5 {t("stars", lang)}</Text>
-              </View>
+          {/* Brand row */}
+          <View style={styles.brandRow}>
+            <Logo size={52} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.brand}>BloomLearn</Text>
+              <Text style={[type.eyebrow, { fontSize: 11 }]}>{tt("hmBrandSub")}</Text>
             </View>
-
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12, marginTop: 10 }}>
-              <View style={styles.therapyIconCircle}>
-                <Text style={{ fontSize: 22 }}>
-                  {activeTherapyGoal.category === "speech" ? "🗣️" : activeTherapyGoal.category === "sensory" ? "🌿" : "📅"}
-                </Text>
-              </View>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.therapyTitle}>{activeTherapyGoal.title}</Text>
-                <Text style={styles.therapySub}>
-                  {activeTherapyGoal.prescribedBy || t("doctorsPlan", lang)} · {t("tapToPracticeNow", lang)}
-                </Text>
-              </View>
-              {activeTherapyGoal.completed && (
-                <View style={styles.therapyCheckCircle}>
-                  <Ionicons name="checkmark" size={16} color="white" />
-                </View>
-              )}
-            </View>
-
-            {/* Progress Bar */}
-            <View style={styles.therapyProgressTrack}>
-              <View
-                style={[
-                  styles.therapyProgressFill,
-                  {
-                    width: `${therapyProgressPct}%`,
-                    backgroundColor: activeTherapyGoal.completed ? colors.greenDeep : colors.forest,
-                  },
-                ]}
-              />
-            </View>
-            <View style={styles.therapyProgressTextRow}>
-              <Text style={styles.therapyProgressNum}>
-                {activeTherapyGoal.currentCount} / {activeTherapyGoal.targetCount} {activeTherapyGoal.unit}
-              </Text>
-              <Text style={styles.therapyActionHint}>
-                {activeTherapyGoal.completed ? t("completedToday", lang) : t("startExercise", lang)}
-              </Text>
-            </View>
-          </Pressable>
-
-          {/* Emotional Mood Check-In Widget */}
-          <View style={styles.moodSection}>
-            <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-              <Text style={styles.sectionHeadingSmall}>{t("moodQuestion", lang)}</Text>
-              {selectedMood && (
-                <View style={styles.selectedMoodTag}>
-                  <Text style={styles.selectedMoodTagText}>
-                    {t("feelingTag", lang)} {wordLabel(selectedMood, lang)} ✓
-                  </Text>
-                </View>
-              )}
-            </View>
-            <View style={[styles.moodRow, isSmallPhone && { gap: 4 }, isTablet && { gap: 12 }]}>
-              {[
-                { label: "Happy", emoji: "😃", bg: "#dcfce7", color: "#166534" },
-                { label: "Calm", emoji: "😌", bg: "#e0f2fe", color: "#0369a1" },
-                { label: "Excited", emoji: "🤩", bg: "#fef3c7", color: "#b45309" },
-                { label: "Sad", emoji: "😢", bg: "#ede9fe", color: "#6b21a8" },
-                { label: "Tired", emoji: "😴", bg: "#f1f5f9", color: "#475569" },
-              ].map((m) => {
-                const isSel = selectedMood === m.label;
-                return (
-                  <Pressable
-                    key={m.label}
-                    onPress={() => handleSelectMood(m.label, m.emoji)}
-                    style={[
-                      styles.moodBtn,
-                      { backgroundColor: m.bg },
-                      isSmallPhone && { paddingVertical: 7, borderRadius: 10 },
-                      isTablet && { paddingVertical: 14, borderRadius: 16 },
-                      isSel && styles.moodBtnActive,
-                    ]}
-                  >
-                    <Text style={{ fontSize: isSmallPhone ? 20 : isTablet ? 30 : 26 }}>{m.emoji}</Text>
-                    <Text
-                      style={[
-                        styles.moodBtnText,
-                        { color: m.color, fontSize: isSmallPhone ? 9.5 : isTablet ? 12.5 : 11 },
-                        isSel && { fontWeight: "900" },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {wordLabel(m.label, lang)}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
-          </View>
-
-          {/* Urgent Needs Quick Express Communication Bar */}
-          <View style={styles.urgentSection}>
-            <Text style={styles.sectionHeadingSmall}>{t("quickExpressHeading", lang)}</Text>
-            <View style={[styles.urgentGrid, isSmallPhone && { gap: 6 }, isTablet && { gap: 12 }]}>
-              {[
-                { label: "Help", phraseKey: "needHelpPhrase" as TKey, emoji: "🆘", color: "#fee2e2", textColor: "#b91c1c" },
-                { label: "Water", phraseKey: "needWaterPhrase" as TKey, emoji: "💧", color: "#e0f2fe", textColor: "#0369a1" },
-                { label: "Bathroom", phraseKey: "needBathroomPhrase" as TKey, emoji: "🚻", color: "#fef3c7", textColor: "#b45309" },
-                { label: "Stop", phraseKey: "pleaseStopPhrase" as TKey, emoji: "🛑", color: "#ffedd5", textColor: "#c2410c" },
-              ].map((u) => (
-                <Pressable
-                  key={u.label}
-                  onPress={() => handleUrgentNeed(u.label, u.phraseKey)}
-                  style={[
-                    styles.urgentTile,
-                    { backgroundColor: u.color },
-                    isSmallPhone && { paddingVertical: 9, borderRadius: 10 },
-                    isTablet && { paddingVertical: 16, borderRadius: 16 },
-                  ]}
-                >
-                  <Text style={{ fontSize: isSmallPhone ? 19 : isTablet ? 26 : 22 }}>{u.emoji}</Text>
-                  <Text style={[styles.urgentTileLabel, { color: u.textColor, fontSize: isSmallPhone ? 10.5 : isTablet ? 13 : 11.5 }]}>
-                    {u.label === "Bathroom" ? t("bathroom", lang) : wordLabel(u.label, lang)}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </View>
-
-          <Text style={styles.sectionTitle}>{t("quickAccess", lang)}</Text>
-          <View style={styles.quickGrid}>
-            {QUICK_ACCESS.map((q) => (
-              <Pressable
-                key={q.labelKey}
-                onPress={() => q.go(props)}
-                style={[
-                  styles.quickTile,
-                  isTablet && styles.quickTileTablet,
-                  { backgroundColor: q.bg },
-                ]}
-              >
-                <View style={styles.quickIconBadge}>
-                  <Ionicons name={q.icon} size={isTablet ? 26 : 22} color={q.iconColor} />
-                </View>
-                <Text style={[styles.quickLabel, isTablet && { fontSize: 15 }]}>{t(q.labelKey, lang)}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <View style={styles.sectionHeaderRow}>
-            <Text style={styles.sectionTitle}>{t("todaySchedule", lang)}</Text>
-            <Pressable
-              onPress={() => {
-                tapFeedback();
-                onTabChange("schedule");
-              }}
-              style={styles.seeAllBtn}
-              hitSlop={8}
-            >
-              <Text style={styles.seeAllText}>{t("viewFullSchedule", lang)}</Text>
-              <Ionicons name="chevron-forward" size={14} color={colors.forest} />
+            <Pressable onPress={onOpenSettings} style={styles.squareBtn} accessibilityLabel={tt("stTitle")}>
+              <Ionicons name="options-outline" size={24} color={colors.forest} />
             </Pressable>
           </View>
 
-          <View style={[styles.scheduleContainer, isTablet && styles.scheduleContainerTablet]}>
-            {scheduleItems.map((item, i) => (
-              <Pressable
-                key={i}
-                onPress={() => handleOpenScheduleItem(item)}
-                style={({ pressed }) => [
-                  styles.scheduleRow,
-                  isTablet && styles.scheduleRowTablet,
-                  item.state === "now"
-                    ? styles.scheduleRowNow
-                    : { backgroundColor: item.state === "done" ? colors.cardMuted : colors.card },
-                  pressed && { opacity: 0.85, transform: [{ scale: 0.99 }] },
-                ]}
-              >
-                <View style={[styles.scheduleIcon, { backgroundColor: item.color }]}>
-                  <Text style={{ fontSize: isTablet ? 22 : 18 }}>{item.icon}</Text>
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text
-                    style={[
-                      styles.scheduleLabel,
-                      isTablet && { fontSize: 16 },
-                      item.state === "done" && { textDecorationLine: "line-through", color: colors.textLight },
-                    ]}
-                  >
-                    {t(item.labelKey, lang)}
-                  </Text>
-                  <Text style={styles.scheduleTime}>{item.time}</Text>
-                </View>
+          {/* Greeting */}
+          <Text style={[type.eyebrow, { marginTop: 26 }]}>{date}</Text>
+          <Text style={[type.display, { marginTop: 8 }]}>{greeting}.</Text>
+          <Text style={[type.lead, { marginTop: 8 }]}>{tt("hmGreetingSub")}</Text>
 
-                {/* Status indicator / interactive checkmark */}
-                <Pressable
-                  onPress={(e) => {
-                    e.stopPropagation();
-                    toggleScheduleItem(i);
-                  }}
-                  hitSlop={8}
-                >
-                  {item.state === "done" ? (
-                    <View style={styles.checkBadge}>
-                      <Ionicons name="checkmark" size={14} color="white" />
-                    </View>
-                  ) : item.state === "now" ? (
-                    <View style={styles.nowBadge}>
-                      <Text style={styles.nowBadgeText}>{t("happeningNow", lang).toUpperCase()}</Text>
-                    </View>
-                  ) : (
-                    <View style={styles.upcomingBadge}>
-                      <Ionicons name="ellipse-outline" size={22} color={colors.textLight} />
-                    </View>
-                  )}
-                </Pressable>
+          {/* Hero */}
+          <View style={styles.hero}>
+            <View style={styles.ringBig} />
+            <View style={styles.ringSmall} />
+            <View style={styles.heroTop}>
+              <View style={styles.pill}>
+                <View style={styles.pillDot} />
+                <Text style={styles.pillText}>{tt("hmHeroPill")}</Text>
+              </View>
+              <Ionicons name="flower-outline" size={32} color={colors.lime} />
+            </View>
+            <Text style={styles.heroTitle}>{tt("hmHeroTitle")}</Text>
+            <Text style={styles.heroBody}>{tt("hmHeroBody")}</Text>
+            <Pressable onPress={() => onOpenTalk()} style={({ pressed }) => [styles.heroBtn, pressed && { opacity: 0.9 }]}>
+              <Ionicons name={rtl ? "arrow-back" : "arrow-forward"} size={22} color={colors.forestDark} />
+              <Text style={styles.heroBtnText}>{tt("hmHeroBtn")}</Text>
+            </Pressable>
+            <Text style={styles.heroFoot}>
+              {tt("hmHeroFooter")
+                .replace("{n}", String(p?.sentences ?? 0))
+                .replace("{m}", String(p ? todayCount(p) : 0))}
+            </Text>
+          </View>
+
+          {needsVoiceSetup && (
+            <Pressable onPress={onOpenSettings} style={styles.notice}>
+              <IconSquare icon="key-outline" bg={colors.yellow} size={40} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.noticeTitle}>{tt("hmSetupTitle")}</Text>
+                <Text style={styles.noticeBody}>{tt("hmSetupBody")}</Text>
+              </View>
+            </Pressable>
+          )}
+
+          {/* Practice */}
+          <SectionHeading title={tt("hmPractice")} subtitle={tt("hmPracticeSub")} action={tt("hmSeeProgress")} onAction={onOpenProgress} />
+          <View style={{ gap: 14 }}>
+            {ACTIVITIES.map((a) => (
+              <Pressable key={a.title} onPress={a.go} style={({ pressed }) => [styles.card, pressed && { opacity: 0.92 }]}>
+                <View style={styles.cardTop}>
+                  <IconSquare icon={a.icon} bg={a.tint} size={60} round />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.cardTitle}>{tt(a.title)}</Text>
+                    <Text style={styles.cardSub}>{tt(a.sub)}</Text>
+                  </View>
+                  <View style={[styles.playBtn, { backgroundColor: a.play }]}>
+                    <Ionicons name="play" size={22} color={colors.textDark} style={rtl ? { transform: [{ scaleX: -1 }] } : undefined} />
+                  </View>
+                </View>
+                <View style={styles.cardFoot}>
+                  <Text style={styles.cardMetric}>{tt(a.metric)}</Text>
+                  <Text style={styles.cardValue}>{a.value}</Text>
+                </View>
               </Pressable>
             ))}
           </View>
+
+          {/* Week */}
+          <SectionHeading title={tt("hmWeek")} />
+          <View style={styles.stats}>
+            <Stat icon="chatbubble-outline" value={weekTotal} label={tt("prSentences")} bg={colors.green} />
+            <Stat icon="flame-outline" value={p ? streak(p) : 0} label={tt("prStreakShort")} bg={colors.pink} />
+            <Stat icon="image-outline" value={p?.aiPictures ?? 0} label={tt("prPicturesShort")} bg={colors.yellow} />
+          </View>
+
+          <Pressable onPress={onOpenHelp} style={styles.helpRow}>
+            <IconSquare icon="book-outline" bg={colors.green} size={40} />
+            <Text style={styles.helpText}>{tt("hmHowTo")}</Text>
+            <Ionicons name={rtl ? "chevron-back" : "chevron-forward"} size={20} color={colors.textLight} />
+          </Pressable>
+
+          <View style={styles.localPill}>
+            <Ionicons name="shield-checkmark-outline" size={20} color={colors.forest} />
+            <Text style={styles.localText}>{tt("hmLocal")}</Text>
+          </View>
         </ScrollView>
       </SafeAreaView>
-      <TabBar active={tab} onChange={onTabChange} labels={labels} />
     </View>
   );
 }
 
+function Stat({ icon, value, label, bg }: { icon: keyof typeof Ionicons.glyphMap; value: number; label: string; bg: string }) {
+  return (
+    <View style={[styles.stat, { backgroundColor: bg }]}>
+      <Ionicons name={icon} size={24} color={colors.textDark} />
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={type.statLabel} numberOfLines={1}>
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function safeDate(lang: string): string {
+  try {
+    return new Date().toLocaleDateString(lang, { weekday: "long", month: "long", day: "numeric" });
+  } catch {
+    return new Date().toDateString();
+  }
+}
+
 const styles = StyleSheet.create({
-  header: {
-    backgroundColor: colors.forest,
-    paddingHorizontal: 22,
-    paddingTop: 18,
-    paddingBottom: 22,
-    borderBottomLeftRadius: 28,
-    borderBottomRightRadius: 28,
-    width: "100%",
+  body: { paddingHorizontal: 22, paddingTop: 18, paddingBottom: 36, gap: 0 },
+  bodyTablet: { maxWidth: 760, alignSelf: "center", width: "100%" },
+  brandRow: { flexDirection: "row", alignItems: "center", gap: 14 },
+  brand: { fontSize: 22, fontWeight: "800", color: colors.textDark, letterSpacing: -0.4, marginBottom: 3 },
+  squareBtn: {
+    width: 56,
+    height: 56,
+    borderRadius: 18,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  headerInner: {
-    width: "100%",
+  hero: { marginTop: 24, backgroundColor: colors.deep, borderRadius: 34, padding: 24, overflow: "hidden" },
+  ringBig: {
+    position: "absolute",
+    right: -90,
+    top: 60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
   },
-  headerInnerTablet: {
-    maxWidth: 860,
-    alignSelf: "center",
+  ringSmall: {
+    position: "absolute",
+    right: -40,
+    top: 110,
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.08)",
   },
-  headerTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
-  greeting: { color: "rgba(255,255,255,0.75)", fontSize: 12 },
-  name: { color: "white", fontSize: 20, fontWeight: "800" },
-  settingsBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: "rgba(255,255,255,0.18)", alignItems: "center", justifyContent: "center" },
-  nextUpRow: {
+  heroTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  pill: { flexDirection: "row", alignItems: "center", gap: 10, backgroundColor: colors.lime, borderRadius: 999, paddingVertical: 9, paddingHorizontal: 16 },
+  pillDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.deep },
+  pillText: { fontSize: 11.5, fontWeight: "800", letterSpacing: 1.5, color: colors.deep },
+  heroTitle: { marginTop: 22, color: "white", fontSize: 34, fontWeight: "800", letterSpacing: -1, lineHeight: 40 },
+  heroBody: { marginTop: 12, color: "rgba(255,255,255,0.85)", fontSize: 16, lineHeight: 23, maxWidth: 440 },
+  heroBtn: {
+    marginTop: 22,
+    flexDirection: "row",
+    gap: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#e6ece2",
+    borderRadius: 26,
+    paddingVertical: 18,
+  },
+  heroBtnText: { color: colors.forestDark, fontSize: 17, fontWeight: "700" },
+  heroFoot: { marginTop: 18, color: "rgba(255,255,255,0.75)", fontSize: 13 },
+  notice: {
+    marginTop: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: colors.card,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 16,
+  },
+  noticeTitle: { fontSize: 15, fontWeight: "700", color: colors.textDark },
+  noticeBody: { fontSize: 13, color: colors.textMid, marginTop: 3, lineHeight: 19 },
+  card: { backgroundColor: colors.card, borderRadius: radiusLg, borderWidth: 1, borderColor: colors.border, paddingHorizontal: 22, paddingTop: 22 },
+  cardTop: { flexDirection: "row", alignItems: "center", gap: 18 },
+  cardTitle: { fontSize: 19, fontWeight: "700", color: colors.textDark },
+  cardSub: { fontSize: 14.5, color: colors.textMid, marginTop: 4 },
+  playBtn: { width: 64, height: 64, borderRadius: 20, alignItems: "center", justifyContent: "center" },
+  cardFoot: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderTopWidth: 1,
+    borderTopColor: "#efede5",
+    marginTop: 20,
+    paddingVertical: 16,
+  },
+  cardMetric: { fontSize: 14.5, color: colors.textMid },
+  cardValue: { fontSize: 15, fontWeight: "700", color: colors.forest },
+  stats: { flexDirection: "row", gap: 12, marginTop: 6 },
+  stat: { flex: 1, borderRadius: 26, padding: 18, gap: 10, minHeight: 150, justifyContent: "space-between" },
+  statValue: { fontSize: 30, fontWeight: "800", color: colors.textDark, letterSpacing: -0.5 },
+  helpRow: {
+    marginTop: 18,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    backgroundColor: colors.card,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 14,
+  },
+  helpText: { flex: 1, fontSize: 16, fontWeight: "700", color: colors.textDark },
+  localPill: {
+    marginTop: 14,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    backgroundColor: "rgba(255,255,255,0.12)",
-    borderRadius: 18,
-    padding: 12,
-    marginTop: 18,
-  },
-  nextUpIconWrap: { width: 40, height: 40, borderRadius: 12, backgroundColor: "rgba(255,255,255,0.16)", alignItems: "center", justifyContent: "center" },
-  nextUpLabel: { color: "rgba(255,255,255,0.7)", fontSize: 11, fontWeight: "600" },
-  nextUpTitle: { color: "white", fontSize: 15, fontWeight: "800", marginTop: 2 },
-  body: { paddingHorizontal: 22, paddingTop: 22, paddingBottom: 32, gap: 14 },
-  bodyTablet: { maxWidth: 860, alignSelf: "center", width: "100%", paddingHorizontal: 28 },
-  sectionTitle: { fontSize: 12, fontWeight: "800", color: colors.textLight, letterSpacing: 1 },
-  sectionHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: 6,
-    marginBottom: 4,
-  },
-  seeAllBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 6,
-    borderRadius: 8,
-  },
-  seeAllText: {
-    fontSize: 12.5,
-    fontWeight: "700",
-    color: colors.forest,
-  },
-  upcomingBadge: {
-    width: 26,
-    height: 26,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  quickGrid: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
-  quickTile: {
-    width: "47%",
-    borderRadius: radiusLg,
-    paddingVertical: 24,
-    paddingHorizontal: 18,
-    gap: 14,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.04)",
-  },
-  quickTileTablet: {
-    width: "23.2%",
-    paddingVertical: 20,
-    paddingHorizontal: 14,
-  },
-  quickIconBadge: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "rgba(255,255,255,0.6)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  quickLabel: { fontSize: 14, fontWeight: "700", color: colors.textDark },
-  scheduleContainer: { gap: 12 },
-  scheduleContainerTablet: { flexDirection: "row", flexWrap: "wrap", gap: 12 },
-  scheduleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-    borderRadius: radiusLg,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: "#e6ebe1",
+    borderRadius: 20,
     paddingVertical: 16,
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
   },
-  scheduleRowTablet: {
-    width: "48.8%",
-  },
-  scheduleRowNow: { backgroundColor: colors.card, borderColor: colors.forest, borderWidth: 2 },
-  scheduleIcon: { width: 44, height: 44, borderRadius: 14, alignItems: "center", justifyContent: "center" },
-  scheduleLabel: { fontSize: 15, fontWeight: "700", color: colors.textDark },
-  scheduleTime: { fontSize: 12.5, color: colors.textLight, marginTop: 3 },
-  checkBadge: { width: 24, height: 24, borderRadius: 12, backgroundColor: colors.greenDeep, alignItems: "center", justifyContent: "center" },
-  nowBadge: { backgroundColor: colors.forest, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 10 },
-  nowBadgeText: { color: "white", fontSize: 10, fontWeight: "800", letterSpacing: 0.5 },
-
-  /* Doctor Therapy Target Card */
-  therapyBanner: {
-    backgroundColor: "white",
-    borderRadius: radiusLg,
-    padding: 16,
-    borderWidth: 1.5,
-    borderColor: "#e2e8f0",
-    gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  therapyBannerHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  therapyBadgeWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    backgroundColor: colors.forest,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  therapyBadgeText: { color: "white", fontSize: 9.5, fontWeight: "900", letterSpacing: 0.5 },
-  therapyStarReward: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "#fef3c7",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  therapyStarText: { color: "#b45309", fontSize: 11, fontWeight: "800" },
-  therapyIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#eff6ff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  therapyTitle: { fontSize: 15, fontWeight: "800", color: "#0f172a" },
-  therapySub: { fontSize: 11.5, color: "#64748b", marginTop: 2 },
-  therapyCheckCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.greenDeep,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  therapyProgressTrack: {
-    height: 8,
-    backgroundColor: "#f1f5f9",
-    borderRadius: 4,
-    overflow: "hidden",
-    marginTop: 4,
-  },
-  therapyProgressFill: {
-    height: "100%",
-    borderRadius: 4,
-  },
-  therapyProgressTextRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  therapyProgressNum: { fontSize: 11.5, color: "#64748b", fontWeight: "600" },
-  therapyActionHint: { fontSize: 11.5, fontWeight: "800", color: colors.forest },
-
-  /* Header Star Badge */
-  starBadgeHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: "rgba(255,255,255,0.18)",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  starBadgeHeaderText: { color: "white", fontSize: 12, fontWeight: "800" },
-
-  /* Emotional Mood Check-In */
-  moodSection: {
-    backgroundColor: "#ffffff",
-    borderRadius: radiusLg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    gap: 8,
-  },
-  sectionHeadingSmall: { fontSize: 11, fontWeight: "800", color: "#94a3b8", letterSpacing: 0.5 },
-  selectedMoodTag: {
-    backgroundColor: "#dcfce7",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 8,
-  },
-  selectedMoodTagText: { fontSize: 11, fontWeight: "700", color: "#166534" },
-  moodRow: { flexDirection: "row", justifyContent: "space-between", gap: 6, marginTop: 4 },
-  moodBtn: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 10,
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: "transparent",
-    gap: 4,
-  },
-  moodBtnActive: { borderColor: colors.forest, backgroundColor: "#ffffff" },
-  moodBtnText: { fontSize: 11, fontWeight: "700" },
-
-  /* Urgent Needs Express Bar */
-  urgentSection: {
-    backgroundColor: "#ffffff",
-    borderRadius: radiusLg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
-    gap: 8,
-  },
-  urgentGrid: { flexDirection: "row", gap: 8, marginTop: 4 },
-  urgentTile: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 12,
-    borderRadius: 14,
-    gap: 4,
-  },
-  urgentTileLabel: { fontSize: 11.5, fontWeight: "800" },
+  localText: { fontSize: 14, color: colors.forestDark, flex: 1 },
 });

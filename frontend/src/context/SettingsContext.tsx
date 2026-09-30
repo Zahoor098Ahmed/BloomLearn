@@ -1,16 +1,15 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react";
 import type { AppSettings } from "../types";
-import { loadSettings, saveSettings, hydrateStorage, isHydrated } from "../modules/storage";
+import { loadSettings, saveSettings, hydrateStorage, isHydrated, defaultSettings } from "../modules/storage";
+import { loadApiKeys } from "../modules/apiKeys";
 import { applyLanguageDirection } from "../modules/i18n";
-import { setSeedLanguage } from "../modules/customCategories";
-import { setHapticsEnabled } from "../modules/haptics";
-import { ensurePhraseLibraryLoaded } from "../modules/phraseMatch";
-import { ensureContentQueueLoaded } from "../modules/contentQueue";
 
 interface SettingsContextType {
   settings: AppSettings;
   ready: boolean;
   update: (patch: Partial<AppSettings>) => void;
+  /** Back to the default settings (keeps onboarding done). */
+  reset: () => void;
 }
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
@@ -21,10 +20,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (ready) return;
-    Promise.all([hydrateStorage(), ensurePhraseLibraryLoaded(), ensureContentQueueLoaded()]).then(() => {
+    Promise.all([hydrateStorage(), loadApiKeys()]).then(() => {
       const s = loadSettings();
-      setSeedLanguage(s.language);
-      setHapticsEnabled(s.hapticsEnabled);
       // sets RTL for the *next* app start if it differs from the current one
       try {
         applyLanguageDirection(s.language);
@@ -44,7 +41,13 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     });
   }
 
-  return <SettingsContext.Provider value={{ settings, ready, update }}>{children}</SettingsContext.Provider>;
+  function reset() {
+    const next = { ...defaultSettings(), onboarded: true };
+    saveSettings(next);
+    setSettings(next);
+  }
+
+  return <SettingsContext.Provider value={{ settings, ready, update, reset }}>{children}</SettingsContext.Provider>;
 }
 
 export function useSettings() {
