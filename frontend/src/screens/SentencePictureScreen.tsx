@@ -249,9 +249,9 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
       if (isAiConfigured()) {
         const res = await generateSentenceImage(story, false, "story");
         uri = res.dataUri;
-      } else {
-        uri = composeStoryUrl(`${story}. ${STORY_STYLE_GUIDE}`, storySeed(story));
       }
+      // no OpenAI (or the backend has no OpenAI key) — use the free engine
+      if (!uri && aiSceneEnabled()) uri = composeStoryUrl(`${story}. ${STORY_STYLE_GUIDE}`, storySeed(story));
       if (!active) return;
       if (uri) {
         setStoryPic(uri);
@@ -340,16 +340,17 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     let generated: string | undefined;
     if (isAiConfigured()) {
       const res = await generateSentenceImage(imageStyle ? `${text}. ${imageStyle}` : text, false);
-      if (res.error) {
+      if (res.error && !aiSceneEnabled()) {
         setAiLoading(false);
         setAiError(res.error);
         return;
       }
       generated = res.dataUri;
-    } else if (aiSceneEnabled()) {
-      // Pollinations with token
+    }
+    if (!generated && aiSceneEnabled()) {
+      // free engine — the backend's /scene route, or Pollinations with a token
       generated = imageStyle ? composeSceneUrl(`${text}. ${imageStyle}`, session.seed) : sceneImageUrl(text, graph);
-    } else {
+    } else if (!isAiConfigured()) {
       setAiLoading(false);
       setAiError(tt("spNoAiEngine"));
       return;

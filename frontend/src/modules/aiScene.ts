@@ -2,20 +2,32 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { SceneGraph } from "../types";
 import { getKey } from "./apiKeys";
 
-// Scene images go straight to Pollinations. The anonymous tier is now heavily
-// rate-limited (HTTP 429), so add a free token from https://auth.pollinations.ai
-// in Settings (or EXPO_PUBLIC_POLLINATIONS_TOKEN in .env) for reliable
-// generation. Without a token the caller falls back to a library picture.
+// Scene images go through the BloomLearn backend's /scene route when a backend
+// URL is set (the server holds the Pollinations token), otherwise straight to
+// Pollinations. The anonymous tier is heavily rate-limited (HTTP 429), so add a
+// free token from https://auth.pollinations.ai in Settings (or
+// EXPO_PUBLIC_POLLINATIONS_TOKEN in .env) when there is no backend. Without
+// either, the caller falls back to a library picture.
 const POLLINATIONS = "https://image.pollinations.ai/prompt";
 
 export function aiSceneEnabled(): boolean {
-  return !!getKey("pollinations");
+  return !!getKey("proxyUrl") || !!getKey("pollinations");
 }
 
-function tail(seed: number): string {
+/** Image URL for an already-styled prompt — via the backend when one is set. */
+function imageUrl(fullPrompt: string, seed: number): string {
+  const p = encodeURIComponent(fullPrompt);
+  const s = seed % 1_000_000;
+  const proxyUrl = getKey("proxyUrl");
+  if (proxyUrl) {
+    // <Image> can't always send headers, so the app token rides in the query
+    const token = getKey("proxyToken");
+    const t = token ? `&token=${encodeURIComponent(token)}` : "";
+    return `${proxyUrl.replace(/\/$/, "")}/scene/${p}?width=768&height=768&seed=${s}&raw=1${t}`;
+  }
   const token = getKey("pollinations");
   const t = token ? `&token=${encodeURIComponent(token)}&referrer=${encodeURIComponent(token)}` : "";
-  return `?width=768&height=768&nologo=true&seed=${seed % 1_000_000}&model=flux${t}`;
+  return `${POLLINATIONS}/${p}?width=768&height=768&nologo=true&seed=${s}&model=flux${t}`;
 }
 
 /**
@@ -81,8 +93,7 @@ export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
   const clean = cleanSentence(sentence);
   const seed = hash(clean) % 1_000_000;
   const subject = graph ? promptFromGraph(graph) : clean;
-  const prompt = encodeURIComponent(`${subject}. ${STYLE}`);
-  return `${POLLINATIONS}/${prompt}${tail(seed)}`;
+  return imageUrl(`${subject}. ${STYLE}`, seed);
 }
 
 /**
@@ -91,8 +102,7 @@ export function sceneImageUrl(sentence: string, graph?: SceneGraph): string {
  * whole session so it is the same character while the pose / parts change.
  */
 export function composeSceneUrl(prompt: string, seed: number): string {
-  const p = encodeURIComponent(`${prompt.trim()}. ${STYLE}`);
-  return `${POLLINATIONS}/${p}${tail(seed)}`;
+  return imageUrl(`${prompt.trim()}. ${STYLE}`, seed);
 }
 
 /**
@@ -100,8 +110,7 @@ export function composeSceneUrl(prompt: string, seed: number): string {
  * Ali.") in a warm storybook style — the story text already carries its style.
  */
 export function composeStoryUrl(prompt: string, seed: number): string {
-  const p = encodeURIComponent(prompt.trim());
-  return `${POLLINATIONS}/${p}${tail(seed)}`;
+  return imageUrl(prompt.trim(), seed);
 }
 
 export interface SavedScene {

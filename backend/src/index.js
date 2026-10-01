@@ -12,6 +12,8 @@ assertConfig();
 
 const app = express();
 
+// keep the app token (sent as ?token= on image URLs) out of the request log
+morgan.token("url", (req) => (req.originalUrl || req.url).replace(/([?&]token=)[^&]*/, "$1***"));
 app.use(morgan("tiny"));
 app.use(cors({ origin: config.corsOrigin === "*" ? true : config.corsOrigin.split(",").map((s) => s.trim()) }));
 app.use(express.json({ limit: "1mb" }));
@@ -36,5 +38,5 @@ app.listen(config.port, () => {
   console.log(`  health : GET  /health`);
   console.log(`  image  : POST /images/generations   { prompt, style? }`);
   console.log(`  speech : POST /audio/transcriptions  (multipart: file)`);
-  console.log(`  scene  : GET  /scene/:prompt?seed=&width=&height=  (free image engine)`);
+  console.log(`  scene  : GET  /scene/:prompt?seed=&width=&height=&raw=  (free image engine)`);
 });
