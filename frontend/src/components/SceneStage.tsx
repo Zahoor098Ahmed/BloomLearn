@@ -65,6 +65,15 @@ const BOTTOM_OFFSET: Record<string, number> = {
   "cardboard box": 0.40,
   table: 0.36,
   desk: 0.36,
+  car: 0.19,
+  bus: 0.15,
+  boy: 0.48,
+  girl: 0.48,
+  child: 0.48,
+  kid: 0.48,
+  man: 0.48,
+  woman: 0.48,
+  person: 0.48,
 };
 const bottomOf = (type: string) => BOTTOM_OFFSET[type] ?? 0.44;
 
@@ -78,6 +87,8 @@ const SURFACE_OFFSET: Record<string, number> = {
   bed: 0.18,
   sofa: 0.18,
   couch: 0.18,
+  car: 0.19,
+  bus: 0.15,
 };
 const surfaceTopOf = (type: string) => SURFACE_OFFSET[type] ?? 0.36;
 
@@ -101,12 +112,15 @@ function layoutScene(items: SceneItem[]): Placed[] {
       if (ref) {
         const rel = n.it.relation as string | null;
         if (rel === "on") {
-          // On surface (table, desk, shelf, chair, bed) - rests directly on the top surface:
+          // On surface (table, desk, shelf, chair, bed, car) - rests directly on the top surface:
           const surfaceY = ref.y - ref.h * surfaceTopOf(ref.it.type);
           n.y = surfaceY - n.h * bottomOf(n.it.type);
           if (ref.it.type.includes("chair")) {
             // The seat cushion of a side-view chair is horizontally offset to the right of the backrest:
             n.x = ref.x + ref.w * 0.05;
+          } else if (ref.it.type.includes("car")) {
+            // Car roof is positioned horizontally over the cabin:
+            n.x = ref.x - ref.w * 0.14;
           } else {
             n.x = ref.x;
           }

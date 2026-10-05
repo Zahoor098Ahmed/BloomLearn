@@ -250,7 +250,15 @@
   - 📁 **Files Worked On (3):**
     - `frontend/src/modules/curriculum.ts` 
     - `frontend/src/screens/SentencePictureScreen.tsx` 
-    - `frontend/src/modules/curriculum.test.ts` 
+    - `frontend/src/modules/curriculum.test.ts`
 
+- **15:55:59 – 16:51:35** ⏱️ Active Coding Session (**56 min**)
+  - 📁 **Files Worked On (4):**
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/modules/curriculum.test.ts`
 
-
+- **17:01:15 – 17:01:15** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/src/components/SceneStage.tsx`
