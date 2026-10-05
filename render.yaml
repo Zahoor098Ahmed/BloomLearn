@@ -1,0 +1,22 @@
+# One-click deploy of the BloomLearn backend on Render (https://render.com).
+# Render → New → Blueprint → pick this repo. Fill in the keys it asks for, then
+# put the service URL (https://….onrender.com) and APP_TOKEN in frontend/.env.
+services:
+  - type: web
+    name: bloomlearn-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_TOKEN
+        generateValue: true
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: POLLINATIONS_TOKEN
+        sync: false
+      - key: CORS_ORIGIN
+        value: "*"

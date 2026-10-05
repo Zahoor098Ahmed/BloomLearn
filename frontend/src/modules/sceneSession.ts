@@ -183,7 +183,7 @@ const OFFSET: Record<Rel, { dx: number; dy: number; behind: boolean }> = {
   right: { dx: 0.37, dy: 0, behind: false },
   above: { dx: 0, dy: -0.36, behind: false },
   below: { dx: 0, dy: 0.36, behind: false },
-  on: { dx: 0, dy: -0.2, behind: false },
+  on: { dx: 0, dy: -0.30, behind: false },
   inside: { dx: 0, dy: 0.0, behind: false },
   center: { dx: 0, dy: 0, behind: false },
 };
@@ -412,48 +412,63 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
     "yes", "no", "not", "too", "also", "just", "now", "here",
   ]);
 
-  const type =
-    g.subject?.type ||
-    g.reference?.type ||
-    tokens.find((w) => GLYPHS[w]) ||
-    tokens.filter((w) => w.length > 2 && !STOP_TOKENS.has(w))[0];
-  if (type && !STOP_TOKENS.has(type)) {
-    const color = g.subject?.color ?? null;
-    const action = actionWord ?? exprWord ?? null;
-    const eyes = eyesOpen ? "open" : eyesClose ? "closed" : null;
-    const existing = findItem(s.items, type);
-    if (existing) {
-      // update in place — only change what was actually mentioned
-      if (color) {
-        existing.color = color;
-        existing.colorHex = colorHex(color);
+  const candidateNouns = [
+    ...new Set(
+      tokens.filter(
+        (w) =>
+          !EXPRESSIONS[w] &&
+          !ACTIONS[w] &&
+          !ADVERBS[w] &&
+          w !== actionWord &&
+          w !== exprWord &&
+          (GLYPHS[w] || SUBJECTS[w] || REFERENCES[w] || (w.length > 2 && !STOP_TOKENS.has(w))) &&
+          !STOP_TOKENS.has(w),
+      ),
+    ),
+  ];
+
+  if (candidateNouns.length > 0) {
+    const typesToAdd = g.subject?.type
+      ? [g.subject.type, ...candidateNouns.filter((w) => w !== g.subject?.type && (GLYPHS[w] || SUBJECTS[w]))]
+      : candidateNouns;
+
+    for (const type of typesToAdd) {
+      if (STOP_TOKENS.has(type)) continue;
+      const color = (type === g.subject?.type ? g.subject?.color : null) ?? null;
+      const action = (type === g.subject?.type ? actionWord : null) ?? exprWord ?? null;
+      const eyes = eyesOpen ? "open" : eyesClose ? "closed" : null;
+      const existing = findItem(s.items, type);
+      if (existing) {
+        if (color) {
+          existing.color = color;
+          existing.colorHex = colorHex(color);
+        }
+        if (g.subject?.size && g.subject.size !== "normal") existing.size = g.subject.size;
+        if (g.subject && g.subject.count > 1) existing.count = g.subject.count;
+        if (action) existing.action = action;
+        if (adverbWord) existing.adverb = adverbWord;
+        if (eyes) existing.eyes = eyes;
+      } else {
+        const patch: Partial<SceneItem> = {
+          color,
+          colorHex: colorHex(color),
+          size: g.subject?.size ?? "normal",
+          count: (type === g.subject?.type ? g.subject?.count : 1) ?? 1,
+          action,
+          adverb: adverbWord,
+          eyes,
+        };
+        const slot = s.items.length;
+        s.items.push(
+          makeItem(type, {
+            ...patch,
+            x: clamp(0.5 + (slot % 2 === 0 ? -0.16 : 0.16) * Math.ceil(slot / 2)),
+            y: clamp(0.5 + (slot > 1 ? 0.12 : 0)),
+          }),
+        );
       }
-      if (g.subject?.size && g.subject.size !== "normal") existing.size = g.subject.size;
-      if (g.subject && g.subject.count > 1) existing.count = g.subject.count;
-      if (action) existing.action = action;
-      if (adverbWord) existing.adverb = adverbWord;
-      if (eyes) existing.eyes = eyes;
-      s.note = `updated ${type}`;
-    } else {
-      const patch: Partial<SceneItem> = {
-        color,
-        colorHex: colorHex(color),
-        size: g.subject?.size ?? "normal",
-        count: g.subject?.count ?? 1,
-        action,
-        adverb: adverbWord,
-        eyes,
-      };
-      const slot = s.items.length;
-      s.items.push(
-        makeItem(type, {
-          ...patch,
-          x: clamp(0.5 + (slot % 2 === 0 ? -0.16 : 0.16) * Math.ceil(slot / 2)),
-          y: clamp(0.5 + (slot > 1 ? 0.12 : 0)),
-        }),
-      );
-      s.note = `added ${type}`;
     }
+    s.note = `added ${typesToAdd.join(" + ")}`;
     return s;
   }
 

@@ -7,6 +7,7 @@ import { healthRouter } from "./routes/health.js";
 import { imagesRouter } from "./routes/images.js";
 import { audioRouter } from "./routes/audio.js";
 import { sceneRouter } from "./routes/scene.js";
+import { chatRouter } from "./routes/chat.js";
 
 assertConfig();
 
@@ -24,6 +25,7 @@ app.use(requireAppToken);
 app.use(imagesRouter);
 app.use(audioRouter);
 app.use(sceneRouter);
+app.use(chatRouter);
 
 app.use((_req, res) => res.status(404).json({ error: "Not found." }));
 
@@ -39,4 +41,5 @@ app.listen(config.port, () => {
   console.log(`  image  : POST /images/generations   { prompt, style? }`);
   console.log(`  speech : POST /audio/transcriptions  (multipart: file)`);
   console.log(`  scene  : GET  /scene/:prompt?seed=&width=&height=&raw=  (free image engine)`);
+  console.log(`  agent  : POST /chat/completions      { messages }  (Groq, else OpenAI)`);
 });

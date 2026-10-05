@@ -134,12 +134,18 @@ export interface AiImageResult {
 }
 
 /** Generate (or fetch from cache) an illustration for a sentence. */
-export async function generateSentenceImage(sentence: string, force = false, style: ImageStyle = "card"): Promise<AiImageResult> {
+export async function generateSentenceImage(
+  sentence: string,
+  force = false,
+  style: ImageStyle = "card",
+  rawPrompt?: string
+): Promise<AiImageResult> {
   const clean = sentence.trim();
   if (!clean) return { error: "Type or say a sentence first." };
 
   await ensureCache();
-  const key = hash(promptFor(clean, style));
+  const effectivePrompt = rawPrompt || promptFor(clean, style);
+  const key = hash(effectivePrompt);
   if (!force && cache[key]) return { dataUri: cache[key], cached: true };
 
   if (!isAiConfigured()) return { error: "AI is not connected yet. Add an OpenAI key to turn on real pictures." };
@@ -150,7 +156,13 @@ export async function generateSentenceImage(sentence: string, force = false, sty
       method: "POST",
       headers: { ...headers, "Content-Type": "application/json" },
       // "story" tells the BloomLearn server not to add its own plain-card style
-      body: JSON.stringify({ model: "gpt-image-1", prompt: promptFor(clean, style), style, size: "1024x1024", n: 1 }),
+      body: JSON.stringify({
+        model: "gpt-image-1",
+        prompt: effectivePrompt,
+        style: rawPrompt || style === "story" ? "story" : "card",
+        size: "1024x1024",
+        n: 1,
+      }),
     });
 
     if (!res.ok) {

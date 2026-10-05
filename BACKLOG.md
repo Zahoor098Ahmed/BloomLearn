@@ -16,6 +16,202 @@
 - **02:45:39 – 02:45:39** ⏱️ Active Coding Session (**1 min**)
   - 📁 **Files Worked On (1):**
     - `.gitignore`
-- **03:58:52 – 03:58:52** ⏱️ Active Coding Session (**1 min**)
+
+- **03:58:52 – 04:00:11** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `.gitignore`
+    - `.gitattributes`
+- **04:01** 🌿 Commit `[0b827ae]` — **"work on sentance page"**
+  - 📁 **Changed Files (7):**
+    - `BACKLOG.md`
+    - `backend/.env.example`
+    - `backend/src/index.js`
+    - `backend/src/middleware/auth.js`
+    - `backend/src/routes/scene.js`
+    - `frontend/src/modules/aiScene.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **04:01** 🌿 Commit `[0b827ae]` — **"work on sentance page"**
+  - 📁 **Changed Files (7):**
+    - `BACKLOG.md`
+    - `backend/.env.example`
+    - `backend/src/index.js`
+    - `backend/src/middleware/auth.js`
+    - `backend/src/routes/scene.js`
+    - `frontend/src/modules/aiScene.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+
+- **22:32:49 – 22:33:10** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (4):**
+    - `CLAUDE.md`
+    - `AGENTS.md`
+    - `.mise.toml`
+    - `.gitattributes`
+
+- **11:58:05 – 11:58:05** ⏱️ Active Coding Session (**1 min**)
   - 📁 **Files Worked On (1):**
     - `.gitignore`
+
+## 2026-10-02
+
+- **04:03:45 – 04:03:49** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `.gitignore`
+    - `.gitattributes`
+
+- **16:05:03 – 16:05:13** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (3):**
+    - `CLAUDE.md`
+    - `AGENTS.md`
+    - `.mise.toml`
+
+## 2026-10-03
+
+- **11:05:37 – 11:07:24** ⏱️ Active Coding Session (**2 min**)
+  - 📁 **Files Worked On (8):**
+    - `.gitignore`
+    - `CLAUDE.md`
+    - `AGENTS.md`
+    - `.gitattributes`
+    - `.mise.toml`
+    - `README.md`
+    - `docs/bloomlearn-overview.md.tmp.7752.532423754e7c`
+    - `docs/bloomlearn-overview.md`
+
+- **12:18:21 – 12:30:14** ⏱️ Active Coding Session (**12 min**)
+  - 📁 **Files Worked On (13):**
+    - `.gitignore`
+    - `.gitattributes`
+    - `backend/src/routes/chat.js`
+    - `backend/src/config.js.tmp.7752.40b5792de86d`
+    - `backend/src/config.js`
+    - `backend/src/index.js`
+    - `frontend/src/modules/sceneAgent.ts.tmp.7752.1338e987c832`
+    - `frontend/src/modules/sceneAgent.ts`
+    - `backend/.env.example.tmp.7752.6549120e8e11`
+    - `backend/.env.example`
+    - `backend/.env`
+    - `render.yaml`
+    - `backend/README.md`
+
+- **14:46:20 – 14:46:20** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `.gitignore`
+- **15:49:59 – 15:49:59** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `.gitignore`
+
+## 2026-10-05
+
+- **10:06:41 – 10:06:41** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (3):**
+    - `CLAUDE.md`
+    - `AGENTS.md`
+    - `.gitignore`
+
+- **10:06:45 – 10:06:46** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `.mise.toml`
+    - `render.yaml`
+
+- **10:23:47 – 10:23:47** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `.gitattributes`
+
+- **10:32:06 – 10:41:49** ⏱️ Active Coding Session (**10 min**)
+  - 📁 **Files Worked On (5):**
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/package.json`
+
+- **10:30:54 – 11:31:40** ⏱️ Active Coding Session (**61 min**)
+  - 📁 **Files Worked On (7):**
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/package.json`
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/components/SceneStage.tsx`
+
+- **10:54:48 – 10:55:18** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/curriculum.ts`
+
+- **11:06:50 – 11:10:43** ⏱️ Active Coding Session (**4 min**)
+  - 📁 **Files Worked On (4):**
+    - `AGENTS.md`
+    - `frontend/src/modules/curriculum.ts`
+    - `.gitignore`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+
+- **11:17:03 – 11:18:27** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+
+- **11:29:08 – 11:31:40** ⏱️ Active Coding Session (**3 min**)
+  - 📁 **Files Worked On (2):**
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+
+- **11:33:45 – 11:40:19** ⏱️ Active Coding Session (**7 min**)
+  - 📁 **Files Worked On (4):**
+    - `frontend/src/modules/sentenceScene.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `.gitattributes`
+
+- **11:42:01 – 11:50:53** ⏱️ Active Coding Session (**9 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/modules/sentenceScene.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+
+- **11:46:45 – 11:50:53** ⏱️ Active Coding Session (**4 min**)
+  - 📁 **Files Worked On (4):**
+    - `frontend/src/modules/sentenceScene.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `.gitattributes`
+
+- **12:02:58 – 12:11:11** ⏱️ Active Coding Session (**8 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `.gitignore`
+    - `AGENTS.md`
+
+- **12:03:09 – 12:04:11** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+
+- **12:21:16 – 12:39:26** ⏱️ Active Coding Session (**18 min**)
+  - 📁 **Files Worked On (5):**
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/sceneSession.ts`
+
+- **12:34:20 – 12:39:26** ⏱️ Active Coding Session (**5 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/sceneSession.ts`
+
+- **13:05:00 – 13:13:33** ⏱️ Active Coding Session (**9 min**)
+  - 📁 **Files Worked On (6):**
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/components/SceneStage.tsx`
+    - `.gitignore`
+    - `AGENTS.md`
+    - `.gitattributes`
+    - `render.yaml`
+
+- **13:05:01 – 13:05:57** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/components/SceneStage.tsx`

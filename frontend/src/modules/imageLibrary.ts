@@ -194,6 +194,14 @@ export function dictUrl(term: string): string | null {
 // Compound nouns ARASAAC files under a different name — pin them so a variant
 // never falls through to an unrelated icon.
 const VARIANT_IDS: Record<string, number> = {
+  box: 7054, // opened cardboard box (cavity visible for inside objects)
+  "cardboard box": 7054,
+  "open box": 7054,
+  "opened cardboard box": 7054,
+  girl: 27509, // full body standing girl
+  boy: 7176, // full body standing boy
+  child: 7176,
+  kid: 27509,
   "office chair": 28085, // "swivel chair"
   "desk chair": 28085,
   "swivel chair": 28085,
@@ -213,6 +221,7 @@ function variantUrl(phrase: string): string | null {
   const id = VARIANT_IDS[norm(phrase).trim()];
   return id ? idUrl(id) : null;
 }
+
 
 /** the last significant word — the thing itself ("office chair" -> "chair") */
 function headNoun(phrase: string): string {
@@ -303,8 +312,9 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
   await ensureLoaded();
   const keys = candidateKeys(phrase, graph);
 
-  // 1. already in the library? (skip any legacy "book" / StoryWeaver cache)
+  // 1. already in the library? (skip any legacy "book" / StoryWeaver cache, and bypass if variant is pinned)
   for (const k of keys) {
+    if (variantUrl(k)) break;
     if (index[k] && index[k].source !== "book") {
       return { uri: index[k].uri, source: index[k].source, fromLibrary: true };
     }
@@ -323,11 +333,12 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
     return { uri: saved?.uri ?? url, source, fromLibrary: false };
   };
 
-  // 2. a pinned variant ("office chair" -> swivel chair), then an exact
-  //    dictionary match on a full phrase ("fire truck")
+  // 2. a pinned variant ("box" -> opened cardboard box, "girl" -> full body), then dictionary match
   const pinned = variantUrl(phrase);
   if (pinned) return hit("variant", phraseNorm, pinned);
   for (const term of [...keys, graph?.subject?.type ?? ""].filter(Boolean)) {
+    const v = variantUrl(term);
+    if (v) return hit("variant", term, v);
     const url = dictUrl(term);
     if (url) return hit("dict", term, url);
   }

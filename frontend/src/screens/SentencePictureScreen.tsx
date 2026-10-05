@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Alert, Platform } from "react-native";
+import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Alert, Platform, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
 import { useResponsive } from "../modules/responsive";
@@ -29,12 +30,23 @@ import { startRecording, stopRecordingTemp } from "../modules/audio";
 import { voiceAvailable, startListening, stopListening } from "../modules/voice";
 import { addHistory } from "../modules/history";
 import { recordSentence, recordAiPicture, recordLesson } from "../modules/progress";
-import { chapterById, label } from "../modules/curriculum";
+import {
+  chapterById,
+  label,
+  validateChapterSentence,
+  getChapterImagePrompt,
+  isPrepositionChapter,
+  SUBJECT_LIST,
+  chaptersFor,
+  type SubjectId,
+  type Grade,
+  GRADES,
+} from "../modules/curriculum";
 import SceneComposer from "../components/SceneComposer";
 import SceneStage from "../components/SceneStage";
 import MathStage from "../components/MathStage";
 import { parseMath, parseWordProblem, storyWithoutQuestion, sumStory } from "../modules/mathScene";
-import { colors, radius } from "../theme";
+import { colors, radius, type } from "../theme";
 
 interface Props {
   /** Sentence to start with (from Home). */
@@ -55,15 +67,39 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
   const lang = settings.language;
   const tt = (k: TKey) => t(k, lang);
 
-  // School chapter mode
-  const course = lesson ? chapterById(lesson.chapterId) : null;
+  // School chapter mode (defaults to English Grade 1 Prepositions)
+  const [activeChapterId, setActiveChapterId] = useState<string>(lesson?.chapterId ?? "en1-prepositions");
+  const course = useMemo(() => chapterById(activeChapterId) ?? chapterById("en1-prepositions")!, [activeChapterId]);
   const [lessonIdx, setLessonIdx] = useState(lesson?.index ?? 0);
   const [showAnswer, setShowAnswer] = useState(false);
-  const current = course?.chapter.lessons[lessonIdx] ?? null;
+  const current = course.chapter.lessons[lessonIdx] ?? null;
   /** Extra prompt words so AI pictures match the subject (English / Math / Science). */
-  const imageStyle = course?.subject.imageStyle;
+  const imageStyle = course.subject.imageStyle;
 
-  const [text, setText] = useState(current?.say ?? initialText);
+  // Chapter picker modal state
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerSubjectId, setPickerSubjectId] = useState<SubjectId>(course.subject.id);
+  const [pickerGrade, setPickerGrade] = useState<Grade>(course.grade);
+  const [zoomModalOpen, setZoomModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (!lesson) {
+      AsyncStorage.getItem("bloomlearn_active_chapter").then((saved) => {
+        if (saved && chapterById(saved)) setActiveChapterId(saved);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    AsyncStorage.setItem("bloomlearn_active_chapter", activeChapterId).catch(() => {});
+  }, [activeChapterId]);
+
+  useEffect(() => {
+    setPickerSubjectId(course.subject.id);
+    setPickerGrade(course.grade);
+  }, [course]);
+
+  const [text, setText] = useState(current?.say ?? (initialText || course.chapter.lessons[0]?.say || ""));
 
   const [img, setImg] = useState<{ uri: string; source: ImgSource } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
@@ -218,51 +254,29 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
 
   /** Move to another lesson of the open chapter, starting from a clean scene. */
   function goToLesson(i: number) {
-    if (!course) return;
     const next = course.chapter.lessons[i];
     if (!next) return;
     resetScene();
     setShowAnswer(false);
     setLessonIdx(i);
     typeText(next.say);
+    // Check if an AI picture was already saved for this lesson in the library
+    lookupImage(next.say).then((hit) => {
+      if (hit && hit.fromLibrary) {
+        setImg({ uri: hit.uri, source: "ai-saved" });
+      }
+    });
   }
 
   useEffect(() => {
-    if (course) recordLesson(course.chapter.id, lessonIdx);
-  }, [lessonIdx]);
+    recordLesson(course.chapter.id, lessonIdx);
+  }, [lessonIdx, activeChapterId]);
 
-  // Draw the story as a real picture (debounced so it waits until the sentence settles).
+  // Auto-generation of story picture is disabled so images are only created when the user taps Generate Picture
   useEffect(() => {
     setStoryPic(null);
-    if (!story) {
-      setStoryState("idle");
-      return;
-    }
-    if (!isAiConfigured() && !aiSceneEnabled()) {
-      setStoryState("needsEngine");
-      return;
-    }
-    setStoryState("drawing");
-    let active = true;
-    const timer = setTimeout(async () => {
-      let uri: string | undefined;
-      if (isAiConfigured()) {
-        const res = await generateSentenceImage(story, false, "story");
-        uri = res.dataUri;
-      }
-      // no OpenAI (or the backend has no OpenAI key) — use the free engine
-      if (!uri && aiSceneEnabled()) uri = composeStoryUrl(`${story}. ${STORY_STYLE_GUIDE}`, storySeed(story));
-      if (!active) return;
-      if (uri) {
-        setStoryPic(uri);
-        recordAiPicture();
-      } else setStoryState("failed");
-    }, 1200);
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [story]);
+    setStoryState("idle");
+  }, [text]);
 
   // Give every object in the built scene its own library picture, and — when a
   // Pollinations token is set — redraw the whole scene as one real picture.
@@ -281,29 +295,6 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
       }
     }
   }, [session, buildMode]);
-
-  // Turn the built scene into one real picture (needs a Pollinations token).
-  async function drawSceneWithAi(scene = session) {
-    if (!aiSceneEnabled()) {
-      setAiError(tt("spNoPollinationsToken"));
-      return;
-    }
-    setAiLoading(true);
-    setAiError(null);
-    const described = (await describeScene(scene)) ?? sessionPrompt(scene);
-    const prompt = imageStyle ? `${described}. ${imageStyle}` : described;
-    const url = composeSceneUrl(prompt, scene.seed);
-    setImg({ uri: url, source: "ai-saved" });
-    recordAiPicture();
-    saveImage(prompt, url, { source: "ai", tags: scene.items.map((i) => i.type) }).catch(() => {});
-    if (aiTimer.current) clearTimeout(aiTimer.current);
-    setTimeout(() => setAiLoading(false), 6000);
-    aiTimer.current = setTimeout(() => {
-      setAiLoading(false);
-      setImg(null);
-      setAiError(tt("spEngineSlow"));
-    }, 18000);
-  }
 
   // On sentence change: ask the library first. If it has (or can seed) a
   // matching picture, show it; otherwise fall back to the instant scene.
@@ -334,12 +325,26 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
   }, [text, concept, graph]);
 
   async function makeAiPicture() {
+    // 1. Strict validation: ensure the sentence aligns with the active chapter!
+    const validation = validateChapterSentence(activeChapterId, text);
+    if (!validation.valid) {
+      setAiError(validation.reason || "This chapter only allows specific sentences.");
+      Alert.alert(
+        `${label(course.chapter.title, lang)} (${label(course.subject.title, lang)})`,
+        (validation.reason ? validation.reason + "\n\n" : "") + (validation.hint || "")
+      );
+      return;
+    }
+
     setAiLoading(true);
     setAiError(null);
 
+    // 2. Build high-quality educational prompt for this subject & chapter
+    const prompt = getChapterImagePrompt(activeChapterId, text, graph);
     let generated: string | undefined;
+
     if (isAiConfigured()) {
-      const res = await generateSentenceImage(imageStyle ? `${text}. ${imageStyle}` : text, false);
+      const res = await generateSentenceImage(text, false, "story", prompt);
       if (res.error && !aiSceneEnabled()) {
         setAiLoading(false);
         setAiError(res.error);
@@ -347,14 +352,16 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
       }
       generated = res.dataUri;
     }
+
     if (!generated && aiSceneEnabled()) {
-      // free engine — the backend's /scene route, or Pollinations with a token
-      generated = imageStyle ? composeSceneUrl(`${text}. ${imageStyle}`, session.seed) : sceneImageUrl(text, graph);
+      const seed = storySeed(text);
+      generated = composeStoryUrl(prompt, seed);
     } else if (!isAiConfigured()) {
       setAiLoading(false);
       setAiError(tt("spNoAiEngine"));
       return;
     }
+
     if (!generated) {
       setAiLoading(false);
       setAiError(tt("spCouldNotMake"));
@@ -362,18 +369,25 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     }
 
     // Save the AI picture into the library so it is served from there next time.
-    const entry = await saveImage(text, generated, { source: "ai", tags: graph.subject ? [graph.subject.type] : [] });
-    // keep the spinner until the <Image> actually loads (Pollinations can be slow)
+    const tags = [course.subject.id, course.chapter.id];
+    if (graph.subject) tags.push(graph.subject.type);
+    if (graph.relation) tags.push(graph.relation);
+    const entry = await saveImage(text, generated, { source: "ai", tags });
     setImg({ uri: entry?.uri ?? generated, source: "ai-saved" });
     recordAiPicture();
     if (aiTimer.current) clearTimeout(aiTimer.current);
-    setTimeout(() => setAiLoading(false), 5000); // reveal even if onLoadEnd is quiet
+    setTimeout(() => setAiLoading(false), 5000);
     aiTimer.current = setTimeout(() => {
       setAiLoading(false);
       setImg(null);
       setAiError(tt("spEngineTooLong"));
     }, 20000);
     libraryCount().then(setLibN);
+  }
+
+  // Turn the built scene into one real picture (uses chapter-aligned AI generation)
+  async function drawSceneWithAi() {
+    return makeAiPicture();
   }
 
   function keyboardMicHint() {
@@ -468,23 +482,19 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
             <Pressable onPress={onBack} style={styles.backBtn} hitSlop={10} accessibilityLabel={tt("back")}>
               <Ionicons name="chevron-back" size={22} color={colors.textDark} />
             </Pressable>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.headerTitle} numberOfLines={1}>
-                {course ? label(course.chapter.title, lang) : tt("spHeaderTitle")}
-              </Text>
+            <Pressable onPress={() => setPickerOpen(true)} style={styles.headerTitleWrap} hitSlop={8}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                <Text style={styles.headerTitle} numberOfLines={1}>
+                  {label(course.chapter.title, lang)}
+                </Text>
+                <Ionicons name="chevron-down-circle" size={19} color={colors.forest} />
+              </View>
               <Text style={styles.headerSub}>
-                {course
-                  ? `${label(course.subject.title, lang)} · ${tt("sbGrade").replace("{n}", String(course.grade))} · ${tt("lsLessonOf")
-                      .replace("{i}", String(lessonIdx + 1))
-                      .replace("{n}", String(course.chapter.lessons.length))}`
-                  : wordsN > 0
-                  ? tt("spHeaderSubWithLib")
-                      .replace("{words}", wordsN.toLocaleString())
-                      .replace("{books}", String(bookVocabSize()))
-                      .replace("{saved}", libN > 0 ? tt("spHeaderSubSavedSuffix").replace("{n}", String(libN)) : "")
-                  : tt("spHeaderSubDefault")}
+                {`${label(course.subject.title, lang)} · ${tt("sbGrade").replace("{n}", String(course.grade))} · ${tt("lsLessonOf")
+                  .replace("{i}", String(lessonIdx + 1))
+                  .replace("{n}", String(course.chapter.lessons.length))}`}
               </Text>
-            </View>
+            </Pressable>
             <Pressable onPress={onOpenSettings} style={styles.squareBtn} accessibilityLabel={tt("stTitle")}>
               <Ionicons name="settings-outline" size={21} color={colors.textDark} />
             </Pressable>
@@ -492,57 +502,33 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
         </View>
 
         <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} keyboardShouldPersistTaps="handled">
-          {story && (storyPic || storyState !== "idle") && (
-            <View style={styles.storyCard}>
-              {storyPic ? (
-                <Image
-                  source={{ uri: storyPic }}
-                  style={styles.storyImg}
-                  resizeMode="cover"
-                  onLoadEnd={() => setStoryState("idle")}
-                  onError={() => {
-                    setStoryPic(null);
-                    setStoryState("failed");
-                  }}
-                />
-              ) : null}
-              {storyState === "drawing" && (
-                <View style={[styles.storyOverlay, !storyPic && styles.storyPlaceholder]}>
-                  <ActivityIndicator color={colors.forest} />
-                  <Text style={styles.storyOverlayText}>{tt("spStoryDrawing")}</Text>
-                </View>
-              )}
-              {(storyState === "needsEngine" || storyState === "failed") && (
-                <View style={styles.storyNotice}>
-                  <Ionicons name="image-outline" size={22} color={colors.yellowDeep} />
-                  <Text style={styles.storyNoticeText}>{tt(storyState === "failed" ? "spStoryFailed" : "spStoryNeedsEngine")}</Text>
-                  {storyState === "needsEngine" && (
-                    <Pressable onPress={onOpenSettings} style={styles.storyNoticeBtn}>
-                      <Text style={styles.storyNoticeBtnText}>{tt("hmSetupBtn")}</Text>
-                    </Pressable>
-                  )}
-                </View>
-              )}
-            </View>
-          )}
-
           <View style={[styles.stageWrap, isTablet && styles.stageWrapTablet]}>
             {img ? (
-              <Image
-                source={{ uri: img.uri }}
-                style={styles.stageImg}
-                resizeMode="contain"
-                onLoadEnd={() => {
-                  if (aiTimer.current) clearTimeout(aiTimer.current);
-                  setAiLoading(false);
-                }}
-                onError={() => {
-                  if (aiTimer.current) clearTimeout(aiTimer.current);
-                  setAiLoading(false);
-                  setImg(null);
-                  setAiError(tt("spEngineNoResponse"));
-                }}
-              />
+              <Pressable
+                onPress={() => setZoomModalOpen(true)}
+                style={styles.stageImgPressable}
+                accessibilityLabel="Tap to zoom picture"
+              >
+                <Image
+                  source={{ uri: img.uri }}
+                  style={styles.stageImg}
+                  resizeMode="cover"
+                  onLoadEnd={() => {
+                    if (aiTimer.current) clearTimeout(aiTimer.current);
+                    setAiLoading(false);
+                  }}
+                  onError={() => {
+                    if (aiTimer.current) clearTimeout(aiTimer.current);
+                    setAiLoading(false);
+                    setImg(null);
+                    setAiError(tt("spEngineNoResponse"));
+                  }}
+                />
+                <View style={styles.zoomTapHint}>
+                  <Ionicons name="scan-outline" size={13} color="white" />
+                  <Text style={styles.zoomTapHintText}>Tap to Zoom</Text>
+                </View>
+              </Pressable>
             ) : math ? (
               // keep the answer hidden in a chapter until "Show answer" is tapped
               <MathStage
@@ -576,34 +562,86 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
 
           {aiError && <Text style={styles.aiError}>{aiError}</Text>}
 
-          <View style={styles.buildRow}>
-            {course ? (
+          {/* AI Picture Action Bar */}
+          <View style={styles.chapterActionRow}>
+            {img ? (
               <>
                 <Pressable
-                  onPress={() => goToLesson(lessonIdx - 1)}
-                  disabled={lessonIdx === 0}
-                  style={[styles.buildReset, lessonIdx === 0 && { opacity: 0.4 }]}
-                  accessibilityLabel={tt("lsPrevious")}
+                  onPress={() => setImg(null)}
+                  style={[styles.actionBtn, styles.actionBtnSecondary]}
                 >
-                  <Ionicons name="chevron-back" size={16} color={colors.forestDark} />
-                  <Text style={styles.buildToggleText}>{tt("lsPrevShort")}</Text>
+                  <Ionicons name="flash-outline" size={17} color={colors.forestDark} />
+                  <Text style={styles.actionBtnTextSecondary}>{tt("spInstantScene")}</Text>
                 </Pressable>
                 <Pressable
-                  onPress={() => goToLesson(lessonIdx + 1)}
-                  disabled={lessonIdx >= course.chapter.lessons.length - 1}
-                  style={[styles.buildToggle, styles.buildToggleOn, lessonIdx >= course.chapter.lessons.length - 1 && { opacity: 0.4 }]}
-                  accessibilityLabel={tt("lsNext")}
+                  onPress={makeAiPicture}
+                  disabled={aiLoading}
+                  style={[styles.actionBtn, styles.actionBtnPrimary, aiLoading && { opacity: 0.6 }]}
                 >
-                  <Text style={styles.buildToggleText}>{tt("lsNextShort")}</Text>
-                  <Ionicons name="chevron-forward" size={16} color={colors.forestDark} />
+                  {aiLoading ? (
+                    <ActivityIndicator size="small" color="white" />
+                  ) : (
+                    <Ionicons name="sparkles" size={17} color="white" />
+                  )}
+                  <Text style={styles.actionBtnTextPrimary}>
+                    {aiLoading ? "Generating..." : "Regenerate AI Picture"}
+                  </Text>
                 </Pressable>
               </>
             ) : (
-              <View style={[styles.buildToggle, styles.buildToggleOn]}>
-                <Ionicons name="chatbubbles-outline" size={16} color={colors.forestDark} />
-                <Text style={styles.buildToggleText}>{tt("spKeepTalkingOn")}</Text>
-              </View>
+              <Pressable
+                onPress={makeAiPicture}
+                disabled={aiLoading}
+                style={[styles.actionBtn, styles.actionBtnPrimary, styles.actionBtnFull, aiLoading && { opacity: 0.6 }]}
+              >
+                {aiLoading ? (
+                  <ActivityIndicator size="small" color="white" />
+                ) : (
+                  <Ionicons name="sparkles" size={19} color="white" />
+                )}
+                <View style={{ alignItems: "center" }}>
+                  <Text style={styles.actionBtnTextPrimary}>
+                    {aiLoading ? "Creating High Quality Picture..." : `Generate Picture (${label(course.chapter.title, lang)})`}
+                  </Text>
+                  <Text style={styles.actionBtnSubtext}>
+                    {isPrepositionChapter(activeChapterId) ? "Only Preposition Sentences" : `${label(course.subject.title, lang)} Style`}
+                  </Text>
+                </View>
+              </Pressable>
             )}
+          </View>
+
+
+
+          {/* Lesson Navigation Bar */}
+          <View style={styles.lessonNavRow}>
+            <Pressable
+              onPress={() => goToLesson(lessonIdx - 1)}
+              disabled={lessonIdx === 0}
+              style={[styles.navBtn, lessonIdx === 0 && { opacity: 0.35 }]}
+              accessibilityLabel={tt("lsPrevious")}
+            >
+              <Ionicons name="chevron-back" size={18} color={colors.forestDark} />
+              <Text style={styles.navBtnText}>{tt("lsPrevShort")}</Text>
+            </Pressable>
+            <Pressable onPress={() => setPickerOpen(true)} style={styles.lessonCounter}>
+              <Text style={styles.lessonCounterText}>
+                {`${tt("lsLessonOf").replace("{i}", String(lessonIdx + 1)).replace("{n}", String(course.chapter.lessons.length))}`}
+              </Text>
+              <Ionicons name="chevron-down" size={14} color={colors.forest} />
+            </Pressable>
+            <Pressable
+              onPress={() => goToLesson(lessonIdx + 1)}
+              disabled={lessonIdx >= course.chapter.lessons.length - 1}
+              style={[styles.navBtn, lessonIdx >= course.chapter.lessons.length - 1 && { opacity: 0.35 }]}
+              accessibilityLabel={tt("lsNext")}
+            >
+              <Text style={styles.navBtnText}>{tt("lsNextShort")}</Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.forestDark} />
+            </Pressable>
+          </View>
+
+          <View style={styles.buildRow}>
             <Pressable
               onPress={() => {
                 resetScene();
@@ -614,41 +652,11 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
               <Ionicons name="refresh-outline" size={16} color={colors.forestDark} />
               <Text style={styles.buildToggleText}>{tt("spStartOver")}</Text>
             </Pressable>
-            {buildMode && !math && !!session.items.length && (
-              <Pressable onPress={() => drawSceneWithAi()} disabled={aiLoading} style={styles.buildReset}>
-                <Ionicons name="brush-outline" size={16} color={colors.forestDark} />
-                <Text style={styles.buildToggleText}>{aiSceneEnabled() ? tt("spRedraw") : tt("spRealPicture")}</Text>
-              </Pressable>
-            )}
+            <Pressable onPress={() => setPickerOpen(true)} style={styles.buildReset}>
+              <Ionicons name="book-outline" size={16} color={colors.forestDark} />
+              <Text style={styles.buildToggleText}>Switch Chapter</Text>
+            </Pressable>
           </View>
-          {buildMode && !course && (
-            <Text style={styles.micHint}>
-              {agentEnabled()
-                ? tt("spMicHintAgent").replace("{agent}", agentName())
-                : tt("spMicHintNoAgent")}
-            </Text>
-          )}
-
-          {!concept && !buildMode && (
-            <View style={styles.aiRow}>
-              {img ? (
-                <>
-                  <Pressable onPress={() => setImg(null)} style={[styles.aiBtn, { backgroundColor: colors.cardMuted }]}>
-                    <Ionicons name="flash-outline" size={16} color={colors.textMid} />
-                    <Text style={[styles.aiBtnText, { color: colors.textMid }]}>{tt("spInstantScene")}</Text>
-                  </Pressable>
-                  <Pressable onPress={makeAiPicture} disabled={aiLoading} style={styles.aiRegenBtn}>
-                    <Ionicons name="refresh-outline" size={18} color={colors.forestDark} />
-                  </Pressable>
-                </>
-              ) : (
-                <Pressable onPress={makeAiPicture} disabled={aiLoading} style={[styles.aiBtn, aiLoading && { opacity: 0.5 }]}>
-                  <Ionicons name="brush-outline" size={18} color="white" />
-                  <Text style={styles.aiBtnText}>{tt("spMakeFullPicture")}</Text>
-                </Pressable>
-              )}
-            </View>
-          )}
 
           {/* what the engine understood */}
           {math ? null : buildMode ? (
@@ -778,6 +786,170 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
         </ScrollView>
       </SafeAreaView>
 
+      {/* Chapter Picker Modal */}
+      <Modal visible={pickerOpen} transparent animationType="slide" onRequestClose={() => setPickerOpen(false)}>
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalSheet, isTablet && styles.modalSheetTablet]}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.modalTitle}>Choose Subject & Chapter</Text>
+                <Text style={styles.modalSub}>Select any subject, grade, or topic to learn</Text>
+              </View>
+              <Pressable onPress={() => setPickerOpen(false)} style={styles.modalCloseBtn} hitSlop={10}>
+                <Ionicons name="close" size={22} color={colors.textDark} />
+              </Pressable>
+            </View>
+
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScroll}>
+              {/* Subject tabs */}
+              <Text style={[type.eyebrow, { marginBottom: 8 }]}>Subject</Text>
+              <View style={styles.modalSubjectRow}>
+                {SUBJECT_LIST.map((s) => {
+                  const on = s.id === pickerSubjectId;
+                  return (
+                    <Pressable
+                      key={s.id}
+                      onPress={() => setPickerSubjectId(s.id)}
+                      style={[styles.modalSubjectTab, on && styles.modalSubjectTabOn]}
+                    >
+                      <Text style={[styles.modalSubjectTabText, on && styles.modalSubjectTabTextOn]}>
+                        {label(s.title, lang)}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* Grade picker */}
+              <Text style={[type.eyebrow, { marginTop: 14, marginBottom: 8 }]}>Grade</Text>
+              <View style={styles.modalGradeRow}>
+                {GRADES.map((g) => {
+                  const on = g === pickerGrade;
+                  const sub = SUBJECT_LIST.find((s) => s.id === pickerSubjectId) || course.subject;
+                  const has = chaptersFor(sub, g).length > 0;
+                  return (
+                    <Pressable
+                      key={g}
+                      onPress={() => setPickerGrade(g)}
+                      style={[styles.modalGradeChip, on && styles.modalGradeChipOn]}
+                    >
+                      <Text style={[styles.modalGradeChipText, on && { color: "white" }, !has && !on && { color: colors.textLight }]}>
+                        Grade {g}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {/* Chapters list */}
+              <Text style={[type.eyebrow, { marginTop: 14, marginBottom: 8 }]}>Chapters</Text>
+              {(() => {
+                const sub = SUBJECT_LIST.find((s) => s.id === pickerSubjectId) || course.subject;
+                const chs = chaptersFor(sub, pickerGrade);
+                if (!chs.length) {
+                  return (
+                    <View style={styles.modalEmpty}>
+                      <Text style={styles.modalEmptyText}>No chapters available for Grade {pickerGrade} in this subject.</Text>
+                    </View>
+                  );
+                }
+                return (
+                  <View style={{ gap: 10 }}>
+                    {chs.map((c, i) => {
+                      const isCur = c.id === activeChapterId;
+                      return (
+                        <Pressable
+                          key={c.id}
+                          onPress={() => {
+                            setActiveChapterId(c.id);
+                            setLessonIdx(0);
+                            setShowAnswer(false);
+                            resetScene();
+                            setImg(null);
+                            setText(c.lessons[0]?.say ?? "");
+                            setPickerOpen(false);
+                          }}
+                          style={[styles.modalChapterItem, isCur && styles.modalChapterItemActive]}
+                        >
+                          <View style={[styles.modalChapterNum, isCur && { backgroundColor: colors.forest }]}>
+                            <Text style={[styles.modalChapterNumText, isCur && { color: "white" }]}>{i + 1}</Text>
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.modalChapterTitle}>{label(c.title, lang)}</Text>
+                            <Text style={styles.modalChapterSummary} numberOfLines={1}>{label(c.summary, lang)}</Text>
+                            <Text style={styles.modalChapterLessonsCount}>{c.lessons.length} lessons</Text>
+                          </View>
+                          {isCur ? (
+                            <Ionicons name="checkmark-circle" size={24} color={colors.forest} />
+                          ) : (
+                            <Ionicons name="chevron-forward" size={20} color={colors.textLight} />
+                          )}
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                );
+              })()}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Fullscreen Picture Zoom Lightbox Modal */}
+      <Modal
+        visible={zoomModalOpen}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setZoomModalOpen(false)}
+      >
+        <View style={styles.zoomModalBackdrop}>
+          <SafeAreaView style={styles.zoomModalSafe} edges={["top", "bottom", "left", "right"]}>
+            <View style={styles.zoomModalHeader}>
+              <View style={{ flex: 1, paddingRight: 12 }}>
+                <Text style={styles.zoomModalTitle} numberOfLines={1}>
+                  {label(course.chapter.title, lang)}
+                </Text>
+                <Text style={styles.zoomModalSub} numberOfLines={1}>
+                  {label(course.subject.title, lang)} · Grade {course.grade}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() => setZoomModalOpen(false)}
+                style={styles.zoomCloseBtn}
+                hitSlop={15}
+                accessibilityLabel="Close full screen view"
+              >
+                <Ionicons name="close" size={26} color="white" />
+              </Pressable>
+            </View>
+
+            <View style={styles.zoomModalBody}>
+              {img && (
+                <Image
+                  source={{ uri: img.uri }}
+                  style={styles.zoomModalImg}
+                  resizeMode="contain"
+                />
+              )}
+            </View>
+
+            <View style={styles.zoomModalFooter}>
+              <Text style={styles.zoomModalSentence} numberOfLines={3}>
+                {text}
+              </Text>
+              <Pressable
+                onPress={() => readBack(text)}
+                style={styles.zoomModalSpeakBtn}
+                accessibilityLabel="Listen"
+              >
+                <Ionicons name="volume-high" size={20} color="white" />
+                <Text style={styles.zoomModalSpeakText}>Listen</Text>
+              </Pressable>
+            </View>
+          </SafeAreaView>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -901,33 +1073,69 @@ const styles = StyleSheet.create({
   },
   headerTitle: { color: colors.textDark, fontSize: 22, fontWeight: "800", letterSpacing: -0.3 },
   headerSub: { color: colors.textMid, fontSize: 13, marginTop: 3 },
-  body: { paddingHorizontal: 22, paddingTop: 12, gap: 14, paddingBottom: 40 },
+  body: { paddingHorizontal: 16, paddingTop: 12, gap: 14, paddingBottom: 40 },
   bodyTablet: {
-    maxWidth: 820,
+    maxWidth: 900,
     alignSelf: "center",
     width: "100%",
     paddingHorizontal: 28,
   },
-  stageWrap: { position: "relative" },
+  stageWrap: {
+    position: "relative",
+    width: "100%",
+  },
   stageWrapTablet: {
-    minHeight: 320,
+    width: "100%",
+    maxWidth: 580,
+    alignSelf: "center",
   },
   stageWhite: {
     width: "100%",
-    aspectRatio: 320 / 236,
+    aspectRatio: 1,
     backgroundColor: "#ffffff",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
   },
-  stageImg: {
+  stageImgPressable: {
     width: "100%",
-    aspectRatio: 320 / 236,
+    aspectRatio: 1,
     backgroundColor: "#ffffff",
     borderRadius: 24,
     borderWidth: 1,
     borderColor: colors.border,
+    overflow: "hidden",
+    position: "relative",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 6,
+  },
+  stageImg: {
+    width: "100%",
+    height: "100%",
+    aspectRatio: 1,
+    backgroundColor: "#ffffff",
+  },
+  zoomTapHint: {
+    position: "absolute",
+    bottom: 12,
+    right: 12,
+    backgroundColor: "rgba(10, 20, 15, 0.72)",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+  },
+  zoomTapHintText: {
+    color: "white",
+    fontSize: 11,
+    fontWeight: "700",
+    letterSpacing: 0.3,
   },
   stageOverlay: {
     position: "absolute",
@@ -1096,4 +1304,319 @@ const styles = StyleSheet.create({
   backbone: { width: 34, height: 4, borderRadius: 2, backgroundColor: colors.pinkDeep },
   noBackbone: { color: colors.textLight, fontSize: 14 },
   conceptNote: { fontSize: 12, color: colors.textMid, fontWeight: "600" },
+  headerTitleWrap: {
+    flex: 1,
+  },
+  chapterActionRow: {
+    flexDirection: "row",
+    gap: 10,
+    marginTop: 4,
+  },
+  actionBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 22,
+    paddingVertical: 14,
+    paddingHorizontal: 18,
+  },
+  actionBtnPrimary: {
+    flex: 1,
+    backgroundColor: colors.forest,
+  },
+  actionBtnSecondary: {
+    backgroundColor: colors.cardMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+  },
+  actionBtnFull: {
+    width: "100%",
+    paddingVertical: 16,
+  },
+  actionBtnTextPrimary: {
+    color: "white",
+    fontSize: 15,
+    fontWeight: "800",
+  },
+  actionBtnTextSecondary: {
+    color: colors.forestDark,
+    fontSize: 14,
+    fontWeight: "700",
+  },
+  actionBtnSubtext: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 11.5,
+    fontWeight: "600",
+    marginTop: 2,
+  },
+  lessonNavRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 2,
+  },
+  navBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+  },
+  navBtnText: {
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: colors.forestDark,
+  },
+  lessonCounter: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: colors.forestLight,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 999,
+  },
+  lessonCounterText: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: colors.forest,
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "flex-end",
+  },
+  modalSheet: {
+    backgroundColor: colors.bg,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    paddingTop: 20,
+    paddingHorizontal: 22,
+    paddingBottom: 34,
+    maxHeight: "85%",
+  },
+  modalSheetTablet: {
+    maxWidth: 600,
+    alignSelf: "center",
+    width: "100%",
+    borderRadius: 28,
+    marginBottom: 40,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "800",
+    color: colors.textDark,
+  },
+  modalSub: {
+    fontSize: 12.5,
+    color: colors.textMid,
+    marginTop: 2,
+  },
+  modalCloseBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: colors.card,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalScroll: {
+    paddingBottom: 24,
+  },
+  modalSubjectRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  modalSubjectTab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 16,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+  },
+  modalSubjectTabOn: {
+    backgroundColor: colors.forest,
+    borderColor: colors.forest,
+  },
+  modalSubjectTabText: {
+    fontSize: 13.5,
+    fontWeight: "700",
+    color: colors.textDark,
+  },
+  modalSubjectTabTextOn: {
+    color: "white",
+  },
+  modalGradeRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  modalGradeChip: {
+    flex: 1,
+    paddingVertical: 8,
+    borderRadius: 14,
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: "center",
+  },
+  modalGradeChipOn: {
+    backgroundColor: colors.forest,
+    borderColor: colors.forest,
+  },
+  modalGradeChipText: {
+    fontSize: 12.5,
+    fontWeight: "700",
+    color: colors.textDark,
+  },
+  modalChapterItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    backgroundColor: colors.card,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 14,
+  },
+  modalChapterItemActive: {
+    borderColor: colors.forest,
+    backgroundColor: colors.forestLight,
+  },
+  modalChapterNum: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.cardMuted,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  modalChapterNumText: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: colors.forestDark,
+  },
+  modalChapterTitle: {
+    fontSize: 15,
+    fontWeight: "800",
+    color: colors.textDark,
+  },
+  modalChapterSummary: {
+    fontSize: 12.5,
+    color: colors.textMid,
+    marginTop: 2,
+  },
+  modalChapterLessonsCount: {
+    fontSize: 11.5,
+    fontWeight: "700",
+    color: colors.forest,
+    marginTop: 3,
+  },
+  modalEmpty: {
+    padding: 24,
+    alignItems: "center",
+  },
+  modalEmptyText: {
+    fontSize: 13.5,
+    color: colors.textMid,
+    textAlign: "center",
+  },
+  zoomModalBackdrop: {
+    flex: 1,
+    backgroundColor: "rgba(10, 18, 14, 0.95)",
+  },
+  zoomModalSafe: {
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  zoomModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+  },
+  zoomModalTitle: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+  zoomModalSub: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 12.5,
+    marginTop: 2,
+  },
+  zoomCloseBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(255,255,255,0.18)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  zoomModalBody: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 12,
+  },
+  zoomModalImg: {
+    width: "100%",
+    height: "100%",
+    maxWidth: 800,
+    maxHeight: 800,
+  },
+  zoomModalFooter: {
+    backgroundColor: "rgba(20, 35, 28, 0.92)",
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 20,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 14,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
+  zoomModalSentence: {
+    flex: 1,
+    color: "white",
+    fontSize: 18,
+    fontWeight: "700",
+    lineHeight: 25,
+  },
+  zoomModalSpeakBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: colors.forest,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 999,
+  },
+  zoomModalSpeakText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "700",
+  },
 });

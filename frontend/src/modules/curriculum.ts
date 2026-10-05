@@ -1,4 +1,6 @@
-import type { LanguageCode } from "../types";
+import type { LanguageCode, SceneGraph } from "../types";
+import { parseSceneGraph } from "./sentenceScene";
+import { parseMath, parseWordProblem } from "./mathScene";
 
 /**
  * School content for Picture Talk: subject → grade (1–5) → chapter → lessons.
@@ -551,3 +553,300 @@ export function lessonCount(subject: Subject): number {
 export function label(text: Text, lang: LanguageCode): string {
   return lang === "ar-SA" ? text.ar : text.en;
 }
+
+export interface ChapterValidation {
+  valid: boolean;
+  reason?: string;
+  hint?: string;
+  suggestions?: string[];
+}
+
+export function isPrepositionChapter(chapterId: string): boolean {
+  return chapterId.toLowerCase().includes("preposition");
+}
+
+export const PREPOSITION_WORDS = [
+  "in front of", "on top of", "next to", "close to", "far from",
+  "under", "underneath", "below", "beneath", "on", "above", "over",
+  "behind", "beside", "near", "inside", "in", "between",
+];
+
+/**
+ * Validates whether a sentence belongs to or aligns with the active chapter.
+ * For example, in English Grade 1 Chapter 1 (Prepositions), ONLY sentences containing
+ * a preposition or matching the chapter lessons are permitted for image generation.
+ */
+export function validateChapterSentence(chapterId: string, sentence: string): ChapterValidation {
+  const clean = sentence.trim().toLowerCase();
+  if (!clean) return { valid: false, reason: "Please enter or speak a sentence first." };
+
+  const course = chapterById(chapterId);
+  // Any sentence that is an official lesson in this chapter is always valid
+  if (course) {
+    const isExactLesson = course.chapter.lessons.some(
+      (l) => l.say.toLowerCase().trim() === clean || (l.question && l.question.toLowerCase().trim() === clean)
+    );
+    if (isExactLesson) return { valid: true };
+  }
+
+  // Preposition chapters (English Grade 1 Chapter 1, etc.)
+  if (isPrepositionChapter(chapterId)) {
+    const hasPrep = PREPOSITION_WORDS.some((p) => {
+      const regex = new RegExp(`(^|\\s)${p}(\\s|[.,!?;:]|$)`, "i");
+      return regex.test(clean);
+    });
+
+    if (hasPrep) {
+      return { valid: true };
+    }
+
+    return {
+      valid: false,
+      reason: "Chapter 1 is for Prepositions! Only preposition sentences can be illustrated here.",
+      hint: "Sentences must describe where an object is located using words like on, under, inside, behind, beside, above (e.g. 'The cat is on the table' or 'The dog is behind the tree').",
+      suggestions: ["on", "under", "inside", "behind", "in front of", "beside", "above"],
+    };
+  }
+
+  // Colours chapter
+  if (chapterId.includes("colour") || chapterId.includes("color")) {
+    const COLOR_WORDS = ["red", "blue", "yellow", "green", "black", "pink", "purple", "brown", "white", "orange", "grey", "gray"];
+    const hasColor = COLOR_WORDS.some((c) => new RegExp(`(^|\\s)${c}(\\s|[.,!?;:]|$)`, "i").test(clean));
+    if (hasColor) return { valid: true };
+    return {
+      valid: false,
+      reason: "This chapter is for Colours! Sentences should include a colour word.",
+      hint: "Try: 'A red apple', 'A blue ball', 'A yellow star', or 'A green leaf'.",
+      suggestions: ["red", "blue", "yellow", "green", "pink", "purple"],
+    };
+  }
+
+  // Action words chapter
+  if (chapterId.includes("action") || chapterId.includes("verb")) {
+    const ACTION_WORDS = ["running", "reading", "sleeping", "flying", "swimming", "crying", "eating", "jumping", "walking", "playing", "dancing", "climbing", "singing", "cooking", "cleaning", "laughing", "standing", "sitting"];
+    const hasAction = ACTION_WORDS.some((a) => new RegExp(`(^|\\s)${a}(\\s|[.,!?;:]|$)`, "i").test(clean));
+    if (hasAction) return { valid: true };
+    return {
+      valid: false,
+      reason: "This chapter is for Action words! Sentences should describe an action.",
+      hint: "Try: 'The boy is running', 'The girl is reading', or 'The bird is flying'.",
+      suggestions: ["running", "reading", "sleeping", "flying", "swimming"],
+    };
+  }
+
+  // Describing words / sizes
+  if (chapterId.includes("size") || chapterId.includes("adjective")) {
+    const SIZE_WORDS = ["big", "small", "tiny", "huge", "large", "little", "tall", "short", "heavy", "light"];
+    const hasSize = SIZE_WORDS.some((s) => new RegExp(`(^|\\s)${s}(\\s|[.,!?;:]|$)`, "i").test(clean));
+    if (hasSize) return { valid: true };
+    return {
+      valid: false,
+      reason: "This chapter is for Describing words! Sentences should include a size or adjective.",
+      hint: "Try: 'A big dog', 'A small cat', or 'A huge elephant'.",
+      suggestions: ["big", "small", "tiny", "huge"],
+    };
+  }
+
+  // Default: accept if not blank
+  return { valid: true };
+}
+
+/**
+ * Builds a high-quality educational image prompt tailored specifically to the chapter.
+ * For Prepositions, it ensures BOTH the subject and the reference object are clearly depicted
+ * in their exact spatial relation, avoiding styles that cause single-object isolation.
+ */
+export function getChapterImagePrompt(chapterId: string, sentence: string, inputGraph?: SceneGraph): string {
+  const clean = sentence.trim();
+  const graph = inputGraph ?? parseSceneGraph(clean);
+
+  // 1. Preposition chapters (English Grade 1 Chapter 1, etc.)
+  if (isPrepositionChapter(chapterId)) {
+    const s = graph.subject;
+    const r = graph.reference;
+    const rel = graph.relation;
+
+    if (rel) {
+      const subjStr = s
+        ? `${s.color ? s.color + " " : ""}${s.size && s.size !== "normal" ? s.size + " " : ""}${s.count > 1 ? s.count + " " + s.type + "s" : s.type}`
+        : "subject";
+      const refStr = r ? `the ${r.type}` : "the object";
+
+      let spatialDesc = `is clearly positioned ${rel} ${refStr}`;
+      if (rel === "on") {
+        spatialDesc = `is resting properly and clearly on top of the flat surface of ${refStr}, sitting comfortably on top of it`;
+      } else if (rel === "under" || rel === "below") {
+        spatialDesc = `is positioned underneath ${refStr}, right on the floor under ${refStr}`;
+      } else if (rel === "above") {
+        spatialDesc = `is positioned high in the air above ${refStr}`;
+      } else if (rel === "behind") {
+        spatialDesc = `is peeking from behind ${refStr}`;
+      } else if (rel === "in front of") {
+        spatialDesc = `is full-body, standing firmly on the ground directly in front of ${refStr}, grounded at the base in front of it`;
+      } else if (rel === "beside") {
+        spatialDesc = `is positioned right next to ${refStr}, standing on the same ground beside it`;
+      } else if (rel === "inside") {
+        spatialDesc = `is placed inside the open ${refStr}, resting visibly inside ${refStr} on its interior floor, not floating in the air`;
+      }
+
+      return `Autism-friendly educational picture book illustration teaching the preposition '${rel.toUpperCase()}': A friendly, cute ${subjStr} ${spatialDesc}. Clean plain simple background, zero background clutter, zero messy room distractions. Close-up camera view, prominent main subjects filling the frame, clear foreground composition with the ${subjStr} and ${refStr} large and centered, not far away in the background. Both the ${subjStr} and ${refStr} are prominently, fully visible together in the frame with distinct spatial depth and unmistakable clarity showing ${subjStr} ${rel} ${refStr}. Vibrant cheerful colors, charming storybook art style, clean defined outlines, bright warm daytime lighting, peaceful friendly atmosphere, beautiful children's book art, no text, no words, no letters, no labels, no watermark.`;
+    }
+
+    return `Autism-friendly educational children's picture book illustration clearly showing the preposition scene: "${clean}". Clean plain simple background, zero background clutter, zero messy room distractions. Close-up camera view, prominent foreground subjects filling the frame, large and clear. Every mentioned object and its spatial preposition position are clearly and unmistakably visible together in the frame with distinct spatial relation. Vibrant joyful colors, clean outlines, charming storybook art, bright lighting, no text, no words, no letters, no labels.`;
+  }
+
+  // 2. Colours chapter
+  if (chapterId.includes("colour") || chapterId.includes("color")) {
+    return `Autism-friendly educational children's illustration highlighting colours: "${clean}". The specified color is rich, vivid, beautiful, and prominently showcased on the subject. Clean plain simple background, zero clutter, cheerful storybook art style, crisp outlines, no text, no words, no labels.`;
+  }
+
+  // 3. Action words / Verbs chapter
+  if (chapterId.includes("action") || chapterId.includes("verb")) {
+    return `Autism-friendly educational children's illustration depicting the action: "${clean}". Expressive character clearly engaged in the action with dynamic and friendly pose, clean simple background, zero clutter, warm joyful colors, charming storybook art style, clean defined outlines, no text, no words, no letters.`;
+  }
+
+  // 4. Naming words / Nouns chapter
+  if (chapterId.includes("noun")) {
+    return `Autism-friendly educational children's book illustration for learning naming words: "${clean}". Highly recognizable, friendly, warm colors, centered subject filling the frame, clean plain background, zero clutter, charming picture book style, clean outlines, no text, no words, no labels.`;
+  }
+
+  // 5. Sizes / Describing words chapter
+  if (chapterId.includes("size") || chapterId.includes("adjective")) {
+    return `Autism-friendly educational children's illustration clearly showing size and description: "${clean}". Clear visual sense of scale and proportion, clean simple background, zero clutter, charming friendly art style, bright warm colors, no text, no words, no labels.`;
+  }
+
+  // 6. Math sums ("2 pencil + 3 pencil", "5 apples - 2 apples", "3 × 2 balls") or word problems:
+  const math = parseMath(clean) ?? parseWordProblem(clean);
+  if (math || chapterId.startsWith("ma")) {
+    if (math) {
+      const obj = math.object || "item";
+      if (math.op === "+") {
+        return `Autism-friendly educational picture book illustration for counting: Exactly ${math.a} colorful ${obj}s on the left side and ${math.b} colorful ${obj}s on the right side, making a total of ${math.result} ${obj}s neatly displayed side by side on a clean plain soft white surface. High clarity, each ${obj} is large, distinct, clearly separated and easy to count immediately for children with autism. Bright cheerful colors, bold clean outlines, zero background clutter, zero furniture, zero messy room distractions, no text, no numbers, no math symbols, no words, no watermark.`;
+      } else if (math.op === "-") {
+        return `Autism-friendly educational picture book illustration for subtraction: Exactly ${math.a} colorful ${obj}s shown on a clean plain white surface, with ${math.b} of them separated to take away, leaving exactly ${math.result} ${obj}s clearly visible and easy to count. High clarity, each ${obj} is large, distinct, and clearly separated for children with autism. Bright cheerful colors, bold clean outlines, zero background clutter, zero furniture, zero messy room distractions, no text, no numbers, no math symbols, no words, no watermark.`;
+      } else if (math.op === "×") {
+        return `Autism-friendly educational multiplication illustration: Exactly ${math.a} neat baskets or groups, with exactly ${math.b} bright ${obj}s in each, neatly arranged on a clean plain soft background. High clarity, each ${obj} clearly visible and easy to count, bold clean outlines, vibrant cheerful colors, zero clutter, no text, no numbers, no words.`;
+      } else if (math.op === "÷") {
+        return `Autism-friendly educational sharing illustration: Exactly ${math.a} colorful ${obj}s shared equally into ${math.b} neat groups, with ${math.result} ${obj}s in each group, on a clean plain soft background. High clarity, bold clean outlines, vibrant cheerful colors, zero clutter, no text, no numbers, no words.`;
+      }
+    }
+
+    if (chapterId.includes("shape")) {
+      return `Autism-friendly educational illustration of the shape: '${clean}'. A single large, clear, bold, brightly colored ${clean} centered on a pure clean white background. High visual clarity, crisp distinct geometric outline, perfectly accurate shape, zero background clutter, no text, no words, no labels.`;
+    }
+
+    return `Autism-friendly educational counting illustration: Clean plain soft solid background, zero background clutter, zero random furniture, zero messy room distractions. Real, colorful objects clearly separated and distinct, bold clean outlines, vibrant bright colors, easy to count immediately, centered composition, high visual clarity for children with autism, no text, no numbers, no words.`;
+  }
+
+  // 7. Science chapters
+  if (chapterId.startsWith("sc")) {
+    return `Autism-friendly educational science illustration for young children: "${clean}". Scientifically accurate yet friendly, colorful, clean simple background, zero clutter, engaging textbook picture book art style, close-up clear distinct details, bright lighting, no text, no labels.`;
+  }
+
+  // Default educational storybook prompt
+  const course = chapterById(chapterId);
+  const extraStyle = course?.subject.imageStyle || "picture-book illustration for learning";
+  return `Autism-friendly children's book illustration: "${clean}". ${extraStyle}. Clean plain background, zero clutter, close-up camera shot, prominent main subjects filling the frame, large and clearly visible. Cheerful vibrant colors, clean outlines, friendly storybook art style, bright warm lighting, no text, no words, no letters, no watermark.`;
+}
+
+/** Flattened list of all curriculum chapters for easy selection */
+export function getAllChapters(): { subject: Subject; grade: Grade; chapter: Chapter }[] {
+  const result: { subject: Subject; grade: Grade; chapter: Chapter }[] = [];
+  for (const subject of SUBJECT_LIST) {
+    for (const grade of GRADES) {
+      const chapters = chaptersFor(subject, grade);
+      for (const chapter of chapters) {
+        result.push({ subject, grade, chapter });
+      }
+    }
+  }
+  return result;
+}
+
+export interface SpeechChallenge {
+  prompt: string;
+  targetText: string;
+  hint: string;
+}
+
+/**
+ * Speech therapy contrast activity generator:
+ * Suggests the next natural minimal pair / spatial contrast challenge:
+ * e.g., "The cat is on the table" -> "Now can you say: The cat is under the table?"
+ */
+export function getNextChallenge(sentence: string): SpeechChallenge | null {
+  const clean = sentence.trim();
+  if (clean.length < 3) return null;
+
+  // 1. Math contrast challenge ("2 pencil + 1 pencil" -> "2 pencil + 2 pencil")
+  const math = parseMath(clean);
+  if (math) {
+    if (math.op === "+") {
+      const nextB = math.b >= 4 ? 1 : math.b + 1;
+      const target = `${math.a} ${math.object} + ${nextB} ${math.object}`;
+      return {
+        prompt: `Great addition! Can you say:`,
+        targetText: target,
+        hint: target,
+      };
+    } else if (math.op === "-") {
+      const nextB = math.b >= math.a ? 1 : math.b + 1;
+      const target = `${math.a} ${math.object} - ${nextB} ${math.object}`;
+      return {
+        prompt: `Great subtraction! Can you say:`,
+        targetText: target,
+        hint: target,
+      };
+    }
+  }
+
+  // 2. Preposition contrast activities
+  const lower = clean.toLowerCase();
+  if (/\b(on top of|on)\b/.test(lower)) {
+    return {
+      prompt: `Great! Now can you say where it hides underneath?`,
+      targetText: clean.replace(/\b(on top of|on)\b/i, "under"),
+      hint: "under",
+    };
+  }
+  if (/\b(under|underneath|below)\b/.test(lower)) {
+    return {
+      prompt: `Super! Now can you say what is behind?`,
+      targetText: clean.replace(/\b(under|underneath|below)\b/i, "behind"),
+      hint: "behind",
+    };
+  }
+  if (/\bbehind\b/.test(lower)) {
+    return {
+      prompt: `Awesome! Now try saying beside / next to:`,
+      targetText: clean.replace(/\bbehind\b/i, "next to"),
+      hint: "next to",
+    };
+  }
+  if (/\b(next to|beside|near)\b/.test(lower)) {
+    return {
+      prompt: `Excellent! Now try saying in front of:`,
+      targetText: clean.replace(/\b(next to|beside|near)\b/i, "in front of"),
+      hint: "in front of",
+    };
+  }
+  if (/\bin front of\b/.test(lower)) {
+    return {
+      prompt: `Can you say on top of:`,
+      targetText: clean.replace(/\bin front of\b/i, "on"),
+      hint: "on",
+    };
+  }
+
+  // 3. Colours contrast
+  if (/\b(red)\b/i.test(lower)) return { prompt: "Now try changing the colour to blue:", targetText: clean.replace(/\bred\b/i, "blue"), hint: "blue" };
+  if (/\b(blue)\b/i.test(lower)) return { prompt: "Now try changing the colour to green:", targetText: clean.replace(/\bblue\b/i, "green"), hint: "green" };
+  if (/\b(green)\b/i.test(lower)) return { prompt: "Now try changing the colour to yellow:", targetText: clean.replace(/\bgreen\b/i, "yellow"), hint: "yellow" };
+
+  // 4. Actions contrast
+  if (/\b(sleeping)\b/i.test(lower)) return { prompt: "Now wake it up and say running:", targetText: clean.replace(/\bsleeping\b/i, "running"), hint: "running" };
+  if (/\b(running)\b/i.test(lower)) return { prompt: "Now try saying jumping:", targetText: clean.replace(/\brunning\b/i, "jumping"), hint: "jumping" };
+
+  return null;
+}
+

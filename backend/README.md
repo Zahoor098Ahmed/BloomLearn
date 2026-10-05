@@ -12,7 +12,9 @@ backend/
 │   └── routes/
 │       ├── health.js         GET  /health              (public)
 │       ├── images.js         POST /images/generations
-│       └── audio.js          POST /audio/transcriptions (Whisper)
+│       ├── audio.js          POST /audio/transcriptions (Whisper)
+│       ├── scene.js          GET  /scene/:prompt          (free image engine)
+│       └── chat.js           POST /chat/completions       (Keep-talking agent: Groq, else OpenAI)
 ├── .env.example
 ├── Dockerfile
 └── package.json
@@ -40,6 +42,16 @@ curl http://localhost:8787/health
 | GET  | `/health` | – | status JSON (no auth) |
 | POST | `/images/generations` | `{ "prompt": "juice", "style": "word" }` | `{ data: [{ b64_json }] }` — same shape as OpenAI |
 | POST | `/audio/transcriptions` | multipart: `file` (audio), optional `language` | `{ text: "juice" }` |
+| GET  | `/scene/:prompt?seed=&raw=1` | – | image (Pollinations; `?token=` accepted for auth) |
+| POST | `/chat/completions` | `{ "messages": [...], "max_tokens"?: 400 }` | `{ choices: [{ message: { content } }] }` |
+
+## Deploy
+
+`render.yaml` in the repo root deploys this folder on Render: New → Blueprint →
+pick the repo, fill in `OPENAI_API_KEY` / `GROQ_API_KEY` / `POLLINATIONS_TOKEN`
+(Render generates `APP_TOKEN`). Then set `EXPO_PUBLIC_AI_PROXY_URL` to the
+`https://….onrender.com` URL and `EXPO_PUBLIC_AI_PROXY_TOKEN` to the generated
+`APP_TOKEN` in `frontend/.env`, and rebuild the APK.
 
 All except `/health` require `Authorization: Bearer <APP_TOKEN>` when `APP_TOKEN` is set.
 

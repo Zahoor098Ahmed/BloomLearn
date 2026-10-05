@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "test:scene": "tsx src/modules/sceneSession.test.ts",
     "typecheck": "tsc --noEmit",
-    "test:math": "tsx src/modules/mathScene.test.ts"
+    "test:math": "tsx src/modules/mathScene.test.ts",
+    "test:curriculum": "tsx src/modules/curriculum.test.ts"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

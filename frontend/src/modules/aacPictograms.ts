@@ -243,14 +243,34 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   "can we go home": arasaac(2317), // house
   "i am scared": arasaac(2261),
 
-  girl: arasaac(2484),
-  boy: arasaac(2485),
+  girl: arasaac(27509), // Full body standing girl (ARASAAC 27509)
+  boy: arasaac(7176), // Full body standing boy (ARASAAC 7176)
+  child: arasaac(7176),
+  kid: arasaac(27509),
+  student: arasaac(7176),
+  pupil: arasaac(7176),
+  man: arasaac(4665), // Full body standing man
+  woman: arasaac(4703), // Full body standing woman
+  father: arasaac(4665),
+  mother: arasaac(4703),
+  box: arasaac(7054), // Opened cardboard box so objects placed inside look natural
+  "cardboard box": arasaac(7054),
+  "open box": arasaac(7054),
+  "opened cardboard box": arasaac(7054),
+  "closed box": arasaac(37948),
   cat: arasaac(2406),
   dog: arasaac(2517),
+  bird: arasaac(2515),
+  fish: arasaac(2407),
+  horse: arasaac(2408),
+  cow: arasaac(2401),
   table: arasaac(3129),
+  bed: arasaac(2304),
   house: arasaac(2317),
+  tree: arasaac(2256),
   car: arasaac(2339),
   bus: arasaac(2262),
+  ball: arasaac(2269),
 };
 
 /**

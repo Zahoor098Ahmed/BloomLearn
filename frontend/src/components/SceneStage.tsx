@@ -26,17 +26,26 @@ const SIZE_SCALE: Record<SceneItem["size"], number> = { tiny: 0.6, small: 0.8, n
 const NATURAL: Record<string, number> = {
   table: 1.3, "dining table": 1.35, desk: 1.3, sofa: 1.5, couch: 1.5, bed: 1.5, "office chair": 1.05,
   chair: 1.0, stool: 0.8, house: 1.7, tree: 1.6, car: 1.5, bus: 1.7, mosque: 1.7,
+  box: 1.15, "cardboard box": 1.15, "open box": 1.15, basket: 0.95, carton: 1.15,
   laptop: 0.68, computer: 0.75, book: 0.55, cup: 0.45, ball: 0.5, phone: 0.4, apple: 0.42,
   key: 0.35, flower: 0.55, hat: 0.5, shoe: 0.5, cat: 0.78, dog: 0.85, bird: 0.55, fish: 0.5,
-  boy: 1.0, girl: 1.0, man: 1.1, woman: 1.1, baby: 0.7, kidney: 0.5, heart: 0.5,
+  boy: 1.0, girl: 1.0, child: 1.0, kid: 1.0, man: 1.1, woman: 1.1, baby: 0.7, kidney: 0.5, heart: 0.5,
 };
 const BASE_W = 0.5; // a lone "normal" object is half the stage wide before fit-scaling
+
+const AIRBORNE_TYPES = new Set([
+  "bird", "birds", "butterfly", "butterflies", "airplane", "aeroplane", "plane",
+  "cloud", "clouds", "sun", "moon", "star", "stars", "balloon", "balloons",
+  "kite", "kites", "helicopter", "rocket", "fly", "bee", "bees", "bat", "bats",
+]);
 
 interface Placed {
   it: SceneItem;
   cx: number;
   cy: number;
   w: number; // fraction of stage width
+  h: number; // fraction of stage height
+  groundShadow: boolean;
 }
 
 function layoutScene(items: SceneItem[]): Placed[] {
@@ -45,22 +54,120 @@ function layoutScene(items: SceneItem[]): Placed[] {
     const w = BASE_W * SIZE_SCALE[it.size] * (NATURAL[it.type] ?? 0.9);
     return { it, x: it.x, y: it.y, w, h: w / ASPECT };
   });
+
+  // 1. Precise spatial relations for prepositions:
+  for (const n of nodes) {
+    if (n.it.reference) {
+      const ref = nodes.find(
+        (other) =>
+          other !== n &&
+          (other.it.type === n.it.reference ||
+            other.it.type.includes(n.it.reference!) ||
+            n.it.reference!.includes(other.it.type)),
+      );
+      if (ref) {
+        const rel = n.it.relation;
+        if (rel === "on") {
+          // On surface (table, desk, shelf, chair, bed)
+          const surfaceY = ref.y - ref.h * 0.35;
+          n.y = surfaceY - n.h * 0.24;
+          n.x = ref.x;
+        } else if (rel === "above") {
+          // Perched or hovering directly above reference object (e.g. bird above tree)
+          n.y = ref.y - ref.h * 0.48 - n.h * 0.44;
+          n.x = ref.x;
+          n.it.behind = false;
+        } else if (rel === "in front of") {
+          // Standing on the ground baseline in front of the reference (e.g. girl in front of house):
+          const groundY = ref.y + ref.h * 0.48;
+          n.y = groundY - n.h * 0.48;
+          n.x = ref.x;
+          n.it.behind = false;
+        } else if (rel === "inside") {
+          // Inside open container (box, basket, bag, cup) - nestled inside top opening:
+          const maxInsideW = ref.w * 0.28;
+          if (n.w > maxInsideW) {
+            n.w = maxInsideW;
+            n.h = n.w / ASPECT;
+          }
+          n.y = ref.y - ref.h * 0.20;
+          n.x = ref.x;
+          n.it.behind = false;
+        } else if (rel === "below") {
+          // On the ground beneath the reference (under table, bed, chair):
+          const floorY = ref.y + ref.h * 0.48;
+          n.y = floorY - n.h * 0.48;
+          n.x = ref.x;
+        } else if (rel === "behind") {
+          // Ground-aligned behind reference, peeking out:
+          const groundY = ref.y + ref.h * 0.48;
+          n.y = groundY - n.h * 0.48;
+          n.x = ref.x + ref.w * 0.30;
+          n.it.behind = true;
+        } else if (rel === "left" || rel === "right") {
+          // Ground-aligned side by side:
+          const groundY = ref.y + ref.h * 0.48;
+          n.y = groundY - n.h * 0.48;
+        }
+      }
+    }
+  }
+
+  // 2. Align base ground objects to the floor so NO object floats in mid-air:
+  const baseGroundNodes = nodes.filter((n) => {
+    if (AIRBORNE_TYPES.has(n.it.type)) return false;
+    if (n.it.relation === "on" && n.it.reference) return false;
+    if (n.it.relation === "inside" && n.it.reference) return false;
+    if (n.it.relation === "above" && n.it.reference) return false;
+    return true;
+  });
+
+  if (baseGroundNodes.length > 0) {
+    const maxBaseBottom = Math.max(...baseGroundNodes.map((n) => n.y + n.h * 0.48));
+    const targetGround = nodes.length === 1 ? 0.76 : 0.80;
+    const dy = targetGround - maxBaseBottom;
+    for (const n of nodes) {
+      n.y += dy;
+    }
+  }
+
+  // 3. Compute group bounding box and scaling:
   const minX = Math.min(...nodes.map((n) => n.x - n.w / 2));
   const maxX = Math.max(...nodes.map((n) => n.x + n.w / 2));
   const minY = Math.min(...nodes.map((n) => n.y - n.h / 2));
   const maxY = Math.max(...nodes.map((n) => n.y + n.h / 2));
   const gw = Math.max(0.01, maxX - minX);
   const gh = Math.max(0.01, maxY - minY);
-  // scale so the group fits the padded area; allow a little zoom for tiny scenes
-  const k = Math.min((1 - 2 * PAD) / gw, (1 - 2 * PAD) / gh, nodes.length === 1 ? 1.25 : 1);
+
+  // Ground baseline anchor so scaling preserves ground contact:
+  const groundBase = Math.max(...nodes.map((n) => n.y + n.h * 0.48));
+
+  // Fit scale so entire scene (including high objects like birds above trees) fits comfortably:
+  const topPad = 0.08;
+  const availTop = Math.max(0.1, groundBase - topPad);
+  const spanUp = Math.max(0.01, groundBase - minY);
+  const scaleUp = spanUp > availTop ? availTop / spanUp : 1;
+
+  const availW = 1 - 2 * PAD;
+  const scaleW = gw > availW ? availW / gw : 1;
+  const k = Math.min(scaleUp, scaleW, 1);
   const gcx = (minX + maxX) / 2;
-  const gcy = (minY + maxY) / 2;
-  return nodes.map((n) => ({
-    it: n.it,
-    cx: 0.5 + (n.x - gcx) * k,
-    cy: 0.5 + (n.y - gcy) * k,
-    w: n.w * k,
-  }));
+
+  return nodes.map((n) => {
+    const isAirborne = AIRBORNE_TYPES.has(n.it.type);
+    const scaledW = n.w * k;
+    const scaledH = n.h * k;
+    const cx = 0.5 + (n.x - gcx) * k;
+    const cy = groundBase - (groundBase - n.y) * k;
+    return {
+      it: n.it,
+      cx,
+      cy,
+      w: scaledW,
+      h: scaledH,
+      groundShadow: !isAirborne && n.it.relation !== "inside" && n.it.relation !== "above",
+    };
+  });
 }
 
 function Item({ p, uri }: { p: Placed; uri?: string }) {
@@ -72,39 +179,57 @@ function Item({ p, uri }: { p: Placed; uri?: string }) {
   const negTop = (p.w * 100) / -2;
   const col = it.colorHex ?? undefined;
   return (
-    <View
-      style={{
-        position: "absolute",
-        left: `${p.cx * 100}%`,
-        top: `${p.cy * 100}%`,
-        width: `${rowW}%`,
-        aspectRatio: ratio,
-        marginLeft: `${negLeft}%`,
-        marginTop: `${negTop}%`,
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "center",
-        opacity: it.behind ? 0.7 : 1,
-      }}
-    >
-      {Array.from({ length: n }).map((_, i) => {
-        const resolvedUri = uri || getPictogramUrl(it.type) || dictUrl(it.type);
-        return (
-          <View key={i} style={{ flex: 1, height: "100%", marginLeft: i === 0 ? 0 : "-10%" }}>
-            {resolvedUri ? (
-              <>
-                <Image source={{ uri: resolvedUri }} style={styles.pic} resizeMode="contain" />
-                {col && <Image source={{ uri: resolvedUri }} style={[styles.pic, styles.glaze, { tintColor: col }]} resizeMode="contain" />}
-              </>
-            ) : uri === "" ? (
-              <Text style={styles.fallbackGlyph}>{it.glyph}</Text>
-            ) : (
-              <View style={styles.loading} />
-            )}
-          </View>
-        );
-      })}
-    </View>
+    <>
+      {p.groundShadow && (
+        <View
+          style={{
+            position: "absolute",
+            left: `${p.cx * 100}%`,
+            top: `${(p.cy + p.h * 0.44) * 100}%`,
+            width: `${rowW * 0.82}%`,
+            height: Math.max(6, Math.min(13, p.h * 26)),
+            marginLeft: `${(rowW * 0.82) / -2}%`,
+            marginTop: -3,
+            borderRadius: 999,
+            backgroundColor: "rgba(25, 45, 35, 0.12)",
+          }}
+          pointerEvents="none"
+        />
+      )}
+      <View
+        style={{
+          position: "absolute",
+          left: `${p.cx * 100}%`,
+          top: `${p.cy * 100}%`,
+          width: `${rowW}%`,
+          aspectRatio: ratio,
+          marginLeft: `${negLeft}%`,
+          marginTop: `${negTop}%`,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          opacity: it.behind ? 0.75 : 1,
+        }}
+      >
+        {Array.from({ length: n }).map((_, i) => {
+          const resolvedUri = getPictogramUrl(it.type) || uri || dictUrl(it.type);
+          return (
+            <View key={i} style={{ flex: 1, height: "100%", marginLeft: i === 0 ? 0 : "-10%" }}>
+              {resolvedUri ? (
+                <>
+                  <Image source={{ uri: resolvedUri }} style={styles.pic} resizeMode="contain" />
+                  {col && <Image source={{ uri: resolvedUri }} style={[styles.pic, styles.glaze, { tintColor: col }]} resizeMode="contain" />}
+                </>
+              ) : uri === "" ? (
+                <Text style={styles.fallbackGlyph}>{it.glyph}</Text>
+              ) : (
+                <View style={styles.loading} />
+              )}
+            </View>
+          );
+        })}
+      </View>
+    </>
   );
 }
 
@@ -251,7 +376,8 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
 
   return (
     <View style={styles.stage}>
-      <View style={styles.groundShadow} />
+      {/* Calm subtle ground floor plane so scenes are physically grounded */}
+      <View style={styles.floorPlane} />
       {placed.map((p) => (
         <Item key={p.it.id} p={p} uri={uris[searchPhrase(p.it)]} />
       ))}
@@ -274,14 +400,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  groundShadow: {
+  floorPlane: {
     position: "absolute",
-    left: "12%",
-    right: "12%",
-    bottom: "12%",
-    height: 14,
-    borderRadius: 999,
-    backgroundColor: "rgba(0,0,0,0.06)",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "24%",
+    backgroundColor: "#f7f9f7",
+    borderTopWidth: 1,
+    borderTopColor: "rgba(0, 0, 0, 0.05)",
   },
   pic: { width: "100%", height: "100%" },
   glaze: { position: "absolute", opacity: 0.5 },

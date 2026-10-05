@@ -6,27 +6,37 @@
  * the teacher or child says is understood, not just the built-in vocabulary.
  * Without a key the app falls back to the on-device rule parser (applyUtterance).
  *
- * Keys are set in Settings (a Groq key is preferred — fast, generous free tier;
- * an OpenAI key also works).
+ * With a backend URL set, requests go to its /chat/completions route and the
+ * Groq / OpenAI key stays on the server. Otherwise keys are set in Settings (a
+ * Groq key is preferred — fast, generous free tier; an OpenAI key also works).
  */
 
 import type { SceneSession, SceneOp } from "./sceneSession";
 import { getKey } from "./apiKeys";
 
 export function agentEnabled(): boolean {
-  return !!getKey("groq") || !!getKey("openai");
+  return !!getKey("proxyUrl") || !!getKey("groq") || !!getKey("openai");
 }
 
 export function agentName(): string {
-  return getKey("groq") ? "Groq" : getKey("openai") ? "OpenAI" : "on-device";
+  return getKey("proxyUrl") ? "BloomLearn server" : getKey("groq") ? "Groq" : getKey("openai") ? "OpenAI" : "on-device";
 }
 
-/** Chat endpoint, model and key for the configured LLM. */
-function llm() {
+/** Chat endpoint, headers and model (the backend picks its own) for the configured LLM. */
+function llm(): { url: string; headers: Record<string, string>; model?: string } {
+  const json = { "Content-Type": "application/json" };
+  const proxyUrl = getKey("proxyUrl");
+  if (proxyUrl) {
+    const token = getKey("proxyToken");
+    return {
+      url: `${proxyUrl.replace(/\/$/, "")}/chat/completions`,
+      headers: token ? { ...json, Authorization: `Bearer ${token}` } : json,
+    };
+  }
   const groq = getKey("groq");
   return groq
-    ? { url: "https://api.groq.com/openai/v1/chat/completions", model: "openai/gpt-oss-20b", key: groq }
-    : { url: "https://api.openai.com/v1/chat/completions", model: "gpt-4o-mini", key: getKey("openai") };
+    ? { url: "https://api.groq.com/openai/v1/chat/completions", model: "openai/gpt-oss-20b", headers: { ...json, Authorization: `Bearer ${groq}` } }
+    : { url: "https://api.openai.com/v1/chat/completions", model: "gpt-4o-mini", headers: { ...json, Authorization: `Bearer ${getKey("openai")}` } };
 }
 
 const SYSTEM = `You convert one short spoken phrase from a teacher or child into edit operations for a children's picture scene.
@@ -92,16 +102,17 @@ function extractArray(text: string): SceneOp[] | null {
 
 async function groqChat(system: string, user: string, maxTokens = 400): Promise<string | null> {
   if (!agentEnabled()) return null;
-  const { url, model, key } = llm();
+  const { url, model, headers } = llm();
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      headers,
       body: JSON.stringify({
         model,
         temperature: 0,
         max_tokens: maxTokens,
-        reasoning_effort: "low",
+        // only gpt-oss on Groq takes this; the backend adds it itself
+        ...(model?.startsWith("openai/") ? { reasoning_effort: "low" } : {}),
         messages: [
           { role: "system", content: system },
           { role: "user", content: user },
@@ -135,29 +146,6 @@ export async function describeScene(session: SceneSession): Promise<string | nul
 
 /** Ask the LLM for scene ops. Returns null on any failure so the caller falls back. */
 export async function parseUtteranceLLM(utterance: string, session: SceneSession): Promise<SceneOp[] | null> {
-  if (!agentEnabled()) return null;
-  const { url, model, key } = llm();
-  const body = {
-    model,
-    temperature: 0,
-    max_tokens: 600,
-    reasoning_effort: "low",
-    messages: [
-      { role: "system", content: SYSTEM },
-      { role: "user", content: `Scene now: ${sceneSummary(session)}\nPhrase: "${utterance}"\nJSON:` },
-    ],
-  };
-  try {
-    const res = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) return null;
-    const json = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const content = json.choices?.[0]?.message?.content ?? "";
-    return extractArray(content);
-  } catch {
-    return null;
-  }
+  const content = await groqChat(SYSTEM, `Scene now: ${sceneSummary(session)}\nPhrase: "${utterance}"\nJSON:`, 600);
+  return content ? extractArray(content) : null;
 }

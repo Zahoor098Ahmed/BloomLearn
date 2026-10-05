@@ -240,12 +240,27 @@ function singular(w: string): string {
   return w;
 }
 
-/** Find the first vocabulary key present in a token list, matching plurals too. */
+const PHONETIC_VARIANTS: Record<string, string> = {
+  // Common child pronunciations and speech-to-text fuzzy variants
+  cot: "cat", kat: "cat", ket: "cat", kitty: "cat",
+  teble: "table", tabel: "table", tebbel: "table", tabe: "table",
+  pensi: "pencil", pensel: "pencil", pensil: "pencil",
+  appel: "apple", aple: "apple",
+  cher: "chair", char: "chair",
+  doggie: "dog", dag: "dog",
+  bo: "ball", bawl: "ball",
+  bok: "book", buk: "book",
+  bocks: "box", boks: "box",
+};
+
+/** Find the first vocabulary key present in a token list, matching plurals and child speech variants too. */
 function findIn(dict: Record<string, string>, tokens: string[], exclude?: string | null): string | null {
   for (const tok of tokens) {
     const s = singular(tok);
     if (dict[tok]) return tok === exclude ? null : tok;
     if (dict[s] && s !== exclude) return s;
+    const v = PHONETIC_VARIANTS[tok] || PHONETIC_VARIANTS[s];
+    if (v && dict[v] && v !== exclude) return v;
   }
   return null;
 }
