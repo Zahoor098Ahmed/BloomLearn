@@ -72,6 +72,19 @@ describe("Curriculum Validation & High Quality Prompt Generation", () => {
 
     const resBad = validateChapterSentence("en1-colours", "The dog is barking");
     assert.strictEqual(resBad.valid, false);
+
+    // Math questions must be rejected in English Colours chapter:
+    const resMath = validateChapterSentence("en1-colours", "5 pencil - 2 pencil");
+    assert.strictEqual(resMath.valid, false);
+    assert.ok(resMath.reason?.includes("Mathematics"));
+  });
+
+  it("validates Math chapters accept math questions and reject non-math", () => {
+    const resMath = validateChapterSentence("ma1-adding", "2 pencil + 3 pencil");
+    assert.strictEqual(resMath.valid, true);
+
+    const resSub = validateChapterSentence("ma1-subtracting", "5 apples - 2 apples");
+    assert.strictEqual(resSub.valid, true);
   });
 
   it("validates Action words chapter properly", () => {

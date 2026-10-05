@@ -154,16 +154,21 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
 
   const graph = useMemo(() => parseSceneGraph(text), [text]);
   const concept = conceptByKey(graph.conceptKey);
-  // A sum ("5 apples - 3 apples") or a story problem ("Sara has 5 apples. She
-  // gives 2 apples to Ali…") is drawn as a counting picture, not a scene. Every
-  // sum also gets a real storybook picture when an AI engine is set up: a story
-  // problem is drawn from its own story, a plain sum from a little made-up one.
-  const math = useMemo(() => parseMath(text) ?? parseWordProblem(text), [text]);
+  const isMathSubject = course.subject.id === "math";
+  const math = useMemo(() => {
+    if (!isMathSubject) return null;
+    return parseMath(text) ?? parseWordProblem(text);
+  }, [text, isMathSubject]);
   const story = useMemo(() => {
+    if (!isMathSubject) return null;
     const sum = parseMath(text);
     if (sum) return sumStory(sum);
     return parseWordProblem(text) ? storyWithoutQuestion(text) : null;
-  }, [text]);
+  }, [text, isMathSubject]);
+  const chapterValidation = useMemo(() => {
+    if (!activeChapterId || !text.trim()) return { valid: true };
+    return validateChapterSentence(activeChapterId, text);
+  }, [activeChapterId, text]);
   const [storyPic, setStoryPic] = useState<string | null>(null);
   const [storyState, setStoryState] = useState<"idle" | "drawing" | "needsEngine" | "failed">("idle");
   const textRef = useRef(text);
@@ -192,6 +197,7 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     if (!buildMode) return;
     const q = text.trim();
     if (!q || q === mergedRef.current || parseMath(q) || parseWordProblem(q)) return;
+    if (!validateChapterSentence(activeChapterId, q).valid) return;
     const t = setTimeout(async () => {
       mergedRef.current = q;
       setAiError(null);
@@ -306,6 +312,7 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     const q = text;
     const t = setTimeout(async () => {
       if (concept) return;
+      if (!validateChapterSentence(activeChapterId, q).valid) return;
       // Two objects in a relation ("cat on the table") -> let SceneComposer draw
       // both with the right depth. A single library picture can only show one.
       if (graph.subject && graph.reference) return;
@@ -540,6 +547,14 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
             ) : concept ? (
               // science concepts ("vertebrates have a backbone") have their own clearer drawing
               <View style={styles.stageWhite}><ConceptView concept={concept} lang={lang} /></View>
+            ) : !chapterValidation.valid && text.trim() ? (
+              <View style={styles.invalidStage}>
+                <Ionicons name="alert-circle-outline" size={44} color="#d97706" />
+                <Text style={styles.invalidStageTitle}>{chapterValidation.reason}</Text>
+                {chapterValidation.hint && (
+                  <Text style={styles.invalidStageHint}>{chapterValidation.hint}</Text>
+                )}
+              </View>
             ) : buildMode ? (
               <SceneStage session={displaySession} uris={itemUris} />
             ) : (
@@ -1618,5 +1633,30 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 14,
     fontWeight: "700",
+  },
+  invalidStage: {
+    width: "100%",
+    height: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 32,
+    backgroundColor: "#fffbf5",
+  },
+  invalidStageTitle: {
+    color: "#b45309",
+    fontSize: 16,
+    fontWeight: "700",
+    textAlign: "center",
+    marginTop: 12,
+    lineHeight: 22,
+  },
+  invalidStageHint: {
+    color: "#78716c",
+    fontSize: 13,
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 19,
+    maxWidth: 340,
   },
 });

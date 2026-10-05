@@ -316,6 +316,9 @@
     - `frontend/src/modules/imageLibrary.ts`
     - `frontend/src/components/SceneStage.tsx`
 
-- **15:55:59 – 15:55:59** ⏱️ Active Coding Session (**1 min**)
-  - 📁 **Files Worked On (1):**
-    - `frontend/src/components/SceneStage.tsx`
+- **16:00:00 – 16:16:00** ⏱️ Active Coding Session (**16 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/modules/curriculum.ts` (Rejected math equations and sums in non-math chapters in validateChapterSentence)
+    - `frontend/src/screens/SentencePictureScreen.tsx` (Restricted MathStage to Math subject only, prevented scene building/lookups for invalid chapter sentences, and displayed chapter requirement banner on stage)
+    - `frontend/src/modules/curriculum.test.ts` (Added tests verifying math questions are rejected in English Colours and accepted in Math chapters)
+

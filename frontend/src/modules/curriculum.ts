@@ -587,6 +587,19 @@ export function validateChapterSentence(chapterId: string, sentence: string): Ch
       (l) => l.say.toLowerCase().trim() === clean || (l.question && l.question.toLowerCase().trim() === clean)
     );
     if (isExactLesson) return { valid: true };
+
+    // If active chapter is NOT in Math subject (e.g. English or Science), reject any math calculation or word problem:
+    if (course.subject.id !== "math") {
+      const isMath = !!(parseMath(clean) || parseWordProblem(clean));
+      if (isMath) {
+        return {
+          valid: false,
+          reason: `Math questions belong in Mathematics! This chapter is for ${course.subject.title.en} (${course.chapter.title.en}).`,
+          hint: "Please switch to the Mathematics subject from 'Switch Chapter' to solve math sums and word problems.",
+          suggestions: ["Switch Chapter", "Mathematics"],
+        };
+      }
+    }
   }
 
   // Preposition chapters (English Grade 1 Chapter 1, etc.)
