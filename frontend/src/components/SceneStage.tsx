@@ -123,14 +123,14 @@ function layoutScene(items: SceneItem[]): Placed[] {
           n.x = ref.x;
           n.it.behind = false;
         } else if (rel === "inside") {
-          // Inside open container (box, basket, bag, cup) - nestled down inside cavity close to ground:
-          const maxInsideW = ref.w * 0.25;
+          // Inside open container (box, basket, bag, cup) - nestled cleanly inside the 3D cavity opening:
+          const maxInsideW = ref.w * 0.20;
           if (n.w > maxInsideW) {
             n.w = maxInsideW;
             n.h = n.w / ASPECT;
           }
-          n.y = ref.y - ref.h * 0.10;
-          n.x = ref.x;
+          n.y = ref.y - ref.h * 0.20;
+          n.x = ref.x + ref.w * 0.02;
           n.it.behind = false;
         } else if (rel === "below") {
           // On the ground beneath the reference (under table, bed, chair):

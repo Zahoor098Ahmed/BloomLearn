@@ -292,15 +292,6 @@
     - `frontend/src/components/SceneStage.tsx`
     - `frontend/src/components/SceneComposer.tsx`
 
-- **15:08:28 – 15:12:28** ⏱️ Active Coding Session (**4 min**)
-  - 📁 **Files Worked On (6):**
-    - `CLAUDE.md`
-    - `.mise.toml`
-    - `render.yaml`
-    - `frontend/src/modules/aacPictograms.ts`
-    - `frontend/src/modules/imageLibrary.ts`
-    - `frontend/src/components/SceneStage.tsx`
-
 - **15:05:21 – 15:12:28** ⏱️ Active Coding Session (**7 min**)
   - 📁 **Files Worked On (3):**
     - `frontend/src/modules/aacPictograms.ts`
@@ -309,7 +300,22 @@
 
 - **15:20:00 – 15:35:00** ⏱️ Active Coding Session (**15 min**)
   - 📁 **Files Worked On (4):**
-    - `frontend/src/modules/aacPictograms.ts` (Fixed bird pictogram from ID 2515 earrings to authentic ARASAAC ID 2490 bird)
-    - `frontend/src/modules/imageLibrary.ts` (Pinned bird/birds to ARASAAC 2490 in VARIANT_IDS)
-    - `frontend/src/components/SceneStage.tsx` (Enlarged chair to 1.3, corrected chair seat surface level & cushion offset for 'on the chair', added ball bottom offset, adjusted box scale to 0.95 and nested apple down inside box cavity near ground)
-    - `frontend/src/components/SceneComposer.tsx` (Aligned beside position with ground contact)
+    - `frontend/src/modules/aacPictograms.ts` 
+    - `frontend/src/modules/imageLibrary.ts` 
+    - `frontend/src/components/SceneStage.tsx` 
+    - `frontend/src/components/SceneComposer.tsx`
+
+
+- **15:45:00 – 15:58:00** ⏱️ Active Coding Session (**13 min**)
+  - 📁 **Files Worked On (2):**
+    - `frontend/src/components/SceneStage.tsx` (Refined 'inside' relation: placed apple nestled cleanly inside box cavity opening at -0.20h with width 0.20w, preventing apple from overlapping the front cardboard wall)
+    - `BACKLOG.md`
+
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/components/SceneStage.tsx`
+
+- **15:55:59 – 15:55:59** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/src/components/SceneStage.tsx`
