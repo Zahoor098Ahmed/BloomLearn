@@ -322,3 +322,16 @@
     - `frontend/src/screens/SentencePictureScreen.tsx` (Restricted MathStage to Math subject only, prevented scene building/lookups for invalid chapter sentences, and displayed chapter requirement banner on stage)
     - `frontend/src/modules/curriculum.test.ts` (Added tests verifying math questions are rejected in English Colours and accepted in Math chapters)
 
+- **16:18** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+
+- **15:55:59 – 16:14:05** ⏱️ Active Coding Session (**18 min**)
+  - 📁 **Files Worked On (4):**
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/modules/curriculum.test.ts`
