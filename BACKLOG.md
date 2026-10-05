@@ -21,24 +21,6 @@
   - 📁 **Files Worked On (2):**
     - `.gitignore`
     - `.gitattributes`
-- **04:01** 🌿 Commit `[0b827ae]` — **"work on sentance page"**
-  - 📁 **Changed Files (7):**
-    - `BACKLOG.md`
-    - `backend/.env.example`
-    - `backend/src/index.js`
-    - `backend/src/middleware/auth.js`
-    - `backend/src/routes/scene.js`
-    - `frontend/src/modules/aiScene.ts`
-    - `frontend/src/screens/SentencePictureScreen.tsx`
-- **04:01** 🌿 Commit `[0b827ae]` — **"work on sentance page"**
-  - 📁 **Changed Files (7):**
-    - `BACKLOG.md`
-    - `backend/.env.example`
-    - `backend/src/index.js`
-    - `backend/src/middleware/auth.js`
-    - `backend/src/routes/scene.js`
-    - `frontend/src/modules/aiScene.ts`
-    - `frontend/src/screens/SentencePictureScreen.tsx`
 
 - **22:32:49 – 22:33:10** ⏱️ Active Coding Session (**1 min**)
   - 📁 **Files Worked On (4):**
@@ -216,58 +198,7 @@
     - `frontend/src/modules/imageLibrary.ts`
     - `frontend/src/components/SceneStage.tsx`
 
-- **13:14** 🌿 Commit `[e1514b9]` — **"Fix spatial scene layouts, improve prepositions, open box rendering and bird fit scaling"**
-  - 📁 **Changed Files (21):**
-    - `.vscode/settings.json`
-    - `BACKLOG.md`
-    - `backend/.env.example`
-    - `backend/README.md`
-    - `backend/src/config.js`
-    - `backend/src/index.js`
-    - `backend/src/routes/chat.js`
-    - `docs/bloomlearn-overview.md`
-    - `frontend/package.json`
-    - `frontend/src/components/SceneComposer.tsx`
-    - `frontend/src/components/SceneStage.tsx`
-    - `frontend/src/modules/aacPictograms.ts`
-    - `frontend/src/modules/aiImage.ts`
-    - `frontend/src/modules/curriculum.test.ts`
-    - `frontend/src/modules/curriculum.ts`
-    - `frontend/src/modules/imageLibrary.ts`
-    - `frontend/src/modules/sceneAgent.ts`
-    - `frontend/src/modules/sceneSession.ts`
-    - `frontend/src/modules/sentenceScene.ts`
-    - `frontend/src/screens/SentencePictureScreen.tsx`
-    - `render.yaml`
-- **13:14** 🌿 Commit `[e1514b9]` — **"Fix spatial scene layouts, improve prepositions, open box rendering and bird fit scaling"**
-  - 📁 **Changed Files (21):**
-    - `.vscode/settings.json`
-    - `BACKLOG.md`
-    - `backend/.env.example`
-    - `backend/README.md`
-    - `backend/src/config.js`
-    - `backend/src/index.js`
-    - `backend/src/routes/chat.js`
-    - `docs/bloomlearn-overview.md`
-    - `frontend/package.json`
-    - `frontend/src/components/SceneComposer.tsx`
-    - `frontend/src/components/SceneStage.tsx`
-    - `frontend/src/modules/aacPictograms.ts`
-    - `frontend/src/modules/aiImage.ts`
-    - `frontend/src/modules/curriculum.test.ts`
-    - `frontend/src/modules/curriculum.ts`
-    - `frontend/src/modules/imageLibrary.ts`
-    - `frontend/src/modules/sceneAgent.ts`
-    - `frontend/src/modules/sceneSession.ts`
-    - `frontend/src/modules/sentenceScene.ts`
-    - `frontend/src/screens/SentencePictureScreen.tsx`
-    - `render.yaml`
-- **13:15** 🌿 Commit `[e1231cc]` — **"docs: update activity log with latest commit details"**
-  - 📁 **Changed Files (1):**
-    - `BACKLOG.md`
-- **13:15** 🌿 Commit `[e1231cc]` — **"docs: update activity log with latest commit details"**
-  - 📁 **Changed Files (1):**
-    - `BACKLOG.md`
+  
 
 - **14:35:42 – 14:35:42** ⏱️ Active Coding Session (**1 min**)
   - 📁 **Files Worked On (1):**
@@ -307,31 +238,19 @@
 
 
 - **15:45:00 – 15:58:00** ⏱️ Active Coding Session (**13 min**)
-  - 📁 **Files Worked On (2):**
-    - `frontend/src/components/SceneStage.tsx` (Refined 'inside' relation: placed apple nestled cleanly inside box cavity opening at -0.20h with width 0.20w, preventing apple from overlapping the front cardboard wall)
-    - `BACKLOG.md`
-
   - 📁 **Files Worked On (3):**
+    - `frontend/src/components/SceneStage.tsx` 
     - `frontend/src/modules/aacPictograms.ts`
     - `frontend/src/modules/imageLibrary.ts`
-    - `frontend/src/components/SceneStage.tsx`
 
+    
+
+ 
 - **16:00:00 – 16:16:00** ⏱️ Active Coding Session (**16 min**)
   - 📁 **Files Worked On (3):**
-    - `frontend/src/modules/curriculum.ts` (Rejected math equations and sums in non-math chapters in validateChapterSentence)
-    - `frontend/src/screens/SentencePictureScreen.tsx` (Restricted MathStage to Math subject only, prevented scene building/lookups for invalid chapter sentences, and displayed chapter requirement banner on stage)
-    - `frontend/src/modules/curriculum.test.ts` (Added tests verifying math questions are rejected in English Colours and accepted in Math chapters)
+    - `frontend/src/modules/curriculum.ts` 
+    - `frontend/src/screens/SentencePictureScreen.tsx` 
+    - `frontend/src/modules/curriculum.test.ts` 
 
-- **16:18** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
-  - 📁 **Changed Files (4):**
-    - `BACKLOG.md`
-    - `frontend/src/modules/curriculum.test.ts`
-    - `frontend/src/modules/curriculum.ts`
-    - `frontend/src/screens/SentencePictureScreen.tsx`
 
-- **15:55:59 – 16:14:05** ⏱️ Active Coding Session (**18 min**)
-  - 📁 **Files Worked On (4):**
-    - `frontend/src/components/SceneStage.tsx`
-    - `frontend/src/modules/curriculum.ts`
-    - `frontend/src/screens/SentencePictureScreen.tsx`
-    - `frontend/src/modules/curriculum.test.ts`
+
