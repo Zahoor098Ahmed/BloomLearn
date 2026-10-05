@@ -215,3 +215,49 @@
   - 📁 **Files Worked On (2):**
     - `frontend/src/modules/imageLibrary.ts`
     - `frontend/src/components/SceneStage.tsx`
+- **13:14** 🌿 Commit `[e1514b9]` — **"Fix spatial scene layouts, improve prepositions, open box rendering and bird fit scaling"**
+  - 📁 **Changed Files (21):**
+    - `.vscode/settings.json`
+    - `BACKLOG.md`
+    - `backend/.env.example`
+    - `backend/README.md`
+    - `backend/src/config.js`
+    - `backend/src/index.js`
+    - `backend/src/routes/chat.js`
+    - `docs/bloomlearn-overview.md`
+    - `frontend/package.json`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/modules/sceneAgent.ts`
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/modules/sentenceScene.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `render.yaml`
+- **13:14** 🌿 Commit `[e1514b9]` — **"Fix spatial scene layouts, improve prepositions, open box rendering and bird fit scaling"**
+  - 📁 **Changed Files (21):**
+    - `.vscode/settings.json`
+    - `BACKLOG.md`
+    - `backend/.env.example`
+    - `backend/README.md`
+    - `backend/src/config.js`
+    - `backend/src/index.js`
+    - `backend/src/routes/chat.js`
+    - `docs/bloomlearn-overview.md`
+    - `frontend/package.json`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/modules/sceneAgent.ts`
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/modules/sentenceScene.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `render.yaml`
