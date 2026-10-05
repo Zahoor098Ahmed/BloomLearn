@@ -242,9 +242,6 @@
     - `frontend/src/components/SceneStage.tsx` 
     - `frontend/src/modules/aacPictograms.ts`
     - `frontend/src/modules/imageLibrary.ts`
-
-    
-
  
 - **16:00:00 – 16:16:00** ⏱️ Active Coding Session (**16 min**)
   - 📁 **Files Worked On (3):**
@@ -252,13 +249,9 @@
     - `frontend/src/screens/SentencePictureScreen.tsx` 
     - `frontend/src/modules/curriculum.test.ts`
 
-- **15:55:59 – 16:51:35** ⏱️ Active Coding Session (**56 min**)
+- **16:20:59 – 16:51:35** ⏱️ Active Coding Session (**30 min**)
   - 📁 **Files Worked On (4):**
     - `frontend/src/components/SceneStage.tsx`
     - `frontend/src/modules/curriculum.ts`
     - `frontend/src/screens/SentencePictureScreen.tsx`
     - `frontend/src/modules/curriculum.test.ts`
-
-- **17:01:15 – 17:01:15** ⏱️ Active Coding Session (**1 min**)
-  - 📁 **Files Worked On (1):**
-    - `frontend/src/components/SceneStage.tsx`
