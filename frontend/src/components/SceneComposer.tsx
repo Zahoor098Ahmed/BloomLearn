@@ -41,7 +41,7 @@ function placeSubject(relation: string | null, subjSize: SceneSize): Placement {
     case "above":
       return { left: cx, top: refCy - 92, scale: s, behind: false, faded: false };
     case "beside":
-      return { left: cx - 92, top: refCy + 8, scale: s, behind: false, faded: false };
+      return { left: cx - 92, top: refCy + 44, scale: s, behind: false, faded: false };
     case "inside":
       return { left: cx, top: refCy + 12, scale: Math.min(s, 0.52), behind: false, faded: false };
     case "behind":

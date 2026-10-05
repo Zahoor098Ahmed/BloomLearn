@@ -258,9 +258,9 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   "open box": arasaac(7054),
   "opened cardboard box": arasaac(7054),
   "closed box": arasaac(37948),
-  cat: arasaac(2406),
+  cat: arasaac(2406), // Original cat (ARASAAC 2406)
   dog: arasaac(2517),
-  bird: arasaac(2515),
+  bird: arasaac(2490),
   fish: arasaac(2407),
   horse: arasaac(2408),
   cow: arasaac(2401),

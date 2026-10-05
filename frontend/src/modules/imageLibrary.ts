@@ -202,6 +202,10 @@ const VARIANT_IDS: Record<string, number> = {
   boy: 7176, // full body standing boy
   child: 7176,
   kid: 27509,
+  cat: 2406, // Original cat (ARASAAC 2406)
+  kitten: 2406,
+  bird: 2490, // Authentic robin bird
+  birds: 2490,
   "office chair": 28085, // "swivel chair"
   "desk chair": 28085,
   "swivel chair": 28085,

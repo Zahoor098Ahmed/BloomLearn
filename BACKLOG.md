@@ -215,6 +215,7 @@
   - 📁 **Files Worked On (2):**
     - `frontend/src/modules/imageLibrary.ts`
     - `frontend/src/components/SceneStage.tsx`
+
 - **13:14** 🌿 Commit `[e1514b9]` — **"Fix spatial scene layouts, improve prepositions, open box rendering and bird fit scaling"**
   - 📁 **Changed Files (21):**
     - `.vscode/settings.json`
@@ -261,3 +262,54 @@
     - `frontend/src/modules/sentenceScene.ts`
     - `frontend/src/screens/SentencePictureScreen.tsx`
     - `render.yaml`
+- **13:15** 🌿 Commit `[e1231cc]` — **"docs: update activity log with latest commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **13:15** 🌿 Commit `[e1231cc]` — **"docs: update activity log with latest commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+
+- **14:35:42 – 14:35:42** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `.gitignore`
+
+- **14:41:49 – 14:41:49** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `AGENTS.md`
+
+- **14:57:10 – 15:02:58** ⏱️ Active Coding Session (**6 min**)
+  - 📁 **Files Worked On (5):**
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `.gitattributes`
+
+- **14:35:53 – 15:00:11** ⏱️ Active Coding Session (**24 min**)
+  - 📁 **Files Worked On (4):**
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/components/SceneComposer.tsx`
+
+- **15:08:28 – 15:12:28** ⏱️ Active Coding Session (**4 min**)
+  - 📁 **Files Worked On (6):**
+    - `CLAUDE.md`
+    - `.mise.toml`
+    - `render.yaml`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/components/SceneStage.tsx`
+
+- **15:05:21 – 15:12:28** ⏱️ Active Coding Session (**7 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/components/SceneStage.tsx`
+
+- **15:20:00 – 15:35:00** ⏱️ Active Coding Session (**15 min**)
+  - 📁 **Files Worked On (4):**
+    - `frontend/src/modules/aacPictograms.ts` (Fixed bird pictogram from ID 2515 earrings to authentic ARASAAC ID 2490 bird)
+    - `frontend/src/modules/imageLibrary.ts` (Pinned bird/birds to ARASAAC 2490 in VARIANT_IDS)
+    - `frontend/src/components/SceneStage.tsx` (Enlarged chair to 1.3, corrected chair seat surface level & cushion offset for 'on the chair', added ball bottom offset, adjusted box scale to 0.95 and nested apple down inside box cavity near ground)
+    - `frontend/src/components/SceneComposer.tsx` (Aligned beside position with ground contact)
