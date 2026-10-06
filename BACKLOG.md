@@ -359,3 +359,31 @@
 - **17:47** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
   - 📁 **Changed Files (1):**
     - `BACKLOG.md`
+- **17:49** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
