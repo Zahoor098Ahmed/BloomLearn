@@ -255,3 +255,107 @@
     - `frontend/src/modules/curriculum.ts`
     - `frontend/src/screens/SentencePictureScreen.tsx`
     - `frontend/src/modules/curriculum.test.ts`
+
+## 2026-10-06
+
+- **09:55:20 – 11:20:30** ⏱️ Active Coding Session (**85 min**)
+  - 📁 **Files Worked On (21):**
+    - `frontend/package.json`
+    - `backend/src/routes/face.js`
+    - `backend/src/index.js`
+    - `frontend/app.json`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/App.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+
+- **11:49:15 – 11:52:02** ⏱️ Active Coding Session (**3 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+
+- **13:13:11 – 13:13:48** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+
+- **13:26:04 – 13:29:54** ⏱️ Active Coding Session (**4 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/sim_test.ts`
+
+- **13:46:40 – 14:11:22** ⏱️ Active Coding Session (**25 min**)
+  - 📁 **Files Worked On (7):**
+    - `frontend/sim_test.ts`
+    - `frontend/sim_robustness.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+
+- **15:33:33 – 15:37:43** ⏱️ Active Coding Session (**4 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/modules/faceEngine.test.ts`
+
+- **15:49:52 – 16:47:16** ⏱️ Active Coding Session (**57 min**)
+  - 📁 **Files Worked On (10):**
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/modules/scienceScene.ts`
+    - `frontend/src/components/ScienceStage.tsx`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/scienceScene.test.ts`
+    - `frontend/package.json`
+    - `frontend/src/components/SceneStage.tsx`
+
+- **17:15:55 – 17:15:55** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/src/components/SceneStage.tsx`
+
+- **17:47:28 – 17:47:29** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (24):**
+    - `backend/src/index.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package.json`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+    - `backend/src/routes/face.js`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+
+- **17:47** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`

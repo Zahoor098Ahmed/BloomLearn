@@ -111,4 +111,16 @@ describe("Curriculum Validation & High Quality Prompt Generation", () => {
     assert.ok(promptShape.includes("circle"), "Prompt must mention circle");
     assert.ok(promptShape.includes("pure clean white background"), "Prompt must have clean background");
   });
+
+  it("builds dedicated educational prompts for Science body & organ lessons", () => {
+    const promptLungs = getChapterImagePrompt("sc1-body", "Add lungs");
+    assert.ok(promptLungs.includes("LUNGS"), "Prompt must teach LUNGS");
+    assert.ok(promptLungs.includes("cutaway view"), "Prompt must specify cutaway view of chest");
+
+    const promptHeart = getChapterImagePrompt("sc1-body", "Heart");
+    assert.ok(promptHeart.includes("HEART"), "Prompt must teach HEART");
+
+    const promptStomach = getChapterImagePrompt("sc1-body", "Add stomach");
+    assert.ok(promptStomach.includes("STOMACH"), "Prompt must teach STOMACH");
+  });
 });

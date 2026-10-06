@@ -46,6 +46,7 @@ import SceneComposer from "../components/SceneComposer";
 import SceneStage from "../components/SceneStage";
 import MathStage from "../components/MathStage";
 import { parseMath, parseWordProblem, storyWithoutQuestion, sumStory } from "../modules/mathScene";
+import { getActiveProfile } from "../modules/childProfiles";
 import { colors, radius, type } from "../theme";
 
 interface Props {
@@ -502,6 +503,14 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                   .replace("{n}", String(course.chapter.lessons.length))}`}
               </Text>
             </Pressable>
+            {getActiveProfile() && (
+              <View style={styles.childHeaderPill}>
+                <Text style={{ fontSize: 16 }}>{getActiveProfile()!.avatarIcon}</Text>
+                <Text style={styles.childHeaderPillText} numberOfLines={1}>
+                  {getActiveProfile()!.name.split(" ")[0]}
+                </Text>
+              </View>
+            )}
             <Pressable onPress={onOpenSettings} style={styles.squareBtn} accessibilityLabel={tt("stTitle")}>
               <Ionicons name="settings-outline" size={21} color={colors.textDark} />
             </Pressable>
@@ -1658,5 +1667,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
     lineHeight: 19,
     maxWidth: 340,
+  },
+  childHeaderPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#e8f5e9",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#c8e6c9",
+  },
+  childHeaderPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: colors.forest,
   },
 });

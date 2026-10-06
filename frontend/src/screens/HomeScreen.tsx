@@ -11,27 +11,37 @@ import { SUBJECT_LIST, GRADES, chaptersFor, chapterCount, lessonCount, label, ty
 import Logo from "../components/Logo";
 import { SUBJECT_LOOK } from "../components/subjectLook";
 import { colors, type } from "../theme";
+import { getActiveProfile, subscribeActiveChild, type ChildProfile } from "../modules/childProfiles";
 
 interface Props {
   onOpenTalk: (text?: string) => void;
   onOpenSubject: (id: SubjectId) => void;
   onOpenSettings: () => void;
   onOpenHelp: () => void;
+  onSwitchChild?: () => void;
 }
 
-export default function HomeScreen({ onOpenTalk, onOpenSubject, onOpenSettings, onOpenHelp }: Props) {
+export default function HomeScreen({ onOpenTalk, onOpenSubject, onOpenSettings, onOpenHelp, onSwitchChild }: Props) {
   const { settings } = useSettings();
   const { isTablet } = useResponsive();
   const lang = settings.language;
   const tt = (k: TKey) => t(k, lang);
 
+  const [child, setChild] = useState<ChildProfile | null>(getActiveProfile);
   const [p, setP] = useState<ProgressData | null>(null);
+
   useEffect(() => {
+    const unsub = subscribeActiveChild((active) => {
+      setChild(active);
+      getProgress().then((d) => setP({ ...d }));
+    });
     getProgress().then((d) => setP({ ...d }));
+    return unsub;
   }, []);
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? tt("hmGoodMorning") : hour < 17 ? tt("hmGoodAfternoon") : tt("hmGoodEvening");
+  const baseGreeting = hour < 12 ? tt("hmGoodMorning") : hour < 17 ? tt("hmGoodAfternoon") : tt("hmGoodEvening");
+  const greeting = child ? `${baseGreeting}, ${child.name.split(" ")[0]}!` : baseGreeting;
 
   // Phones need an OpenAI key or the BloomLearn server for voice-to-text.
   const needsVoiceSetup = Platform.OS !== "web" && !isAiConfigured();
@@ -51,6 +61,51 @@ export default function HomeScreen({ onOpenTalk, onOpenSubject, onOpenSettings, 
               <Ionicons name="settings-outline" size={21} color={colors.textDark} />
             </Pressable>
           </View>
+
+          {/* Active Child & Switcher Bar */}
+          {child && (
+            <View style={styles.childBar}>
+              <View style={styles.childBarLeft}>
+                <View style={styles.childAvatarBadge}>
+                  <Text style={{ fontSize: 24 }}>{child.avatarIcon}</Text>
+                </View>
+                <View>
+                  <Text style={styles.childBarName}>{child.name}</Text>
+                  <Text style={styles.childBarGrade}>
+                    Grade {child.prescription.assignedGrade} • Doctor Prescription Active
+                  </Text>
+                </View>
+              </View>
+              {onSwitchChild && (
+                <Pressable
+                  onPress={onSwitchChild}
+                  style={({ pressed }) => [styles.switchBtn, pressed && { opacity: 0.85 }]}
+                  accessibilityLabel="Switch Child / Face Scan"
+                >
+                  <Ionicons name="scan-outline" size={17} color={colors.forest} />
+                  <Text style={styles.switchBtnText}>Switch</Text>
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {/* Doctor Prescription Plan Card */}
+          {child?.prescription && (
+            <View style={styles.rxCard}>
+              <View style={styles.rxHeader}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flex: 1 }}>
+                  <Ionicons name="medkit" size={18} color={colors.forest} />
+                  <Text style={styles.rxTitle}>
+                    {child.prescription.prescribedBy || "Doctor's Prescribed Plan"}
+                  </Text>
+                </View>
+                <View style={styles.rxGoalBadge}>
+                  <Text style={styles.rxGoalBadgeText}>Target: {child.prescription.dailySentenceGoal}/day</Text>
+                </View>
+              </View>
+              <Text style={styles.rxNotes}>{child.prescription.notes}</Text>
+            </View>
+          )}
 
           {/* Hero */}
           <View style={styles.hero}>
@@ -86,10 +141,12 @@ export default function HomeScreen({ onOpenTalk, onOpenSubject, onOpenSettings, 
             </Pressable>
           )}
 
-          {/* Subjects */}
-          <Text style={[type.eyebrow, styles.label]}>{tt("hmSubjects")}</Text>
+          {/* Subjects: Filtered only to subjects prescribed by doctor for this child */}
+          <Text style={[type.eyebrow, styles.label]}>
+            {tt("hmSubjects")} (Assigned: {child?.prescription.assignedSubjects.join(", ").toUpperCase()})
+          </Text>
           <View style={{ gap: 12 }}>
-            {SUBJECT_LIST.map((s) => {
+            {SUBJECT_LIST.filter((s) => !child?.prescription?.assignedSubjects || child.prescription.assignedSubjects.includes(s.id)).map((s) => {
               const look = SUBJECT_LOOK[s.id];
               const total = lessonCount(s);
               const done = p ? GRADES.reduce((n, g) => n + chaptersFor(s, g).reduce((m, c) => m + lessonsDone(p, c.id), 0), 0) : 0;
@@ -181,4 +238,90 @@ const styles = StyleSheet.create({
   subjectCount: { fontSize: 11.5, color: colors.textMid, marginTop: 5, fontWeight: "600" },
   localRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6, marginTop: 22 },
   localText: { fontSize: 12.5, color: colors.textLight },
+  childBar: {
+    marginTop: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  childBarLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  childAvatarBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#e8f5e9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  childBarName: {
+    fontSize: 15.5,
+    fontWeight: "800",
+    color: colors.textDark,
+  },
+  childBarGrade: {
+    fontSize: 12,
+    color: colors.textMid,
+    marginTop: 2,
+  },
+  switchBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "#f0fdf4",
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+  },
+  switchBtnText: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: colors.forest,
+  },
+  rxCard: {
+    marginTop: 10,
+    backgroundColor: "#fbfefc",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1.5,
+    borderColor: "#c3e6cb",
+    gap: 6,
+  },
+  rxHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  rxTitle: {
+    fontSize: 13.5,
+    fontWeight: "800",
+    color: colors.forest,
+  },
+  rxGoalBadge: {
+    backgroundColor: colors.forest,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+  },
+  rxGoalBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "white",
+  },
+  rxNotes: {
+    fontSize: 12.5,
+    color: colors.textDark,
+    lineHeight: 17,
+  },
 });

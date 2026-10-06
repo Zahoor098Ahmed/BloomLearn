@@ -753,6 +753,39 @@ export function getChapterImagePrompt(chapterId: string, sentence: string, input
 
   // 7. Science chapters
   if (chapterId.startsWith("sc")) {
+    // 7a. Human anatomy & body chapters ("sc1-body", "sc5-heartlungs", "sc4-digestion", etc.)
+    if (
+      chapterId === "sc1-body" ||
+      chapterId === "sc5-heartlungs" ||
+      chapterId === "sc4-digestion" ||
+      /\b(heart|lung|lungs|stomach|brain|kidney|kidneys|liver|body|organ|organs|chest|breathe|blood)\b/i.test(clean)
+    ) {
+      const rawOrgan = clean.replace(/^(add|the|my)\s+/i, "").trim().toLowerCase();
+      const organName =
+        rawOrgan.includes("lung") ? "lungs" :
+        rawOrgan.includes("heart") ? "heart" :
+        rawOrgan.includes("stomach") ? "stomach" :
+        rawOrgan.includes("brain") ? "brain" :
+        rawOrgan;
+
+      return `Autism-friendly educational science children's textbook illustration teaching human anatomy and the '${organName.toUpperCase()}': A cute, cheerful, friendly young child standing in center view, with a clear, gentle, child-friendly educational cutaway view showing the ${organName} glowing warmly and clearly inside their chest or abdomen in its accurate anatomical position. Clean plain white background, zero messy clutter, cheerful colorful medical science illustration for primary school children, beautiful storybook textbook style, bright warm daylight, gentle and inspiring, absolutely no scary or gory medical details, no text, no words, no letters, no labels, no watermark.`;
+    }
+
+    // 7b. Plant chapters ("sc1-plants", "sc2-plantparts")
+    if (chapterId === "sc1-plants" || chapterId === "sc2-plantparts") {
+      return `Autism-friendly educational science botanical illustration for young children: "${clean}". A vibrant, healthy green plant shown with crisp clarity on a clean plain white background, clearly highlighting natural plant parts (roots in soil, sturdy stem, bright green leaves, blooming colorful flower). Clean minimal background, zero clutter, colorful educational textbook art, warm bright lighting, no text, no words, no labels.`;
+    }
+
+    // 7c. Animal & habitat chapters ("sc1-animals", "sc2-habitats", "sc4-classify")
+    if (chapterId === "sc1-animals" || chapterId === "sc2-habitats" || chapterId === "sc4-classify") {
+      return `Autism-friendly educational science children's picture book illustration: "${clean}". A beautiful, friendly, scientifically accurate animal depicted in a clean, serene, uncluttered natural habitat. Vivid colorful details, charming children's encyclopedia style, bright warm lighting, zero messy distractions, no text, no words, no labels.`;
+    }
+
+    // 7d. Weather & Sky chapters ("sc1-sky", "sc5-space")
+    if (chapterId === "sc1-sky" || chapterId === "sc5-space") {
+      return `Autism-friendly educational science children's illustration: "${clean}". Beautiful, clear, wonder-filled depiction of the sky, solar system, sun, moon, stars, or weather. Vibrant luminous colors, clean composition, zero clutter, cheerful children's astronomy textbook art, no text, no words, no labels.`;
+    }
+
     return `Autism-friendly educational science illustration for young children: "${clean}". Scientifically accurate yet friendly, colorful, clean simple background, zero clutter, engaging textbook picture book art style, close-up clear distinct details, bright lighting, no text, no labels.`;
   }
 

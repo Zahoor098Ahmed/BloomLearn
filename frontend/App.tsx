@@ -16,15 +16,16 @@ import SettingsScreen from "./src/screens/SettingsScreen";
 import HelpScreen from "./src/screens/HelpScreen";
 import PrivacyScreen from "./src/screens/PrivacyScreen";
 import SubjectScreen from "./src/screens/SubjectScreen";
+import FaceAuthScreen from "./src/screens/FaceAuthScreen";
 import type { SubjectId } from "./src/modules/curriculum";
 
-type Screen = Tab | "subject" | "settings" | "help" | "privacy";
+type Screen = Tab | "subject" | "settings" | "help" | "privacy" | "face-auth";
 
 const TABS: Screen[] = ["home", "talk", "progress"];
 
 function AppInner() {
   const { ready, settings } = useSettings();
-  const [screen, setScreen] = useState<Screen>("home");
+  const [screen, setScreen] = useState<Screen>("face-auth");
   const historyRef = useRef<Screen[]>([]);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
   // Parent lock stays open while the parent moves around Settings / Help / Privacy.
@@ -73,10 +74,10 @@ function AppInner() {
     setScreen(tab);
   }
 
-  // Android back: step back through screens, and leave the app from Home.
+  // Android back: step back through screens, and leave the app from Home or Face Auth.
   useEffect(() => {
     const sub = BackHandler.addEventListener("hardwareBackPress", () => {
-      if (screen === "home") return false;
+      if (screen === "home" || screen === "face-auth") return false;
       back();
       return true;
     });
@@ -102,16 +103,32 @@ function AppInner() {
   }
 
   if (!settings.onboarded) {
-    return <WelcomeScreen onGetStarted={() => setScreen("home")} />;
+    return <WelcomeScreen onGetStarted={() => setScreen("face-auth")} />;
   }
 
   // The tab bar also shows on a subject page (it belongs to Home).
   const activeTab: Tab | null = TABS.includes(screen) ? (screen as Tab) : screen === "subject" ? "home" : null;
-  const settingsBody = <SettingsScreen onBack={back} onOpenHelp={() => go("help")} onOpenPrivacy={() => go("privacy")} />;
+  const settingsBody = (
+    <SettingsScreen
+      onBack={back}
+      onOpenHelp={() => go("help")}
+      onOpenPrivacy={() => go("privacy")}
+      onOpenFaceAuth={() => go("face-auth")}
+    />
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <View style={{ flex: 1 }}>
+        {screen === "face-auth" && (
+          <FaceAuthScreen
+            onSuccess={() => {
+              historyRef.current = [];
+              setScreen("home");
+            }}
+            onOpenParentSettings={() => go("settings")}
+          />
+        )}
         {talk && (
           <View style={{ flex: 1, display: screen === "talk" ? "flex" : "none" }}>
             <SentencePictureScreen
@@ -129,6 +146,7 @@ function AppInner() {
             onOpenSubject={openSubject}
             onOpenSettings={() => go("settings")}
             onOpenHelp={() => go("help")}
+            onSwitchChild={() => go("face-auth")}
           />
         )}
         {screen === "subject" && <SubjectScreen subjectId={subjectId} onBack={back} onOpenChapter={openChapter} />}

@@ -233,7 +233,32 @@ export type TKey =
   | 'lsNextShort'
   | 'spStoryDrawing'
   | 'spStoryNeedsEngine'
-  | 'spStoryFailed';
+  | 'spStoryFailed'
+  | 'faTitle'
+  | 'faSubtitle'
+  | 'faScanning'
+  | 'faRecognized'
+  | 'faAccuracy'
+  | 'faDoctorPlan'
+  | 'faNoMatch'
+  | 'faSwitchChild'
+  | 'faAddChild'
+  | 'faManageKids'
+  | 'faManualSelect'
+  | 'faStartLearning'
+  | 'faEnrollFace'
+  | 'faCapturePhoto'
+  | 'faSamplesCaptured'
+  | 'faPrescription'
+  | 'faDoctorNotes'
+  | 'faAssignedSubjects'
+  | 'faAssignedGrade'
+  | 'faDailyGoal'
+  | 'faChildName'
+  | 'faAge'
+  | 'faSavedProfile'
+  | 'faHoldStill'
+  | 'faLookingForFace';
 
 type TMap = Record<TKey, string>;
 type AllTranslations = { 'en-US': TMap } & Partial<Record<LanguageCode, Partial<TMap>>>;
@@ -444,6 +469,31 @@ const T: AllTranslations = {
     spStoryDrawing: "Drawing the story…",
     spStoryNeedsEngine: "A real picture of the story needs an AI engine — add a free Pollinations token or an OpenAI key in Settings. The counting picture below always works.",
     spStoryFailed: "Could not draw the story right now. The counting picture below still shows the sum.",
+    faTitle: "Who is learning today?",
+    faSubtitle: "Look at the camera to scan face",
+    faScanning: "Scanning face…",
+    faRecognized: "Face recognized!",
+    faAccuracy: "Accuracy: {n}%",
+    faDoctorPlan: "Doctor's Plan",
+    faNoMatch: "Face not recognized. Please align inside the oval or select child manually.",
+    faSwitchChild: "Switch Child",
+    faAddChild: "Add Child",
+    faManageKids: "Manage Children & Doctor Plans",
+    faManualSelect: "Select Profile with PIN",
+    faStartLearning: "Start Learning",
+    faEnrollFace: "Enroll Face",
+    faCapturePhoto: "Take Photo",
+    faSamplesCaptured: "{n} of 3 samples captured",
+    faPrescription: "Doctor Prescription",
+    faDoctorNotes: "Doctor's Clinical Notes",
+    faAssignedSubjects: "Assigned Subjects",
+    faAssignedGrade: "Assigned Grade",
+    faDailyGoal: "Daily Sentence Goal",
+    faChildName: "Child's Name",
+    faAge: "Age",
+    faSavedProfile: "Child profile saved",
+    faHoldStill: "Align your face in the oval and hold still",
+    faLookingForFace: "Looking for face…",
   },
   'ar-SA': {
     save: 'حفظ',
@@ -650,6 +700,31 @@ const T: AllTranslations = {
     spStoryDrawing: "جارٍ رسم القصة…",
     spStoryNeedsEngine: "صورة حقيقية للقصة تحتاج إلى محرك ذكاء اصطناعي — أضف رمز Pollinations مجانياً أو مفتاح OpenAI في الإعدادات. صورة العدّ في الأسفل تعمل دائماً.",
     spStoryFailed: "تعذّر رسم القصة الآن. صورة العدّ في الأسفل ما زالت تُظهر المسألة.",
+    faTitle: "من يتعلم اليوم؟",
+    faSubtitle: "انظر إلى الكاميرا لمسح الوجه",
+    faScanning: "جارٍ مسح الوجه…",
+    faRecognized: "تم التعرف على الوجه!",
+    faAccuracy: "الدقة: {n}%",
+    faDoctorPlan: "خطة الطبيب",
+    faNoMatch: "لم يتم التعرف على الوجه. يرجى المحاذاة داخل الشكل البيضاوي أو الاختيار يدوياً.",
+    faSwitchChild: "تبديل الطفل",
+    faAddChild: "إضافة طفل",
+    faManageKids: "إدارة الأطفال وخطط الطبيب",
+    faManualSelect: "اختيار الملف الشخصي برمز المرور",
+    faStartLearning: "ابدأ التعلم",
+    faEnrollFace: "تسجيل الوجه",
+    faCapturePhoto: "التقاط صورة",
+    faSamplesCaptured: "تم التقاط {n} من 3 عينات",
+    faPrescription: "وصفة الطبيب",
+    faDoctorNotes: "ملاحظات الطبيب وتوصياته",
+    faAssignedSubjects: "المواد المخصصة",
+    faAssignedGrade: "الصف المخصص",
+    faDailyGoal: "الهدف اليومي للجمل",
+    faChildName: "اسم الطفل",
+    faAge: "العمر",
+    faSavedProfile: "تم حفظ الملف الشخصي",
+    faHoldStill: "اضبط وجهك داخل الإطار البيضاوي واثبت",
+    faLookingForFace: "جارٍ البحث عن الوجه…",
   },
 };
 

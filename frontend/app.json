@@ -12,14 +12,16 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSMicrophoneUsageDescription": "BloomLearn uses the microphone so you can speak a sentence and see it as a picture.",
-        "NSSpeechRecognitionUsageDescription": "BloomLearn turns a spoken sentence into text and a matching picture."
+        "NSSpeechRecognitionUsageDescription": "BloomLearn turns a spoken sentence into text and a matching picture.",
+        "NSCameraUsageDescription": "BloomLearn uses the camera for child face recognition and profile personalization."
       }
     },
     "android": {
       "package": "com.timeglobaltech.bloomlearn",
       "versionCode": 1,
       "permissions": [
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA"
       ]
     },
     "plugins": [
@@ -28,6 +30,12 @@
         "expo-audio",
         {
           "microphonePermission": "BloomLearn uses the microphone so you can speak a sentence and see it as a picture."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "BloomLearn uses the camera for child face recognition and profile personalization."
         }
       ],
       "expo-secure-store"

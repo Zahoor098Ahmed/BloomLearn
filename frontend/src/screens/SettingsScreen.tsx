@@ -21,11 +21,22 @@ import Group, { Row } from "../components/Group";
 import Segmented from "../components/Segmented";
 import Toggle from "../components/Toggle";
 import { colors } from "../theme";
+import {
+  loadProfiles,
+  getCachedProfiles,
+  getActiveChildId,
+  setActiveChild,
+  deleteProfile,
+  clearStarterProfiles,
+  type ChildProfile,
+} from "../modules/childProfiles";
+import ChildEnrollmentModal from "../components/ChildEnrollmentModal";
 
 interface Props {
   onBack: () => void;
   onOpenHelp: () => void;
   onOpenPrivacy: () => void;
+  onOpenFaceAuth?: () => void;
 }
 
 const RATES: { key: TKey; value: number }[] = [
@@ -90,7 +101,7 @@ const ENGINES: EngineDef[] = [
   },
 ];
 
-export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Props) {
+export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy, onOpenFaceAuth }: Props) {
   const { settings, update, reset } = useSettings();
   const lang = settings.language;
   const tt = (k: TKey) => t(k, lang);
@@ -104,9 +115,18 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
   const [pinModal, setPinModal] = useState(false);
   const [pinValue, setPinValue] = useState("");
 
+  const [profilesList, setProfilesList] = useState<ChildProfile[]>(getCachedProfiles);
+  const [activeChildId, setActiveChildIdState] = useState<string | null>(getActiveChildId);
+  const [childModalVisible, setChildModalVisible] = useState(false);
+  const [selectedChildForEdit, setSelectedChildForEdit] = useState<ChildProfile | null>(null);
+
   useEffect(() => {
     libraryCount().then(setLibN);
     loadPasscode().then(() => setPinSet(hasPasscode()));
+    loadProfiles().then((list) => {
+      setProfilesList([...list]);
+      setActiveChildIdState(getActiveChildId());
+    });
   }, []);
 
   const refreshKeys = () => setKeysVersion((v) => v + 1);
@@ -262,6 +282,110 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
             )}
           </Group>
 
+          {/* Children & Doctor Prescriptions */}
+          <Group title="Children & Doctor Prescriptions" note="Each child sees only their own assigned subjects and doctor clinical plan. Face scan automatically recognizes which child is using the device.">
+            {profilesList.map((p) => {
+              const isActive = activeChildId === p.id;
+              return (
+                <Row
+                  key={p.id}
+                  icon="person-outline"
+                  tint={colors.forest}
+                  bg="#e8f5e9"
+                  label={`${p.avatarIcon} ${p.name}`}
+                  detail={`Grade ${p.prescription.assignedGrade} • ${p.prescription.assignedSubjects.join(", ").toUpperCase()}${p.faceEnrollment ? ` • ${p.faceEnrollment.featureVectors.length} Face Samples` : ""}`}
+                  chevron
+                  onPress={() => {
+                    setSelectedChildForEdit(p);
+                    setChildModalVisible(true);
+                  }}
+                  trailing={
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                      {isActive && (
+                        <View style={{ backgroundColor: colors.forest, paddingVertical: 2, paddingHorizontal: 7, borderRadius: 8 }}>
+                          <Text style={{ color: "white", fontSize: 11, fontWeight: "800" }}>Active</Text>
+                        </View>
+                      )}
+                      <Pressable
+                        onPress={async () => {
+                          await setActiveChild(p.id);
+                          setActiveChildIdState(p.id);
+                        }}
+                        style={{ padding: 4 }}
+                        hitSlop={6}
+                      >
+                        <Ionicons name={isActive ? "checkmark-circle" : "radio-button-off"} size={20} color={isActive ? colors.forest : colors.textLight} />
+                      </Pressable>
+                      <Pressable
+                        onPress={() => {
+                          Alert.alert(
+                            "Delete Child Profile",
+                            `Are you sure you want to remove ${p.name}?`,
+                            [
+                              { text: "Cancel", style: "cancel" },
+                              {
+                                text: "Delete",
+                                style: "destructive",
+                                onPress: async () => {
+                                  await deleteProfile(p.id);
+                                  const list = await loadProfiles();
+                                  setProfilesList([...list]);
+                                  setActiveChildIdState(getActiveChildId());
+                                },
+                              },
+                            ]
+                          );
+                        }}
+                        style={{ padding: 4 }}
+                        hitSlop={6}
+                      >
+                        <Ionicons name="trash-outline" size={19} color="#dc2626" />
+                      </Pressable>
+                    </View>
+                  }
+                />
+              );
+            })}
+            {profilesList.some((p) => p.isStarter || p.id === "child_a_ahmed" || p.id === "child_b_sara") && (
+              <Row
+                icon="trash-bin-outline"
+                tint="#dc2626"
+                bg="#fee2e2"
+                label="Clear Demo Profiles (Ahmed & Sara)"
+                detail="Remove sample kids so only your family children show"
+                onPress={async () => {
+                  await clearStarterProfiles();
+                  const list = await loadProfiles();
+                  setProfilesList([...list]);
+                  setActiveChildIdState(getActiveChildId());
+                }}
+              />
+            )}
+            <Row
+              icon="person-add-outline"
+              tint={colors.blueDeep}
+              bg={colors.blue}
+              label="Add New Child Profile"
+              detail="Enroll face biometrics & doctor prescription"
+              chevron
+              onPress={() => {
+                setSelectedChildForEdit(null);
+                setChildModalVisible(true);
+              }}
+            />
+            {onOpenFaceAuth && (
+              <Row
+                icon="scan-outline"
+                tint={colors.yellowDeep}
+                bg={colors.yellow}
+                label="Scan Face to Switch Child"
+                detail="Open live camera face recognition"
+                chevron
+                onPress={onOpenFaceAuth}
+              />
+            )}
+          </Group>
+
           {/* Privacy */}
           <Group title={tt("stPrivacyTitle")} note={tt("stPrivacy")}>
             <Row
@@ -397,6 +521,25 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy }: Pr
           )}
         </View>
       </Modal>
+
+      <ChildEnrollmentModal
+        visible={childModalVisible}
+        initialProfile={selectedChildForEdit}
+        onClose={() => {
+          setChildModalVisible(false);
+          setSelectedChildForEdit(null);
+        }}
+        onSaved={async () => {
+          const list = await loadProfiles();
+          setProfilesList([...list]);
+          setActiveChildIdState(getActiveChildId());
+        }}
+        onDelete={async () => {
+          const list = await loadProfiles();
+          setProfilesList([...list]);
+          setActiveChildIdState(getActiveChildId());
+        }}
+      />
     </View>
   );
 }

@@ -1,4 +1,6 @@
+import React, { useState } from "react";
 import { View, Text, Image, StyleSheet } from "react-native";
+import Svg, { Line, Circle, G } from "react-native-svg";
 import type { SceneSession, SceneItem } from "../modules/sceneSession";
 import { searchPhrase } from "../modules/sceneSession";
 import { getPictogramUrl } from "../modules/aacPictograms";
@@ -300,84 +302,64 @@ function Item({ p, uri }: { p: Placed; uri?: string }) {
 // One clean body outline; each named part is a labelled marker on the figure
 // "Organs of the body" style diagram: a figure in the centre, each named organ
 // in a circular badge around the edge with a connector line to its spot.
-type OrganDef = { label: string; id: number; ax: number; ay: number };
+type OrganDef = { label: string; id: number; ax: number; ay: number; tip?: string; tint?: string };
 const ORGAN: Record<string, OrganDef> = {
-  brain: { label: "Brain", id: 2696, ax: 0.5, ay: 0.12 },
-  lungs: { label: "Lungs", id: 2822, ax: 0.5, ay: 0.34 },
-  lung: { label: "Lungs", id: 2822, ax: 0.5, ay: 0.34 },
-  heart: { label: "Heart", id: 4613, ax: 0.47, ay: 0.37 },
-  liver: { label: "Liver", id: 2980, ax: 0.45, ay: 0.46 },
-  stomach: { label: "Stomach", id: 2786, ax: 0.55, ay: 0.45 },
-  belly: { label: "Stomach", id: 2786, ax: 0.55, ay: 0.45 },
-  pancreas: { label: "Pancreas", id: 28407, ax: 0.53, ay: 0.49 },
-  kidney: { label: "Kidneys", id: 2812, ax: 0.53, ay: 0.51 },
-  kidneys: { label: "Kidneys", id: 2812, ax: 0.53, ay: 0.51 },
-  intestine: { label: "Intestines", id: 2967, ax: 0.5, ay: 0.56 },
-  intestines: { label: "Intestines", id: 2967, ax: 0.5, ay: 0.56 },
-  bladder: { label: "Bladder", id: 3407, ax: 0.5, ay: 0.62 },
+  brain: { label: "Brain", id: 2696, ax: 0.50, ay: 0.17, tip: "Helps us think", tint: "#f43f5e" },
+  lungs: { label: "Lungs", id: 2822, ax: 0.50, ay: 0.35, tip: "Helps us breathe", tint: "#06b6d4" },
+  lung: { label: "Lungs", id: 2822, ax: 0.50, ay: 0.35, tip: "Helps us breathe", tint: "#06b6d4" },
+  heart: { label: "Heart", id: 2715, ax: 0.48, ay: 0.37, tip: "Pumps blood", tint: "#ef4444" },
+  liver: { label: "Liver", id: 2980, ax: 0.46, ay: 0.44, tip: "Cleans our blood", tint: "#b45309" },
+  stomach: { label: "Stomach", id: 3309, ax: 0.54, ay: 0.46, tip: "Digests food", tint: "#8b5cf6" },
+  belly: { label: "Stomach", id: 3309, ax: 0.54, ay: 0.46, tip: "Digests food", tint: "#8b5cf6" },
+  pancreas: { label: "Pancreas", id: 28407, ax: 0.51, ay: 0.49, tip: "Makes insulin", tint: "#f59e0b" },
+  kidney: { label: "Kidneys", id: 2812, ax: 0.50, ay: 0.52, tip: "Filters water", tint: "#84cc16" },
+  kidneys: { label: "Kidneys", id: 2812, ax: 0.50, ay: 0.52, tip: "Filters water", tint: "#84cc16" },
+  intestine: { label: "Intestines", id: 2967, ax: 0.50, ay: 0.58, tip: "Absorbs nutrients", tint: "#10b981" },
+  intestines: { label: "Intestines", id: 2967, ax: 0.50, ay: 0.58, tip: "Absorbs nutrients", tint: "#10b981" },
+  bladder: { label: "Bladder", id: 3407, ax: 0.50, ay: 0.64, tip: "Stores liquid", tint: "#3b82f6" },
 };
 // simple outside parts — a dot + label on the figure (no organ picture)
 const PART: Record<string, { label: string; x: number; y: number; side: "L" | "R" }> = {
-  head: { label: "Head", x: 0.5, y: 0.07, side: "R" },
-  hair: { label: "Hair", x: 0.5, y: 0.04, side: "L" },
-  eye: { label: "Eyes", x: 0.48, y: 0.07, side: "L" }, eyes: { label: "Eyes", x: 0.48, y: 0.07, side: "L" },
-  ear: { label: "Ears", x: 0.54, y: 0.08, side: "R" }, ears: { label: "Ears", x: 0.54, y: 0.08, side: "R" },
-  nose: { label: "Nose", x: 0.5, y: 0.09, side: "L" },
-  mouth: { label: "Mouth", x: 0.5, y: 0.11, side: "R" },
-  neck: { label: "Neck", x: 0.5, y: 0.16, side: "L" },
-  shoulder: { label: "Shoulders", x: 0.4, y: 0.21, side: "L" }, shoulders: { label: "Shoulders", x: 0.4, y: 0.21, side: "L" },
-  chest: { label: "Chest", x: 0.5, y: 0.28, side: "R" },
-  arm: { label: "Arms", x: 0.34, y: 0.34, side: "L" }, arms: { label: "Arms", x: 0.34, y: 0.34, side: "L" },
-  elbow: { label: "Elbows", x: 0.3, y: 0.42, side: "R" },
-  hand: { label: "Hands", x: 0.27, y: 0.5, side: "L" }, hands: { label: "Hands", x: 0.27, y: 0.5, side: "L" },
+  head: { label: "Head", x: 0.50, y: 0.14, side: "R" },
+  hair: { label: "Hair", x: 0.50, y: 0.11, side: "L" },
+  eye: { label: "Eyes", x: 0.48, y: 0.15, side: "L" }, eyes: { label: "Eyes", x: 0.48, y: 0.15, side: "L" },
+  ear: { label: "Ears", x: 0.54, y: 0.16, side: "R" }, ears: { label: "Ears", x: 0.54, y: 0.16, side: "R" },
+  nose: { label: "Nose", x: 0.50, y: 0.18, side: "L" },
+  mouth: { label: "Mouth", x: 0.50, y: 0.20, side: "R" },
+  neck: { label: "Neck", x: 0.50, y: 0.25, side: "L" },
+  shoulder: { label: "Shoulders", x: 0.40, y: 0.29, side: "L" }, shoulders: { label: "Shoulders", x: 0.40, y: 0.29, side: "L" },
+  chest: { label: "Chest", x: 0.50, y: 0.35, side: "R" },
+  arm: { label: "Arms", x: 0.34, y: 0.40, side: "L" }, arms: { label: "Arms", x: 0.34, y: 0.40, side: "L" },
+  elbow: { label: "Elbows", x: 0.30, y: 0.46, side: "R" },
+  hand: { label: "Hands", x: 0.27, y: 0.52, side: "L" }, hands: { label: "Hands", x: 0.27, y: 0.52, side: "L" },
   finger: { label: "Fingers", x: 0.25, y: 0.56, side: "R" },
-  tummy: { label: "Tummy", x: 0.5, y: 0.43, side: "R" },
-  hip: { label: "Hips", x: 0.5, y: 0.6, side: "L" }, hips: { label: "Hips", x: 0.5, y: 0.6, side: "L" },
-  leg: { label: "Legs", x: 0.46, y: 0.78, side: "L" }, legs: { label: "Legs", x: 0.46, y: 0.78, side: "L" },
-  knee: { label: "Knees", x: 0.46, y: 0.86, side: "R" },
-  foot: { label: "Feet", x: 0.46, y: 0.96, side: "L" }, feet: { label: "Feet", x: 0.46, y: 0.96, side: "L" },
-  toe: { label: "Toes", x: 0.45, y: 0.99, side: "R" },
-  back: { label: "Back", x: 0.5, y: 0.32, side: "R" },
-  torso: { label: "Torso", x: 0.5, y: 0.36, side: "R" },
-  body: { label: "Body", x: 0.5, y: 0.4, side: "R" },
+  tummy: { label: "Tummy", x: 0.50, y: 0.47, side: "R" },
+  hip: { label: "Hips", x: 0.50, y: 0.60, side: "L" }, hips: { label: "Hips", x: 0.50, y: 0.60, side: "L" },
+  leg: { label: "Legs", x: 0.45, y: 0.74, side: "L" }, legs: { label: "Legs", x: 0.45, y: 0.74, side: "L" },
+  knee: { label: "Knees", x: 0.45, y: 0.82, side: "R" },
+  foot: { label: "Feet", x: 0.45, y: 0.92, side: "L" }, feet: { label: "Feet", x: 0.45, y: 0.92, side: "L" },
+  toe: { label: "Toes", x: 0.45, y: 0.96, side: "R" },
+  back: { label: "Back", x: 0.50, y: 0.38, side: "R" },
+  torso: { label: "Torso", x: 0.50, y: 0.42, side: "R" },
+  body: { label: "Body", x: 0.50, y: 0.45, side: "R" },
 };
 const asrc = (id: number) => `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
 
-const AW = 320;
-const AH = 410;
+const AW = 360;
+const AH = 420;
 // badge slots around the edge, filled in this order
 const SLOTS = [
-  { x: 0.135, y: 0.16 }, { x: 0.865, y: 0.16 },
-  { x: 0.135, y: 0.37 }, { x: 0.865, y: 0.37 },
-  { x: 0.135, y: 0.58 }, { x: 0.865, y: 0.58 },
-  { x: 0.135, y: 0.79 }, { x: 0.865, y: 0.79 },
-  { x: 0.34, y: 0.93 }, { x: 0.66, y: 0.93 },
+  { x: 0.16, y: 0.30 }, { x: 0.84, y: 0.30 },
+  { x: 0.16, y: 0.48 }, { x: 0.84, y: 0.48 },
+  { x: 0.16, y: 0.16 }, { x: 0.84, y: 0.16 },
+  { x: 0.16, y: 0.66 }, { x: 0.84, y: 0.66 },
+  { x: 0.32, y: 0.88 }, { x: 0.68, y: 0.88 },
 ];
-
-function Connector({ from, to, color = "#3f8f86" }: { from: { x: number; y: number }; to: { x: number; y: number }; color?: string }) {
-  const dx = (to.x - from.x) * AW;
-  const dy = (to.y - from.y) * AH;
-  const len = Math.hypot(dx, dy);
-  const angle = (Math.atan2(dy, dx) * 180) / Math.PI;
-  return (
-    <View
-      style={{
-        position: "absolute",
-        left: `${from.x * 100}%`,
-        top: `${from.y * 100}%`,
-        width: len,
-        height: 1.5,
-        backgroundColor: color,
-        transformOrigin: "left center",
-        transform: [{ rotate: `${angle}deg` }],
-      }}
-    />
-  );
-}
 
 export default function SceneStage({ session, uris = {} }: { session: SceneSession; uris?: Record<string, string> }) {
   const { settings } = useSettings();
   const lang = settings.language;
+
   if (session.anatomy) {
     const seen = new Set<string>();
     const uniq = session.anatomyParts.filter((p) => {
@@ -392,20 +374,104 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
     return (
       <View style={styles.bodyStage}>
         <Text style={styles.bodyTitle}>{t("ssBodyTitle", lang)}</Text>
-        <Image source={{ uri: asrc(6473) }} style={styles.bodyFigure} resizeMode="contain" />
 
+        {/* Prominent human body silhouette with in-body organ rendering */}
+        <View style={styles.bodyFigureContainer} pointerEvents="none">
+          <Image source={{ uri: asrc(6473) }} style={styles.bodyFigure} resizeMode="contain" />
+
+          {/* Organs rendered directly INSIDE the body silhouette */}
+          {organs.map((o) => (
+            <View
+              key={`body-organ-${o.label}`}
+              style={[
+                styles.organOnBody,
+                {
+                  left: `${o.ax * 100}%`,
+                  top: `${o.ay * 100}%`,
+                },
+              ]}
+            >
+              <View style={[styles.organOnBodyPill, { borderColor: o.tint || colors.forest }]}>
+                <Image source={{ uri: asrc(o.id) }} style={styles.organOnBodyImg} resizeMode="contain" />
+              </View>
+            </View>
+          ))}
+        </View>
+
+        {/* Precision SVG Connector Lines with viewBox (Instant, zero-delay on all platforms) */}
+        <Svg
+          style={StyleSheet.absoluteFill}
+          viewBox={`0 0 ${AW} ${AH}`}
+          preserveAspectRatio="none"
+          pointerEvents="none"
+        >
+          {organs.map((o, i) => {
+            const slot = SLOTS[i];
+            const x1 = slot.x * AW;
+            const y1 = slot.y * AH;
+            const x2 = o.ax * AW;
+            const y2 = o.ay * AH;
+            const color = o.tint || "#0d9488";
+            return (
+              <G key={`svg-conn-${o.label}`}>
+                {/* Outer soft glow line */}
+                <Line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke={color}
+                  strokeWidth={4.5}
+                  strokeOpacity={0.25}
+                />
+                {/* Crisp precision dashed line */}
+                <Line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke={color}
+                  strokeWidth={2}
+                  strokeDasharray="4, 3"
+                />
+                {/* Callout badge anchor dot */}
+                <Circle cx={x1} cy={y1} r={4.5} fill={color} stroke="white" strokeWidth={1.5} />
+                {/* Body organ pulse locator beacon */}
+                <Circle cx={x2} cy={y2} r={9} fill={color} fillOpacity={0.28} />
+                <Circle cx={x2} cy={y2} r={4.5} fill={color} stroke="white" strokeWidth={1.5} />
+              </G>
+            );
+          })}
+        </Svg>
+
+        {/* Peripheral Callout Badges */}
         {organs.map((o, i) => {
           const slot = SLOTS[i];
           return (
-            // fill the stage so the percentage positions below measure against it
-            <View key={o.label} style={StyleSheet.absoluteFill} pointerEvents="none">
-              <Connector from={slot} to={{ x: o.ax, y: o.ay }} />
-              <View style={[styles.badge, { left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }]}>
+            <View
+              key={o.label}
+              style={[
+                styles.badgeCard,
+                {
+                  left: `${slot.x * 100}%`,
+                  top: `${slot.y * 100}%`,
+                },
+              ]}
+              pointerEvents="none"
+            >
+              <View style={[styles.badgeIconWrap, { borderColor: o.tint || colors.forest }]}>
                 <Image source={{ uri: asrc(o.id) }} style={styles.badgeImg} resizeMode="contain" />
               </View>
-              <Text style={[styles.badgeLabel, { left: `${slot.x * 100}%`, top: `${slot.y * 100}%` }]} numberOfLines={1}>
-                {wordLabel(o.label, lang)}
-              </Text>
+              <View style={styles.badgeInfo}>
+                <Text style={styles.badgeLabel} numberOfLines={1}>
+                  {wordLabel(o.label, lang)}
+                </Text>
+                {o.tip && (
+                  <Text style={styles.badgeTip} numberOfLines={1}>
+                    {o.tip}
+                  </Text>
+                )}
+              </View>
             </View>
           );
         })}
@@ -505,43 +571,105 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: "hidden",
+    position: "relative",
   },
   bodyTitle: {
     position: "absolute",
-    top: 8,
+    top: 10,
     alignSelf: "center",
-    fontSize: 13,
+    fontSize: 13.5,
     fontWeight: "800",
-    color: "#3f8f86",
-    letterSpacing: 0.5,
+    color: "#0f766e",
+    letterSpacing: 0.6,
     textTransform: "uppercase",
+    zIndex: 4,
   },
-  bodyFigure: { position: "absolute", left: "33%", right: "33%", top: "9%", bottom: "3%" },
-  badge: {
+  bodyFigureContainer: {
     position: "absolute",
-    width: 62,
-    height: 62,
-    marginLeft: -31,
-    marginTop: -31,
-    borderRadius: 31,
-    backgroundColor: "#e8f4f2",
-    borderWidth: 1.5,
-    borderColor: "#bfe0da",
+    left: "22%",
+    right: "22%",
+    top: "8%",
+    bottom: "2%",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  bodyFigure: {
+    width: "100%",
+    height: "100%",
+  },
+  organOnBody: {
+    position: "absolute",
+    width: 44,
+    height: 44,
+    marginLeft: -22,
+    marginTop: -22,
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 2,
+  },
+  organOnBodyPill: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: "rgba(255, 255, 255, 0.94)",
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  organOnBodyImg: {
+    width: 32,
+    height: 32,
+  },
+  badgeCard: {
+    position: "absolute",
+    width: 104,
+    marginLeft: -52,
+    marginTop: -32,
     alignItems: "center",
     justifyContent: "center",
     zIndex: 3,
   },
-  badgeImg: { width: 46, height: 46 },
+  badgeIconWrap: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: "#f0fdfa",
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  badgeImg: {
+    width: 38,
+    height: 38,
+  },
+  badgeInfo: {
+    alignItems: "center",
+    marginTop: 4,
+    backgroundColor: "rgba(255, 255, 255, 0.92)",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
   badgeLabel: {
-    position: "absolute",
-    width: 90,
-    marginLeft: -45,
-    marginTop: 32,
-    textAlign: "center",
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: "800",
-    color: "#3f8f86",
-    zIndex: 3,
+    color: colors.textDark,
+    textAlign: "center",
+  },
+  badgeTip: {
+    fontSize: 9.5,
+    fontWeight: "600",
+    color: "#0f766e",
+    textAlign: "center",
+    marginTop: 1,
   },
   organDot: {
     position: "absolute",

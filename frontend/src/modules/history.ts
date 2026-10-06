@@ -7,8 +7,21 @@ export interface HistoryItem {
   at: number;
 }
 
-const STORE = "bloomlearn_history";
+const STORE_PREFIX = "bloomlearn_history";
 const MAX = 50;
+
+let activeChildId: string | null = null;
+
+function getStoreKey(): string {
+  return activeChildId ? `${STORE_PREFIX}_${activeChildId}` : STORE_PREFIX;
+}
+
+export async function switchChildForHistory(childId: string | null): Promise<void> {
+  activeChildId = childId;
+  loaded = false;
+  items = [];
+  await ensureLoaded();
+}
 
 let items: HistoryItem[] = [];
 let loaded = false;
@@ -16,7 +29,7 @@ let loaded = false;
 async function ensureLoaded() {
   if (loaded) return;
   try {
-    const raw = await AsyncStorage.getItem(STORE);
+    const raw = await AsyncStorage.getItem(getStoreKey());
     items = raw ? JSON.parse(raw) : [];
   } catch {
     items = [];
@@ -25,7 +38,7 @@ async function ensureLoaded() {
 }
 
 function persist() {
-  AsyncStorage.setItem(STORE, JSON.stringify(items)).catch(() => {});
+  AsyncStorage.setItem(getStoreKey(), JSON.stringify(items)).catch(() => {});
 }
 
 export async function getHistory(): Promise<HistoryItem[]> {
@@ -53,7 +66,7 @@ export async function clearHistory(): Promise<void> {
   items = [];
   loaded = true;
   try {
-    await AsyncStorage.removeItem(STORE);
+    await AsyncStorage.removeItem(getStoreKey());
   } catch {
     /* ignore */
   }

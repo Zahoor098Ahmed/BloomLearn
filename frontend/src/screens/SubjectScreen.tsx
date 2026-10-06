@@ -10,6 +10,7 @@ import { getProgress, lessonsDone, type ProgressData } from "../modules/progress
 import TopBar from "../components/TopBar";
 import { SUBJECT_LOOK } from "../components/subjectLook";
 import { colors, type } from "../theme";
+import { getActiveProfile } from "../modules/childProfiles";
 
 interface Props {
   subjectId: SubjectId;
@@ -24,8 +25,9 @@ export default function SubjectScreen({ subjectId, onBack, onOpenChapter }: Prop
   const tt = (k: TKey) => t(k, lang);
   const subject = subjectById(subjectId);
   const look = SUBJECT_LOOK[subjectId];
+  const activeChild = getActiveProfile();
 
-  const [grade, setGrade] = useState<Grade>(1);
+  const [grade, setGrade] = useState<Grade>(activeChild?.prescription?.assignedGrade ?? 1);
   const [p, setP] = useState<ProgressData | null>(null);
   useEffect(() => {
     getProgress().then((d) => setP({ ...d }));
@@ -75,13 +77,22 @@ export default function SubjectScreen({ subjectId, onBack, onOpenChapter }: Prop
               {chapters.map((c, i) => {
                 const done = p ? lessonsDone(p, c.id) : 0;
                 const total = c.lessons.length;
+                const isDrFocus = activeChild?.prescription?.focusChapterIds?.includes(c.id);
                 return (
-                  <Pressable key={c.id} onPress={() => onOpenChapter(c.id)} style={({ pressed }) => [styles.chapter, pressed && { opacity: 0.9 }]}>
+                  <Pressable key={c.id} onPress={() => onOpenChapter(c.id)} style={({ pressed }) => [styles.chapter, isDrFocus && styles.chapterDrFocus, pressed && { opacity: 0.9 }]}>
                     <View style={[styles.num, { backgroundColor: look.bg }]}>
                       <Text style={[styles.numText, { color: look.tint }]}>{i + 1}</Text>
                     </View>
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.chapterTitle}>{label(c.title, lang)}</Text>
+                      <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                        <Text style={styles.chapterTitle}>{label(c.title, lang)}</Text>
+                        {isDrFocus && (
+                          <View style={styles.drBadge}>
+                            <Ionicons name="medkit" size={12} color={colors.forest} />
+                            <Text style={styles.drBadgeText}>Doctor Prescribed</Text>
+                          </View>
+                        )}
+                      </View>
                       <Text style={styles.chapterSub} numberOfLines={1}>
                         {label(c.summary, lang)}
                       </Text>
@@ -162,4 +173,22 @@ const styles = StyleSheet.create({
   source: { flexDirection: "row", gap: 8, marginTop: 20, marginHorizontal: 4 },
   sourceText: { flex: 1, fontSize: 12, color: colors.textLight, lineHeight: 17 },
   emptyText: { fontSize: 14, color: colors.textMid, textAlign: "center", lineHeight: 20 },
+  chapterDrFocus: {
+    borderColor: "#a7f3d0",
+    backgroundColor: "#f0fdf4",
+  },
+  drBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#dcfce7",
+    paddingVertical: 2,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  drBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: colors.forest,
+  },
 });

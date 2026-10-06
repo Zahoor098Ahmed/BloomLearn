@@ -20,6 +20,7 @@ import {
 } from "../modules/progress";
 import { SUBJECT_LOOK } from "../components/subjectLook";
 import { colors, type } from "../theme";
+import { getActiveProfile, subscribeActiveChild, type ChildProfile } from "../modules/childProfiles";
 
 interface Props {
   onOpenSubject: (id: SubjectId) => void;
@@ -46,15 +47,23 @@ export default function ProgressScreen({ onOpenSubject, onOpenChapter }: Props) 
   const tt = (k: TKey) => t(k, lang);
   const chevron = isRTL(lang) ? "chevron-back" : "chevron-forward";
 
+  const [child, setChild] = useState<ChildProfile | null>(getActiveProfile);
   const [p, setP] = useState<ProgressData | null>(null);
+
   useEffect(() => {
+    const unsub = subscribeActiveChild((active) => {
+      setChild(active);
+      getProgress().then((d) => setP({ ...d }));
+    });
     getProgress().then((d) => setP({ ...d }));
+    return unsub;
   }, []);
 
   if (!p) return <View style={{ flex: 1, backgroundColor: colors.bg }} />;
 
   const all = overallReport(p);
-  const reports = SUBJECT_LIST.map((s) => subjectReport(p, s));
+  const assigned = child?.prescription.assignedSubjects || ["english", "math", "science"];
+  const reports = SUBJECT_LIST.filter((s) => assigned.includes(s.id)).map((s) => subjectReport(p, s));
   const days = lastWeek(p);
   const weekTotal = days.reduce((s, d) => s + d.count, 0);
   const maxDay = Math.max(1, ...days.map((d) => d.count));
@@ -84,6 +93,27 @@ export default function ProgressScreen({ onOpenSubject, onOpenChapter }: Props) 
         <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} showsVerticalScrollIndicator={false}>
           <Text style={[type.display, { marginTop: 10 }]}>{tt("prReportTitle")}</Text>
           <Text style={[type.lead, { marginTop: 4 }]}>{tt("prReportSub")}</Text>
+
+          {/* Child & Doctor Plan Header */}
+          {child && (
+            <View style={styles.childHeader}>
+              <View style={styles.childHeaderLeft}>
+                <View style={styles.childAvatarBadge}>
+                  <Text style={{ fontSize: 24 }}>{child.avatarIcon}</Text>
+                </View>
+                <View>
+                  <Text style={styles.childHeaderName}>{child.name}'s Learning Report</Text>
+                  <Text style={styles.childHeaderMeta}>
+                    Grade {child.prescription.assignedGrade} • Daily Goal: {child.prescription.dailySentenceGoal} Sentences
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.drBadge}>
+                <Ionicons name="medkit" size={13} color={colors.forest} />
+                <Text style={styles.drBadgeText}>Doctor Plan</Text>
+              </View>
+            </View>
+          )}
 
           {/* Overall */}
           <View style={[styles.card, styles.overall]}>
@@ -359,4 +389,56 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   shareText: { fontSize: 15.5, fontWeight: "700", color: colors.forest },
+  childHeader: {
+    marginTop: 14,
+    marginBottom: 6,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  childHeaderLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    flex: 1,
+  },
+  childAvatarBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "#e8f5e9",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  childHeaderName: {
+    fontSize: 15.5,
+    fontWeight: "800",
+    color: colors.textDark,
+  },
+  childHeaderMeta: {
+    fontSize: 12,
+    color: colors.textMid,
+    marginTop: 2,
+  },
+  drBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#dcfce7",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#bbf7d0",
+  },
+  drBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: colors.forest,
+  },
 });

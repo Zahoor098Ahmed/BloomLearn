@@ -22,7 +22,20 @@ export interface ProgressData {
   lastLesson: { chapterId: string; index: number; at: number } | null;
 }
 
-const STORE = "bloomlearn_progress";
+const STORE_PREFIX = "bloomlearn_progress";
+
+let activeChildId: string | null = null;
+
+function getStoreKey(): string {
+  return activeChildId ? `${STORE_PREFIX}_${activeChildId}` : STORE_PREFIX;
+}
+
+export async function switchChildForProgress(childId: string | null): Promise<void> {
+  activeChildId = childId;
+  loaded = false;
+  data = fresh();
+  await ensureLoaded();
+}
 
 const EMPTY: ProgressData = {
   sentences: 0,
@@ -44,7 +57,7 @@ function fresh(): ProgressData {
 async function ensureLoaded() {
   if (loaded) return;
   try {
-    const raw = await AsyncStorage.getItem(STORE);
+    const raw = await AsyncStorage.getItem(getStoreKey());
     data = raw ? { ...fresh(), ...JSON.parse(raw) } : fresh();
   } catch {
     data = fresh();
@@ -53,7 +66,7 @@ async function ensureLoaded() {
 }
 
 function persist() {
-  AsyncStorage.setItem(STORE, JSON.stringify(data)).catch(() => {});
+  AsyncStorage.setItem(getStoreKey(), JSON.stringify(data)).catch(() => {});
 }
 
 export function dayKey(d = new Date()): string {
@@ -104,7 +117,7 @@ export async function clearProgress(): Promise<void> {
   data = fresh();
   loaded = true;
   try {
-    await AsyncStorage.removeItem(STORE);
+    await AsyncStorage.removeItem(getStoreKey());
   } catch {
     /* ignore */
   }
