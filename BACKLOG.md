@@ -1220,6 +1220,105 @@
 - **14:28:19 – 14:28:19** ⏱️ Active Coding Session (**1 min**)
   - 📁 **Files Worked On (1):**
     - `frontend/app.json`
-- **16:09:56 – 16:09:56** ⏱️ Active Coding Session (**1 min**)
-  - 📁 **Files Worked On (1):**
+
+- **16:09:56 – 16:10:07** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (2):**
     - `.gitignore`
+    - `.gitattributes`
+
+- **16:10** 🌿 Commit `[9f77270]` — **"fix science chapter"**
+  - 📁 **Changed Files (30):**
+    - `BACKLOG.md`
+    - `backend/.env.example`
+    - `backend/package-lock.json`
+    - `backend/package.json`
+    - `backend/src/config.js`
+    - `backend/src/index.js`
+    - `backend/src/localWhisper.js`
+    - `backend/src/routes/audio.js`
+    - `backend/src/routes/health.js`
+    - `frontend/app.json`
+    - `frontend/assets/adaptive-icon.png`
+    - `frontend/assets/favicon.png`
+    - `frontend/assets/icon.png`
+    - `frontend/assets/splash-icon.png`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/BodyDiagram.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/Logo.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/src/modules/apiKeys.ts`
+    - `frontend/src/modules/audio.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/modules/voice.ts`
+    - `frontend/src/modules/voiceMatch.test.ts`
+    - `frontend/src/modules/voiceMatch.ts`
+- **16:10** 🌿 Commit `[9f77270]` — **"fix science chapter"**
+  - 📁 **Changed Files (30):**
+    - `BACKLOG.md`
+    - `backend/.env.example`
+    - `backend/package-lock.json`
+    - `backend/package.json`
+    - `backend/src/config.js`
+    - `backend/src/index.js`
+    - `backend/src/localWhisper.js`
+    - `backend/src/routes/audio.js`
+    - `backend/src/routes/health.js`
+    - `frontend/app.json`
+    - `frontend/assets/adaptive-icon.png`
+    - `frontend/assets/favicon.png`
+    - `frontend/assets/icon.png`
+    - `frontend/assets/splash-icon.png`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/BodyDiagram.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/Logo.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/src/modules/apiKeys.ts`
+    - `frontend/src/modules/audio.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/modules/voice.ts`
+    - `frontend/src/modules/voiceMatch.test.ts`
+    - `frontend/src/modules/voiceMatch.ts`
+- **16:11** 🌿 Commit `[9f77270]` — **"fix science chapter"**
+  - 📁 **Changed Files (30):**
+    - `BACKLOG.md`
+    - `backend/.env.example`
+    - `backend/package-lock.json`
+    - `backend/package.json`
+    - `backend/src/config.js`
+    - `backend/src/index.js`
+    - `backend/src/localWhisper.js`
+    - `backend/src/routes/audio.js`
+    - `backend/src/routes/health.js`
+    - `frontend/app.json`
+    - `frontend/assets/adaptive-icon.png`
+    - `frontend/assets/favicon.png`
+    - `frontend/assets/icon.png`
+    - `frontend/assets/splash-icon.png`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/BodyDiagram.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/Logo.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/src/modules/apiKeys.ts`
+    - `frontend/src/modules/audio.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/modules/voice.ts`
+    - `frontend/src/modules/voiceMatch.test.ts`
+    - `frontend/src/modules/voiceMatch.ts`
