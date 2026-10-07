@@ -5,7 +5,9 @@ import {
   AudioModule,
   RecordingPresets,
   type AudioStatus,
+  type RecordingOptions,
 } from "expo-audio";
+import { Platform } from "react-native";
 import * as FileSystem from "expo-file-system/legacy";
 import * as Speech from "expo-speech";
 import type { LanguageCode } from "../types";
@@ -33,8 +35,31 @@ async function ensureDir() {
 // --- recording -----------------------------------------------------------
 
 // AudioModule is a native module (loosely typed); the recorder is its class instance.
-let recorder: { prepareToRecordAsync: () => Promise<void>; record: () => void; stop: () => Promise<void>; uri: string | null } | null =
-  null;
+type NativeRecorder = {
+  prepareToRecordAsync: () => Promise<void>;
+  record: () => void;
+  stop: () => Promise<void>;
+  uri: string | null;
+  getStatus?: () => { url?: string | null };
+};
+let recorder: NativeRecorder | null = null;
+
+/**
+ * The native recorder takes flat, per-platform options — the same step
+ * expo-audio's useAudioRecorder does with createRecordingOptions. Passing the
+ * nested preset straight through leaves Android without its m4a/AAC settings.
+ */
+function nativeOptions(preset: RecordingOptions) {
+  const common = {
+    extension: preset.extension,
+    sampleRate: preset.sampleRate,
+    numberOfChannels: preset.numberOfChannels,
+    bitRate: preset.bitRate,
+    isMeteringEnabled: preset.isMeteringEnabled ?? false,
+    directory: preset.directory,
+  };
+  return Platform.OS === "ios" ? { ...common, ...preset.ios } : { ...common, ...preset.android };
+}
 
 export async function canRecord(): Promise<boolean> {
   try {
@@ -49,13 +74,14 @@ export async function startRecording(): Promise<boolean> {
   if (!(await canRecord())) return false;
   try {
     await setAudioModeAsync({ allowsRecording: true, playsInSilentMode: true });
-    const Ctor = (AudioModule as { AudioRecorder: new (o: unknown) => NonNullable<typeof recorder> }).AudioRecorder;
-    const rec = new Ctor(RecordingPresets.HIGH_QUALITY);
+    const Ctor = (AudioModule as { AudioRecorder: new (o: unknown) => NativeRecorder }).AudioRecorder;
+    const rec = new Ctor(nativeOptions(RecordingPresets.HIGH_QUALITY));
     await rec.prepareToRecordAsync();
     rec.record();
     recorder = rec;
     return true;
-  } catch {
+  } catch (err) {
+    console.warn("[audio] could not start recording:", err);
     recorder = null;
     return false;
   }
@@ -69,7 +95,20 @@ export async function stopRecordingTemp(): Promise<string | null> {
     await rec.stop();
     recorder = null;
     await setAudioModeAsync({ allowsRecording: false, playsInSilentMode: true });
-    return rec.uri ?? null;
+    let uri = rec.uri;
+    if (!uri) {
+      try {
+        uri = rec.getStatus?.().url ?? null;
+      } catch {
+        /* older recorders have no getStatus */
+      }
+    }
+    if (!uri) {
+      console.warn("[audio] recording stopped but has no file uri");
+      return null;
+    }
+    // an upload needs a file:// uri; newer expo-audio can hand back a bare path
+    return uri.startsWith("/") ? `file://${uri}` : uri;
   } catch {
     recorder = null;
     return null;

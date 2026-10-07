@@ -387,3 +387,839 @@
     - `frontend/src/screens/SentencePictureScreen.tsx`
     - `frontend/src/screens/SettingsScreen.tsx`
     - `frontend/src/screens/SubjectScreen.tsx`
+- **17:50** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+
+## 2026-10-07
+
+- **09:51** 🌿 Commit `[de67efd]` — **"Fix chair size, ball on chair seating, bird pictogram ID, and grounded apple inside box"**
+  - 📁 **Changed Files (5):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+- **09:51** 🌿 Commit `[de67efd]` — **"Fix chair size, ball on chair seating, bird pictogram ID, and grounded apple inside box"**
+  - 📁 **Changed Files (5):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+
+- **09:51:54 – 09:51:54** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (3):**
+    - `CLAUDE.md`
+    - `AGENTS.md`
+    - `.gitignore`
+- **09:51** 🌿 Commit `[de67efd]` — **"Fix chair size, ball on chair seating, bird pictogram ID, and grounded apple inside box"**
+  - 📁 **Changed Files (5):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+- **09:51** 🌿 Commit `[de67efd]` — **"Fix chair size, ball on chair seating, bird pictogram ID, and grounded apple inside box"**
+  - 📁 **Changed Files (5):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneComposer.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/imageLibrary.ts`
+- **09:51** 🌿 Commit `[2c18561]` — **"Refine inside box positioning so apple sits cleanly inside cavity opening"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[2c18561]` — **"Refine inside box positioning so apple sits cleanly inside cavity opening"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+
+- **09:52:02 – 10:47:40** ⏱️ Active Coding Session (**56 min**)
+  - 📁 **Files Worked On (27):**
+    - `.gitattributes`
+    - `.mise.toml`
+    - `render.yaml`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/curriculum.test.ts.tmp.14008.351c5a4350a4`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.test.ts.tmp.14008.3a42ab3cbc7d`
+    - `frontend/src/modules/sedBuWc9U`
+    - `frontend/src/modules/sedB6Nw2q`
+    - `frontend/src/modules/curriculum.ts.tmp.14008.926e80b1b325`
+    - `frontend/src/modules/imageLibrary.ts.tmp.14008.fe469a6303ca`
+    - `frontend/src/modules/imageLibrary.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.14008.af4d6608d3f0`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.14008.1f27dd7851eb`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.14008.4485b09bb689`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.14008.fdd09c059d5d`
+    - `frontend/src/__p.ts`
+    - `frontend/src/components/BodyDiagram.tsx.tmp.14008.9e5d4520e23e`
+    - `frontend/src/components/BodyDiagram.tsx`
+    - `frontend/src/components/sedgnwTxz`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/components/sedcXfzZk`
+    - `frontend/src/components/sedeUcAoR`
+    - `frontend/src/components/sedRLgCkk`
+    - `frontend/src/__c.ts`
+    - `frontend/src/modules/sceneSession.ts`
+
+- **09:52** 🌿 Commit `[2c18561]` — **"Refine inside box positioning so apple sits cleanly inside cavity opening"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[2c18561]` — **"Refine inside box positioning so apple sits cleanly inside cavity opening"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[2c18561]` — **"Refine inside box positioning so apple sits cleanly inside cavity opening"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[2c18561]` — **"Refine inside box positioning so apple sits cleanly inside cavity opening"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[2c18561]` — **"Refine inside box positioning so apple sits cleanly inside cavity opening"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[940d7bb]` — **"Isolate math calculations to Math subject only and block in English chapters"**
+  - 📁 **Changed Files (4):**
+    - `BACKLOG.md`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[d6389be]` — **"fix backlog.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[bfd6082]` — **"Clean up BACKLOG.md by removing duplicates"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[a8e9333]` — **"Fix boy positioning on car roof and remove extra comments from BACKLOG"**
+  - 📁 **Changed Files (2):**
+    - `BACKLOG.md`
+    - `frontend/src/components/SceneStage.tsx`
+- **09:52** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:52** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:52** 🌿 Commit `[05f6b3f]` — **"Refactor active coding session entries in BACKLOG.md"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:53** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:53** 🌿 Commit `[ad4acf1]` — **"add face recoginezation"**
+  - 📁 **Changed Files (26):**
+    - `BACKLOG.md`
+    - `backend/src/index.js`
+    - `backend/src/routes/face.js`
+    - `frontend/App.tsx`
+    - `frontend/app.json`
+    - `frontend/package-lock.json`
+    - `frontend/package.json`
+    - `frontend/src/components/ChildEnrollmentModal.tsx`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/components/SceneStage.tsx`
+    - `frontend/src/modules/childProfiles.ts`
+    - `frontend/src/modules/curriculum.test.ts`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/faceBiometrics.test.ts`
+    - `frontend/src/modules/faceBiometrics.ts`
+    - `frontend/src/modules/faceEngine.test.ts`
+    - `frontend/src/modules/faceEngine.ts`
+    - `frontend/src/modules/history.ts`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/progress.ts`
+    - `frontend/src/screens/FaceAuthScreen.tsx`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/SubjectScreen.tsx`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+- **09:53** 🌿 Commit `[9d1a723]` — **"docs: update activity log with face recognition commit details"**
+  - 📁 **Changed Files (1):**
+    - `BACKLOG.md`
+
+- **10:55:22 – 11:13:00** ⏱️ Active Coding Session (**18 min**)
+  - 📁 **Files Worked On (8):**
+    - `.gitattributes`
+    - `frontend/package.json`
+    - `frontend/app.json.N-SwpFfovl-iB84_CtSDN2vr7zQyQ-WHf_ezM6EYdMQ`
+    - `frontend/app.json`
+    - `frontend/tsconfig.json.tmp.14008.cb930b1a02e5`
+    - `frontend/tsconfig.json`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/modules/curriculum.test.ts`
+
+- **11:25:59 – 12:20:04** ⏱️ Active Coding Session (**54 min**)
+  - 📁 **Files Worked On (15):**
+    - `backend/src/routes/audio.js`
+    - `backend/src/config.js`
+    - `backend/src/routes/health.js`
+    - `frontend/package.json`
+    - `frontend/src/modules/apiKeys.ts`
+    - `frontend/src/modules/aiImage.ts`
+    - `frontend/.env`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.14008.bc595fccb3fa`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `.gitignore`
+    - `frontend/src/modules/audio.ts`
+    - `.gitattributes`
+    - `backend/package.json`
+    - `backend/src/localWhisper.js`
+    - `backend/src/index.js`
+
+- **13:07:42 – 13:09:02** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (3):**
+    - `.gitignore`
+    - `.gitattributes`
+    - `backend/.env.example`
+
+- **13:53:59 – 13:58:43** ⏱️ Active Coding Session (**5 min**)
+  - 📁 **Files Worked On (5):**
+    - `frontend/src/modules/audio.ts`
+    - `frontend/src/modules/voice.ts`
+    - `frontend/src/components/FaceScannerView.tsx`
+    - `frontend/src/modules/aiImage.ts.tmp.14008.3289bbd6c495`
+    - `frontend/src/modules/aiImage.ts`
+
+- **14:05:35 – 14:22:22** ⏱️ Active Coding Session (**17 min**)
+  - 📁 **Files Worked On (20):**
+    - `frontend/src/modules/voiceMatch.ts`
+    - `frontend/src/modules/voiceMatch.test.ts`
+    - `frontend/src/modules/voiceMatch.ts.tmp.14008.ab54507eaed7`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.14008.0098df86b8a2`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/sedxPjAN7`
+    - `frontend/package.json`
+    - `.gitignore`
+    - `.gitattributes`
+    - `frontend/app.json`
+    - `frontend/src/modules/voice.ts`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/SettingsScreen.tsx`
+    - `frontend/src/screens/sed3bkglm`
+    - `frontend/assets/icon.png`
+    - `frontend/assets/adaptive-icon.png`
+    - `frontend/assets/splash-icon.png`
+    - `frontend/assets/favicon.png`
+    - `frontend/src/components/Logo.tsx`
+    - `AGENTS.md`
+
+- **14:28:19 – 14:42:22** ⏱️ Active Coding Session (**14 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/app.json`
+
+- **14:28:19 – 14:28:19** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `frontend/app.json`
+- **16:09:56 – 16:09:56** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `.gitignore`

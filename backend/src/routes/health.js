@@ -9,6 +9,7 @@ healthRouter.get("/health", (_req, res) => {
     service: "bloomlearn-backend",
     time: new Date().toISOString(),
     openai: config.openaiKey ? "configured" : "missing",
+    speech: config.openaiKey ? "openai" : config.groqKey ? "groq" : "local",
     auth: config.appToken ? "required" : "open",
   });
 });

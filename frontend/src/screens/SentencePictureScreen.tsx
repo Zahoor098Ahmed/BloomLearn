@@ -11,7 +11,7 @@ import { parseSceneGraph, conceptByKey, CONCEPTS, SUBJECTS, REFERENCES, findWord
 import { getPictogramUrl } from "../modules/aacPictograms";
 import { isAiConfigured, generateSentenceImage, transcribeAudio, STORY_STYLE_GUIDE } from "../modules/aiImage";
 import { sceneImageUrl, composeSceneUrl, composeStoryUrl, aiSceneEnabled } from "../modules/aiScene";
-import { lookupImage, saveImage, libraryCount, prewarmLibrary, dictionaryWords } from "../modules/imageLibrary";
+import { lookupImage, libraryCount, prewarmLibrary, dictionaryWords, findLessonPicture, saveLessonPicture } from "../modules/imageLibrary";
 import { bookVocabSize } from "../modules/bookVocab";
 import {
   type SceneSession,
@@ -27,7 +27,7 @@ import {
 } from "../modules/sceneSession";
 import { agentEnabled, agentName, parseUtteranceLLM, describeScene } from "../modules/sceneAgent";
 import { startRecording, stopRecordingTemp } from "../modules/audio";
-import { voiceAvailable, startListening, stopListening } from "../modules/voice";
+import { voiceAvailable, startListening, stopListening, nativeSpeechAvailable } from "../modules/voice";
 import { addHistory } from "../modules/history";
 import { recordSentence, recordAiPicture, recordLesson } from "../modules/progress";
 import {
@@ -47,6 +47,7 @@ import SceneStage from "../components/SceneStage";
 import MathStage from "../components/MathStage";
 import { parseMath, parseWordProblem, storyWithoutQuestion, sumStory } from "../modules/mathScene";
 import { getActiveProfile } from "../modules/childProfiles";
+import { snapToLesson } from "../modules/voiceMatch";
 import { colors, radius, type } from "../theme";
 
 interface Props {
@@ -102,7 +103,8 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
 
   const [text, setText] = useState(current?.say ?? (initialText || course.chapter.lessons[0]?.say || ""));
 
-  const [img, setImg] = useState<{ uri: string; source: ImgSource } | null>(null);
+  // `sentence` = the sentence the picture was made for, so it survives that sentence being re-read
+  const [img, setImg] = useState<{ uri: string; source: ImgSource; sentence?: string } | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
@@ -202,7 +204,8 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     const t = setTimeout(async () => {
       mergedRef.current = q;
       setAiError(null);
-      setImg(null);
+      setAgentThinking(false);
+      setImg((prev) => (prev?.sentence === q ? prev : null));
       // "start over", or a full "the X on the Y" sentence that drops leftovers
       // In a school chapter every sentence is its own picture; in free talk it builds on the scene.
       const fresh = isReset(q) || !!course || isFreshScene(q, sessionRef.current.items.map((i) => i.type));
@@ -211,20 +214,20 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
         setSession(newSession());
         return;
       }
-      // Agent route: an LLM turns free speech into scene ops. Falls back to the
-      // on-device rule parser when there's no key or the call fails.
-      let ops = null;
-      if (agentEnabled()) {
-        setAgentThinking(true);
-        ops = await parseUtteranceLLM(q, fresh ? newSession() : sessionRef.current);
-        setAgentThinking(false);
-      }
+      // Draw the on-device understanding straight away, so the child never waits
+      // on a blank stage. The LLM agent (when set up) then refines it in the
+      // background — except for the chapter's own lessons, which are written
+      // for the on-device parser and need no agent at all.
+      const base = fresh ? newSession() : sessionRef.current;
+      setSession(applyUtterance(base, q));
+      const isLesson = course.chapter.lessons.some((l) => l.say.trim().toLowerCase() === q.toLowerCase());
+      if (!agentEnabled() || isLesson) return;
+      setAgentThinking(true);
+      const ops = await parseUtteranceLLM(q, base);
       if (mergedRef.current !== q) return;
-      setSession((prev) => {
-        const s = fresh ? newSession() : prev;
-        return ops && ops.length ? applyOps(s, ops) : applyUtterance(s, q);
-      });
-    }, 600);
+      setAgentThinking(false);
+      if (ops && ops.length) setSession(applyOps(base, ops));
+    }, 350);
     return () => clearTimeout(t);
   }, [text, buildMode]);
 
@@ -243,6 +246,16 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
   function typeText(value: string) {
     fromVoiceRef.current = false;
     setText(value);
+  }
+
+  /**
+   * On phones the clip goes through Whisper, which can mishear a word; snap a
+   * near-miss onto this chapter's lesson sentence. The browser's own speech
+   * recognition is already accurate, so the PC keeps exactly what it heard.
+   */
+  function fixHeard(said: string): string {
+    if (Platform.OS === "web") return said;
+    return snapToLesson(said, course.chapter.lessons.map((l) => l.say)) ?? said;
   }
 
   function voiceText(value: string) {
@@ -267,11 +280,10 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     setShowAnswer(false);
     setLessonIdx(i);
     typeText(next.say);
-    // Check if an AI picture was already saved for this lesson in the library
-    lookupImage(next.say).then((hit) => {
-      if (hit && hit.fromLibrary) {
-        setImg({ uri: hit.uri, source: "ai-saved" });
-      }
+    // Show the AI picture already made for this lesson in this chapter, if any
+    // (never a word picture, nor one drawn for another chapter's lesson)
+    findLessonPicture(activeChapterId, next.say).then((uri) => {
+      if (uri && textRef.current === next.say) setImg({ uri, source: "ai-saved", sentence: next.say.trim() });
     });
   }
 
@@ -376,12 +388,9 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
       return;
     }
 
-    // Save the AI picture into the library so it is served from there next time.
-    const tags = [course.subject.id, course.chapter.id];
-    if (graph.subject) tags.push(graph.subject.type);
-    if (graph.relation) tags.push(graph.relation);
-    const entry = await saveImage(text, generated, { source: "ai", tags });
-    setImg({ uri: entry?.uri ?? generated, source: "ai-saved" });
+    // Save it for this chapter + sentence only, so it is served from there next time.
+    const entry = await saveLessonPicture(activeChapterId, text, generated);
+    setImg({ uri: entry?.uri ?? generated, source: "ai-saved", sentence: text.trim() });
     recordAiPicture();
     if (aiTimer.current) clearTimeout(aiTimer.current);
     setTimeout(() => setAiLoading(false), 5000);
@@ -428,14 +437,15 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
       const res = await transcribeAudio(uri, (lang || "en-US").split("-")[0]);
       setSttBusy(false);
       if (res.text) {
-        voiceText(res.text);
-        readBack(res.text);
+        const said = fixHeard(res.text);
+        voiceText(said);
+        readBack(said);
       } else if (res.unavailable) keyboardMicHint();
       else Alert.alert(tt("spDidntCatchTitle"), res.error ?? tt("spTryAgainType"));
       return;
     }
 
-    if (Platform.OS !== "web" && !isAiConfigured()) return voiceSetupNeeded();
+    if (Platform.OS !== "web" && !isAiConfigured() && !nativeSpeechAvailable()) return voiceSetupNeeded();
 
     // Live voice — updates the sentence (and picture) as you talk.
     if (voiceAvailable()) {
@@ -445,8 +455,8 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
         onPartial: (t) => t && voiceText(t),
         onFinal: (t) => {
           if (!t) return;
-          heard = t;
-          voiceText(t);
+          heard = fixHeard(t);
+          voiceText(heard);
         },
         onStatus: (st) => setSttBusy(st === "processing"),
         onEnd: () => {
@@ -569,12 +579,18 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
             ) : (
               <SceneComposer graph={graph} />
             )}
-            {(aiLoading || agentThinking) && (
+            {aiLoading ? (
               <View style={styles.stageOverlay}>
                 <ActivityIndicator color="white" />
-                <Text style={styles.stageOverlayText}>{agentThinking ? tt("spUnderstanding") : tt("spMakingPicture")}</Text>
+                <Text style={styles.stageOverlayText}>{tt("spMakingPicture")}</Text>
               </View>
-            )}
+            ) : agentThinking ? (
+              // the instant scene is already drawn; this only says it's being refined
+              <View style={styles.thinkingPill} pointerEvents="none">
+                <ActivityIndicator size="small" color="white" />
+                <Text style={styles.thinkingPillText}>{tt("spUnderstanding")}</Text>
+              </View>
+            ) : null}
             {/* only label real (library / AI) pictures; drawn scenes need no badge */}
             {img && (
               <View style={[styles.sourceBadge, img ? styles.sourceAi : styles.sourceInstant]}>
@@ -890,8 +906,14 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                             setShowAnswer(false);
                             resetScene();
                             setImg(null);
-                            setText(c.lessons[0]?.say ?? "");
+                            const first = c.lessons[0]?.say ?? "";
+                            setText(first);
                             setPickerOpen(false);
+                            if (first) {
+                              findLessonPicture(c.id, first).then((uri) => {
+                                if (uri && textRef.current === first) setImg({ uri, source: "ai-saved", sentence: first.trim() });
+                              });
+                            }
                           }}
                           style={[styles.modalChapterItem, isCur && styles.modalChapterItemActive]}
                         >
@@ -1174,6 +1196,19 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   stageOverlayText: { color: "white", fontWeight: "600", fontSize: 12.5 },
+  thinkingPill: {
+    position: "absolute",
+    right: 12,
+    bottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 999,
+    backgroundColor: "rgba(20,35,28,0.7)",
+  },
+  thinkingPillText: { color: "white", fontWeight: "600", fontSize: 11.5 },
   sourceBadge: {
     position: "absolute",
     top: 12,
@@ -1643,14 +1678,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700",
   },
+  // sized like the picture stage (it sits in a ScrollView, so no height: "100%")
   invalidStage: {
     width: "100%",
-    height: "100%",
+    minHeight: 240,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
-    paddingVertical: 32,
+    paddingVertical: 28,
     backgroundColor: "#fffbf5",
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#fde3c3",
   },
   invalidStageTitle: {
     color: "#b45309",

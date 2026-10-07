@@ -1,4 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Platform } from "react-native";
+import * as FileSystem from "expo-file-system/legacy";
 import { getKey } from "./apiKeys";
 
 /**
@@ -79,27 +81,80 @@ export async function transcribeAudio(uri: string, langHint?: string): Promise<T
     return { unavailable: true, error: "Voice typing isn't set up. Use the keyboard microphone for now." };
   }
   try {
-    const form = new FormData();
-    form.append("file", { uri, name: "speech.m4a", type: "audio/m4a" } as unknown as Blob);
-    form.append("model", "whisper-1");
-    if (langHint) form.append("language", langHint);
-    form.append("prompt", "A short everyday sentence describing a picture, e.g. The black cat is under the table.");
-
+    const fields: Record<string, string> = {
+      model: "whisper-1",
+      prompt: "A short everyday sentence describing a picture, e.g. The black cat is under the table.",
+    };
+    if (langHint) fields.language = langHint;
     const { url, headers } = endpointFor("/audio/transcriptions");
-    const res = await fetch(url, { method: "POST", headers, body: form });
-    if (!res.ok) {
+    const { status, body } = await uploadRecording(url, headers, uri, fields);
+
+    if (status < 200 || status >= 300) {
       // 503 = the backend has no OpenAI key -> not an error the user can fix; fall back to keyboard.
-      if (res.status === 503) return { unavailable: true, error: "Voice typing isn't set up on the server. Use the keyboard microphone for now." };
-      if (res.status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
-      if (res.status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
-      return { error: `Speech service error (${res.status}).` };
+      if (status === 503) return { unavailable: true, error: "Voice typing isn't set up on the server. Use the keyboard microphone for now." };
+      if (status === 401) return { error: "The OpenAI key was rejected. Check it in Settings." };
+      if (status === 429) return { error: "OpenAI has no credit or hit a rate limit." };
+      return { error: `Speech service error (${status}).` };
     }
-    const json = (await res.json()) as { text?: string };
+    const json = JSON.parse(body || "{}") as { text?: string };
     const text = (json.text ?? "").trim().replace(/[.。!?]+$/, "");
     if (!text) return { error: "Didn't catch that — try again or type the word." };
     return { text };
+  } catch (e) {
+    const server = getKey("proxyUrl");
+    if (!server) return { error: "Could not reach the speech service. Check the internet connection." };
+    // "Network request failed" means either the server is unreachable or the
+    // recording could not be uploaded — a quick health check tells them apart
+    const alive = await serverAlive(server);
+    console.warn(`[voice] upload failed (server ${alive ? "reachable" : "unreachable"}):`, e, uri);
+    return {
+      error: alive
+        ? "The recording could not be sent. Please try again, or type the sentence."
+        : `Could not reach the BloomLearn server (${server}). Is it running, and is this phone on the same Wi-Fi?`,
+    };
+  }
+}
+
+/**
+ * Send the recorded clip as multipart/form-data. On phones the file is
+ * streamed straight from disk by expo-file-system: Expo's fetch rejects React
+ * Native's `{ uri, name, type }` FormData parts ("Unsupported FormDataPart
+ * implementation"). The browser keeps the plain fetch + FormData path.
+ */
+async function uploadRecording(
+  url: string,
+  headers: Record<string, string>,
+  uri: string,
+  fields: Record<string, string>,
+): Promise<{ status: number; body: string }> {
+  if (Platform.OS !== "web") {
+    const res = await FileSystem.uploadAsync(url, uri, {
+      httpMethod: "POST",
+      uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+      fieldName: "file",
+      mimeType: "audio/m4a",
+      parameters: fields,
+      headers,
+    });
+    return { status: res.status, body: res.body };
+  }
+  const form = new FormData();
+  form.append("file", await (await fetch(uri)).blob(), "speech.webm");
+  for (const [k, v] of Object.entries(fields)) form.append(k, v);
+  const res = await fetch(url, { method: "POST", headers, body: form });
+  return { status: res.status, body: await res.text() };
+}
+
+async function serverAlive(base: string): Promise<boolean> {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 4000);
+  try {
+    const res = await fetch(`${base.replace(/\/$/, "")}/health`, { signal: ctrl.signal });
+    return res.ok;
   } catch {
-    return { error: "Could not reach the speech service. Check the internet connection." };
+    return false;
+  } finally {
+    clearTimeout(timer);
   }
 }
 

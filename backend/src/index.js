@@ -8,9 +8,12 @@ import { imagesRouter } from "./routes/images.js";
 import { audioRouter } from "./routes/audio.js";
 import { sceneRouter } from "./routes/scene.js";
 import { chatRouter } from "./routes/chat.js";
+import { warmUpLocalWhisper } from "./localWhisper.js";
 import { faceRouter } from "./routes/face.js";
 
 assertConfig();
+// no cloud speech key: get the offline Whisper model ready before the first clip
+if (!config.openaiKey && !config.groqKey) warmUpLocalWhisper();
 
 const app = express();
 

@@ -2,9 +2,11 @@
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "strict": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"],
+      // SDK 57 installs expo-modules-core inside expo/ (Metro finds it there);
+      // point TypeScript at the same copy so expo-audio etc. keep their types
+      "expo-modules-core": ["./node_modules/expo/node_modules/expo-modules-core"]
     }
   },
   "include": ["**/*.ts", "**/*.tsx"]

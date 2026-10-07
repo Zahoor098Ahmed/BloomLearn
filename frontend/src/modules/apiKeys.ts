@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Constants from "expo-constants";
 
 /**
  * Keys and endpoints for the optional online engines, editable in Settings.
@@ -50,9 +51,28 @@ export function apiKeysLoaded(): boolean {
   return loaded;
 }
 
+const PRIVATE_IP = /^(10\.\d+|192\.168|172\.(1[6-9]|2\d|3[01]))\.\d+\.\d+$/;
+
+/**
+ * While developing, the backend runs on the same computer as the Expo dev
+ * server. Wi-Fi hands that computer a new LAN IP now and then, which silently
+ * breaks a hard-coded "http://192.168.1.9:8787". So a LAN backend URL follows
+ * the dev server's current IP (port and path kept). Release builds and
+ * public URLs are left untouched.
+ */
+function followDevHost(url: string): string {
+  if (!__DEV__ || !url) return url;
+  const devHost = (Constants.expoConfig?.hostUri ?? "").split(":")[0];
+  if (!PRIVATE_IP.test(devHost)) return url; // tunnel / web / unknown: keep as is
+  const m = url.match(/^(https?:\/\/)([^/:]+)(.*)$/);
+  if (!m || !PRIVATE_IP.test(m[2])) return url;
+  return `${m[1]}${devHost}${m[3]}`;
+}
+
 /** The value in use: the in-app one if set, else the build-time one. */
 export function getKey(name: ApiKeyName): string {
-  return (saved[name] || ENV[name] || "").trim();
+  const value = (saved[name] || ENV[name] || "").trim();
+  return name === "proxyUrl" ? followDevHost(value) : value;
 }
 
 /** Only what the user typed in Settings (not the build-time fallback). */

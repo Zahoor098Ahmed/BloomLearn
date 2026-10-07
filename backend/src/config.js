@@ -10,12 +10,15 @@ export const config = {
   openaiBase: "https://api.openai.com/v1",
   groqKey: process.env.GROQ_API_KEY || "",
   groqModel: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
+  groqWhisperModel: process.env.GROQ_WHISPER_MODEL || "whisper-large-v3-turbo",
   chatModel: process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini",
 };
 
 export function assertConfig() {
   if (!config.openaiKey) {
-    console.warn("[config] OPENAI_API_KEY is not set — /images/generations and /audio/transcriptions will return 503.");
+    console.warn(config.groqKey
+      ? "[config] OPENAI_API_KEY is not set — /images/generations will return 503; speech-to-text uses Groq."
+      : "[config] OPENAI_API_KEY is not set — /images/generations will return 503; speech-to-text runs offline (local Whisper).");
   }
   if (!config.groqKey && !config.openaiKey) {
     console.warn("[config] Neither GROQ_API_KEY nor OPENAI_API_KEY is set — /chat/completions will return 503.");

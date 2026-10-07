@@ -6,6 +6,7 @@ import { useSettings } from "../context/SettingsContext";
 import { t, type TKey, isRTL } from "../modules/i18n";
 import { useResponsive } from "../modules/responsive";
 import { isAiConfigured } from "../modules/aiImage";
+import { nativeSpeechAvailable } from "../modules/voice";
 import { getProgress, lessonsDone, type ProgressData } from "../modules/progress";
 import { SUBJECT_LIST, GRADES, chaptersFor, chapterCount, lessonCount, label, type SubjectId } from "../modules/curriculum";
 import Logo from "../components/Logo";
@@ -44,7 +45,7 @@ export default function HomeScreen({ onOpenTalk, onOpenSubject, onOpenSettings, 
   const greeting = child ? `${baseGreeting}, ${child.name.split(" ")[0]}!` : baseGreeting;
 
   // Phones need an OpenAI key or the BloomLearn server for voice-to-text.
-  const needsVoiceSetup = Platform.OS !== "web" && !isAiConfigured();
+  const needsVoiceSetup = Platform.OS !== "web" && !isAiConfigured() && !nativeSpeechAvailable();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>

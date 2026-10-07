@@ -57,6 +57,17 @@ async function ensureLoaded() {
   } catch {
     index = {};
   }
+  // Older builds also filed lesson AI pictures under their tags ("cat", "on",
+  // the chapter id), so a whole lesson scene answered for a single word. Drop
+  // those aliases; the picture itself stays under its own key.
+  let dropped = false;
+  for (const [k, e] of Object.entries(index)) {
+    if (e.source === "ai" && e.key !== k && e.tags?.some((t) => /^[a-z]{2}\d-/.test(t))) {
+      delete index[k];
+      dropped = true;
+    }
+  }
+  if (dropped) persist();
   try {
     const info = await FileSystem.getInfoAsync(DIR);
     if (!info.exists) await FileSystem.makeDirectoryAsync(DIR, { intermediates: true });
@@ -380,6 +391,22 @@ export async function lookupImage(phrase: string, graph?: SceneGraph): Promise<L
 
   console.log(`[library] "${phrase}" -> no match`);
   return null;
+}
+
+/**
+ * AI pictures made in a school chapter belong to that chapter and sentence
+ * only — never to the plain word ("cat") or to the same sentence in another
+ * chapter, where the picture would have been drawn for a different lesson.
+ */
+const lessonKey = (chapterId: string, sentence: string) => `lessonpic ${chapterId} ${sentence}`;
+
+export async function findLessonPicture(chapterId: string, sentence: string): Promise<string | null> {
+  await ensureLoaded();
+  return index[norm(lessonKey(chapterId, sentence))]?.uri ?? null;
+}
+
+export async function saveLessonPicture(chapterId: string, sentence: string, uri: string): Promise<LibraryEntry | null> {
+  return saveImage(lessonKey(chapterId, sentence), uri, { source: "ai" });
 }
 
 /** Download and index a picture. Used for ARASAAC seeds and for AI results. */

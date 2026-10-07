@@ -117,13 +117,20 @@ const FaceScannerView = forwardRef<FaceScannerRef, Props>(function FaceScannerVi
     };
   }, [cameraFacing]);
 
-  // Native camera readiness fallback
+  // Native camera: wait for onCameraReady (again after a flip). The timer is
+  // only a fallback for a device that never fires it — a photo taken before
+  // the camera is ready fails with "Failed to capture image".
   useEffect(() => {
     if (Platform.OS !== "web") {
-      const t = setTimeout(() => setReady(true), 600);
+      setReady(false);
+      const t = setTimeout(() => setReady(true), 3000);
       return () => clearTimeout(t);
     }
-  }, []);
+  }, [cameraFacing]);
+
+  // one photo at a time: overlapping takePictureAsync calls fail on Android
+  const capturingRef = useRef(false);
+  const failuresRef = useRef(0);
 
   // Frame capture & feature descriptor generation (100% on-device faceEngine)
   async function captureNow() {
@@ -172,12 +179,15 @@ const FaceScannerView = forwardRef<FaceScannerRef, Props>(function FaceScannerVi
     }
 
     // Native CameraView
-    if (nativeCameraRef.current) {
+    if (nativeCameraRef.current && !capturingRef.current) {
+      capturingRef.current = true;
       try {
         const photo = await nativeCameraRef.current.takePictureAsync({
           quality: 0.6,
           skipProcessing: false,
+          shutterSound: false, // it scans every 1.5s — no clicking
         });
+        failuresRef.current = 0;
         if (photo?.uri) {
           const vector = await captureEmbedding(photo.uri, {
             width: photo.width,
@@ -188,7 +198,10 @@ const FaceScannerView = forwardRef<FaceScannerRef, Props>(function FaceScannerVi
           }
         }
       } catch (err) {
-        console.warn("[FaceScanner] Native capture error:", err);
+        // log the first failure only, not one line every 1.5s
+        if (failuresRef.current++ === 0) console.warn("[FaceScanner] Native capture error:", err);
+      } finally {
+        capturingRef.current = false;
       }
     }
   }
@@ -240,7 +253,7 @@ const FaceScannerView = forwardRef<FaceScannerRef, Props>(function FaceScannerVi
       <View style={[styles.circleContainer, { width: size, height: size, borderRadius: size / 2 }]}>
         {/* Live Camera View */}
         {Platform.OS === "web" ? (
-          <View style={StyleSheet.absoluteFillObject}>
+          <View style={StyleSheet.absoluteFill}>
             <video
               ref={webVideoRef}
               autoPlay
@@ -258,7 +271,7 @@ const FaceScannerView = forwardRef<FaceScannerRef, Props>(function FaceScannerVi
           <CameraView
             ref={nativeCameraRef}
             facing={cameraFacing}
-            style={StyleSheet.absoluteFillObject}
+            style={StyleSheet.absoluteFill}
             onCameraReady={() => setReady(true)}
           />
         )}
@@ -307,7 +320,7 @@ const FaceScannerView = forwardRef<FaceScannerRef, Props>(function FaceScannerVi
         <CameraView
           ref={nativeCameraRef}
           facing={cameraFacing}
-          style={StyleSheet.absoluteFillObject}
+          style={StyleSheet.absoluteFill}
           onCameraReady={() => setReady(true)}
         />
       )}
@@ -370,7 +383,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   circleOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "rgba(0, 0, 0, 0.12)",
@@ -416,7 +429,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#1c1c1e",
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: "rgba(0, 0, 0, 0.32)",
     alignItems: "center",
     justifyContent: "space-between",

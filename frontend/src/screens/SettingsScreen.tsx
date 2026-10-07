@@ -9,6 +9,7 @@ import type { LanguageCode } from "../types";
 import { speak } from "../modules/tts";
 import { getKey, getSavedKey, isFromBuild, setKey, clearApiKeys, maskKey, type ApiKeyName } from "../modules/apiKeys";
 import { isAiConfigured, clearAiCache } from "../modules/aiImage";
+import { nativeSpeechAvailable } from "../modules/voice";
 import { agentEnabled } from "../modules/sceneAgent";
 import { aiSceneEnabled } from "../modules/aiScene";
 import { libraryCount, prewarmLibrary, clearLibrary } from "../modules/imageLibrary";
@@ -204,7 +205,7 @@ export default function SettingsScreen({ onBack, onOpenHelp, onOpenPrivacy, onOp
   }
 
   // Voice-to-text: browsers have it built in; phones need OpenAI or the server.
-  const voiceOn = Platform.OS === "web" || isAiConfigured();
+  const voiceOn = Platform.OS === "web" || isAiConfigured() || nativeSpeechAvailable();
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.bg }}>

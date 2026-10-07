@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { describe, it } from "node:test";
 import assert from "node:assert";
 import {
@@ -5,6 +6,7 @@ import {
   getChapterImagePrompt,
   isPrepositionChapter,
   chapterById,
+  getAllChapters,
 } from "./curriculum";
 
 describe("Curriculum Validation & High Quality Prompt Generation", () => {
@@ -59,7 +61,8 @@ describe("Curriculum Validation & High Quality Prompt Generation", () => {
 
   it("builds high quality educational prompts for prepositions", () => {
     const prompt = getChapterImagePrompt("en1-prepositions", "The cat is on the table");
-    assert.ok(prompt.includes("ON"), "Prompt should emphasize ON in uppercase");
+    assert.ok(prompt.includes("on top of the table"), "Prompt should spell out the ON position");
+    assert.ok(!/\bON\b/.test(prompt), "No uppercase lesson words — image models paint them as text");
     assert.ok(prompt.includes("cat"), "Prompt should mention cat");
     assert.ok(prompt.includes("table"), "Prompt should mention table");
     assert.ok(!prompt.includes("single clear centred subject"), "Prompt must avoid single-subject isolation");
@@ -109,18 +112,82 @@ describe("Curriculum Validation & High Quality Prompt Generation", () => {
 
     const promptShape = getChapterImagePrompt("ma1-shapes", "A circle");
     assert.ok(promptShape.includes("circle"), "Prompt must mention circle");
-    assert.ok(promptShape.includes("pure clean white background"), "Prompt must have clean background");
+    assert.ok(promptShape.includes("plain white background"), "Prompt must have clean background");
   });
 
   it("builds dedicated educational prompts for Science body & organ lessons", () => {
-    const promptLungs = getChapterImagePrompt("sc1-body", "Add lungs");
-    assert.ok(promptLungs.includes("LUNGS"), "Prompt must teach LUNGS");
-    assert.ok(promptLungs.includes("cutaway view"), "Prompt must specify cutaway view of chest");
+    const promptLungs = getChapterImagePrompt("sc1-body", "The lungs");
+    assert.ok(promptLungs.includes("showing the lungs"), "Prompt must show the lungs");
+    assert.ok(promptLungs.includes("see-through window on the chest"), "Lungs are shown in the chest");
 
-    const promptHeart = getChapterImagePrompt("sc1-body", "Heart");
-    assert.ok(promptHeart.includes("HEART"), "Prompt must teach HEART");
+    const promptHeart = getChapterImagePrompt("sc1-body", "The heart");
+    assert.ok(promptHeart.includes("showing the heart"), "Prompt must show the heart");
 
-    const promptStomach = getChapterImagePrompt("sc1-body", "Add stomach");
-    assert.ok(promptStomach.includes("STOMACH"), "Prompt must teach STOMACH");
+    const promptStomach = getChapterImagePrompt("sc1-body", "The stomach");
+    assert.ok(promptStomach.includes("on the tummy"), "The stomach is shown in the tummy");
+
+    // a body chapter sentence that is not an organ must not become an anatomy cut-away
+    const eating = getChapterImagePrompt("sc4-digestion", "The boy is eating");
+    assert.ok(!eating.includes("see-through"), "\"The boy is eating\" is a boy eating, not an organ");
+  });
+
+  it("has a topic rule for every chapter, and every lesson fits its own chapter", () => {
+    for (const { chapter } of getAllChapters()) {
+      for (const lesson of chapter.lessons) {
+        const res = validateChapterSentence(chapter.id, lesson.say);
+        assert.strictEqual(res.valid, true, `${chapter.id}: "${lesson.say}" should be valid`);
+      }
+      // an obviously off-topic sentence is refused in every chapter
+      const off = validateChapterSentence(chapter.id, "I want to go home now please");
+      assert.strictEqual(off.valid, false, `${chapter.id} should refuse an off-topic sentence`);
+    }
+  });
+
+  it("keeps each chapter to its own topic", () => {
+    const cases: [string, string, boolean][] = [
+      ["en1-prepositions", "The giraffe is under the umbrella", true],
+      ["en1-prepositions", "A red apple", false],
+      ["en1-colours", "A blue car", true],
+      ["en1-sizes", "A red apple", false],
+      ["en2-plurals", "Six ducks", true],
+      ["en2-plurals", "A duck", false],
+      ["en4-adverbs", "The horse is running fast", false],
+      ["en4-adverbs", "The horse is running quickly", true],
+      ["ma1-counting", "Four cars", true],
+      ["ma1-counting", "The cat is on the table", false],
+      ["ma1-adding", "5 apples - 2 apples", false],
+      ["ma1-shapes", "A triangle", true],
+      ["sc1-plants", "A sunflower", true],
+      ["sc1-plants", "The car is red", false],
+      ["sc1-animals", "A snail", true],
+      ["sc1-animals", "A rainbow", false],
+      ["sc4-magnets", "A paperclip and a magnet", true],
+      ["sc4-magnets", "The girl is singing", false],
+      ["sc5-space", "A planet", true],
+      ["sc5-space", "A burger", false],
+    ];
+    for (const [id, s, ok] of cases) {
+      assert.strictEqual(validateChapterSentence(id, s).valid, ok, `${id}: "${s}" should be ${ok ? "valid" : "refused"}`);
+    }
+  });
+
+  it("draws the lesson's own scene for science and math lessons", () => {
+    const inv = getChapterImagePrompt("sc1-animals", "Invertebrates do not have a backbone");
+    assert.ok(inv.includes("earthworm") && inv.includes("snail"), "Invertebrates are shown as real invertebrates");
+
+    const fern = getChapterImagePrompt("sc1-plants", "Non-flowering plants do not have seeds and flowers");
+    assert.ok(fern.includes("fern") && !fern.includes("blooming"), "Non-flowering plants must not get a flower");
+
+    const clock = getChapterImagePrompt("ma2-time", "A clock");
+    assert.ok(clock.includes("A clock"), "Math lessons keep their own subject (a clock), not random objects");
+  });
+
+  it("never asks the image model for uppercase lesson words", () => {
+    for (const { chapter } of getAllChapters()) {
+      for (const lesson of chapter.lessons) {
+        const prompt = getChapterImagePrompt(chapter.id, lesson.say);
+        assert.ok(!/\b[A-Z]{3,}\b/.test(prompt), `${chapter.id}: "${lesson.say}" prompt has an uppercase word`);
+      }
+    }
   });
 });

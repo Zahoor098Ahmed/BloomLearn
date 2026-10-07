@@ -86,7 +86,7 @@ const BODY_WORDS = new Set([
   "head", "hair", "eye", "eyes", "ear", "ears", "nose", "mouth", "neck",
   "shoulder", "shoulders", "chest", "arm", "arms", "elbow", "hand", "hands",
   "finger", "fingers", "tummy", "hip", "hips", "leg", "legs", "knee", "knees",
-  "foot", "feet", "toe", "toes", "back",
+  "foot", "feet", "toe", "toes", "back", "teeth", "tooth", "tongue",
 ]);
 const ANATOMY = new Set([...ORGAN_WORDS, ...BODY_WORDS]);
 // the standard set drawn for "internal organs" / "all the organs"
