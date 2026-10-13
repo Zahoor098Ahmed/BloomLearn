@@ -120,6 +120,26 @@ const surfaceTopOf = (type: string) => SURFACE_OFFSET[type] ?? 0.36;
 
 function layoutScene(items: SceneItem[]): Placed[] {
   if (!items.length) return [];
+
+  // 1. Single subject: provide full-size display (82% to 88% of the box) centered prominently!
+  if (items.length === 1) {
+    const it = items[0];
+    const isAirborne = AIRBORNE_TYPES.has(it.type);
+    const sz = SIZE_SCALE[it.size] ?? 1.0;
+    const targetW = Math.min(0.88, 0.82 * sz);
+    const targetH = targetW / ASPECT;
+    return [
+      {
+        it,
+        cx: 0.5,
+        cy: 0.5,
+        w: targetW,
+        h: targetH,
+        groundShadow: !isAirborne,
+      },
+    ];
+  }
+
   const nodes = items.map((it) => {
     const w = BASE_W * SIZE_SCALE[it.size] * (NATURAL[it.type] ?? 0.9);
     return { it, x: it.x, y: it.y, w, h: w / ASPECT };
@@ -238,14 +258,14 @@ function layoutScene(items: SceneItem[]): Placed[] {
   const groundBase = Math.max(...nodes.map((n) => n.y + n.h * bottomOf(n.it.type)));
 
   // Fit scale so entire scene (including high objects like birds above trees) fits comfortably:
-  const topPad = 0.08;
+  const topPad = 0.06;
   const availTop = Math.max(0.1, groundBase - topPad);
   const spanUp = Math.max(0.01, groundBase - minY);
-  const scaleUp = spanUp > availTop ? availTop / spanUp : 1;
+  const scaleUp = spanUp > 0 ? availTop / spanUp : 1;
 
   const availW = 1 - 2 * PAD;
-  const scaleW = gw > availW ? availW / gw : 1;
-  const k = Math.min(scaleUp, scaleW, 1);
+  const scaleW = gw > 0 ? availW / gw : 1;
+  const k = Math.min(scaleUp, scaleW, 1.4);
   const gcx = (minX + maxX) / 2;
 
   return nodes.map((n) => {
@@ -275,26 +295,10 @@ function Item({ p, uri }: { p: Placed; uri?: string }) {
   const ratio = 1 + (n - 1) * 0.68; // width : height of the row
   const rowW = p.w * 100 * ratio; // % of stage width
   const negLeft = rowW / -2;
-  const negTop = (p.w * 100) / -2;
+  const negTop = (p.h * 100) / -2;
   const col = it.colorHex ?? undefined;
   return (
     <>
-      {p.groundShadow && (
-        <View
-          style={{
-            position: "absolute",
-            left: `${p.cx * 100}%`,
-            top: `${(p.cy + p.h * bottomOf(it.type) - 0.01) * 100}%`,
-            width: `${rowW * 0.82}%`,
-            height: Math.max(6, Math.min(13, p.h * 26)),
-            marginLeft: `${(rowW * 0.82) / -2}%`,
-            marginTop: -3,
-            borderRadius: 999,
-            backgroundColor: "rgba(25, 45, 35, 0.12)",
-          }}
-          pointerEvents="none"
-        />
-      )}
       <View
         style={{
           position: "absolute",

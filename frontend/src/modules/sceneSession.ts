@@ -15,7 +15,7 @@
  * Rendering is done by <SceneStage> from these items — offline, free, no keys.
  */
 
-import { parseSceneGraph, SUBJECTS, REFERENCES, ACTIONS, ADVERBS, colorHex, ALL_VOCAB_GLYPHS, findWordEmoji } from "./sentenceScene";
+import { parseSceneGraph, SUBJECTS, REFERENCES, ACTIONS, ADVERBS, colorHex, ALL_VOCAB_GLYPHS, findWordEmoji, singular } from "./sentenceScene";
 import type { SceneSize } from "../types";
 
 // Islamic education assets (respectful — objects, places and prayer poses only;
@@ -84,9 +84,13 @@ const ORGAN_WORDS = new Set([
 // already about the body, or the phrase says so, or nothing else is on screen
 const BODY_WORDS = new Set([
   "head", "hair", "eye", "eyes", "ear", "ears", "nose", "mouth", "neck",
-  "shoulder", "shoulders", "chest", "arm", "arms", "elbow", "hand", "hands",
+  "shoulder", "shoulders", "chest", "arm", "arms", "elbow", "elbows", "hand", "hands",
   "finger", "fingers", "tummy", "hip", "hips", "leg", "legs", "knee", "knees",
   "foot", "feet", "toe", "toes", "back", "teeth", "tooth", "tongue",
+  "forehead", "eyebrow", "eyebrows", "eyelash", "eyelashes", "cheek", "cheeks",
+  "lip", "lips", "chin", "throat", "wrist", "wrists", "palm", "palms",
+  "thumb", "thumbs", "fingernail", "fingernails", "ankle", "ankles", "heel", "heels",
+  "toenail", "toenails", "skin",
 ]);
 const ANATOMY = new Set([...ORGAN_WORDS, ...BODY_WORDS]);
 // the standard set drawn for "internal organs" / "all the organs"
@@ -410,6 +414,8 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
     "what", "why", "how", "who", "when", "where", "can", "could", "will", "would",
     "i", "my", "we", "our", "he", "she", "it", "they", "them", "for", "from",
     "yes", "no", "not", "too", "also", "just", "now", "here",
+    "each", "has", "have", "had", "off", "own", "all", "one", "two", "three", "four", "five",
+    "series", "parallel", "branch", "turns", "removing", "lower", "higher", "more", "less",
   ]);
 
   const candidateNouns = [
@@ -418,19 +424,24 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
         (w) =>
           !EXPRESSIONS[w] &&
           !ACTIONS[w] &&
-          !ADVERBS[w] &&
+          (!ADVERBS[w] || REFERENCES[w] || SUBJECTS[w]) &&
           w !== actionWord &&
           w !== exprWord &&
-          (GLYPHS[w] || SUBJECTS[w] || REFERENCES[w] || (w.length > 2 && !STOP_TOKENS.has(w))) &&
+          (GLYPHS[w] || GLYPHS[singular(w)] || SUBJECTS[w] || SUBJECTS[singular(w)] || REFERENCES[w] || REFERENCES[singular(w)] || (w.length > 2 && !STOP_TOKENS.has(w))) &&
           !STOP_TOKENS.has(w),
       ),
     ),
   ];
 
-  if (candidateNouns.length > 0) {
-    const typesToAdd = g.subject?.type
-      ? [g.subject.type, ...candidateNouns.filter((w) => w !== g.subject?.type && (GLYPHS[w] || SUBJECTS[w]))]
-      : candidateNouns;
+  const subjectType = g.subject?.type;
+  if (candidateNouns.length > 0 || subjectType) {
+    const hasConjunction = /\b(and|plus)\b/i.test(text) || text.includes(",");
+    const rawTypes = subjectType
+      ? hasConjunction
+        ? [subjectType, ...candidateNouns.filter((w) => w !== subjectType && (GLYPHS[w] || GLYPHS[singular(w)] || SUBJECTS[w] || SUBJECTS[singular(w)]))]
+        : [subjectType]
+      : candidateNouns.slice(0, 1);
+    const typesToAdd = rawTypes.map((t) => (GLYPHS[singular(t)] || SUBJECTS[singular(t)] ? singular(t) : t));
 
     for (const type of typesToAdd) {
       if (STOP_TOKENS.has(type)) continue;

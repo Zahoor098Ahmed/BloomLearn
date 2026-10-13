@@ -163,6 +163,15 @@ const SYNONYMS: Record<string, string> = {
   darakht: "tree", phool: "flower",
   masjid: "mosque", madrasa: "school", basta: "backpack",
   joote: "shoes", kapre: "clothes",
+  honeybee: "bee", woodpecker: "bird", sweater: "clothes", woollen: "clothes",
+  silk: "clothes", wooden: "wood", concrete: "rock", aluminium: "metal",
+  nylon: "rope", pan: "pot", glow: "lamp", voice: "mouth",
+  sunset: "sun", sunlight: "sun", solar: "sun", asteroid: "rock",
+  satellites: "star", doorbell: "bell", friction: "car", electric: "battery",
+  magnetic: "magnet", electromagnet: "magnet", windpipe: "neck", alveoli: "lungs",
+  gastric: "stomach", algae: "plant", nutrients: "food", saltwater: "sea",
+  biomass: "tree", overfishing: "fish", pesticides: "plant", conserving: "water",
+  hovercraft: "boat", pulling: "pull", pushing: "push",
 };
 
 /** Try a word, its singular, and common verb forms. */

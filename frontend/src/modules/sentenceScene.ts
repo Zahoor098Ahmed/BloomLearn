@@ -40,12 +40,25 @@ export const SUBJECTS: Record<string, string> = {
   frog: "🐸", bear: "🐻", lion: "🦁", tiger: "🐯", elephant: "🐘", monkey: "🐵", horse: "🐴", cow: "🐮",
   pig: "🐷", sheep: "🐑", duck: "🦆", chicken: "🐔", mouse: "🐭", snake: "🐍", turtle: "🐢", butterfly: "🦋",
   bee: "🐝", spider: "🕷️", ant: "🐜", owl: "🦉", penguin: "🐧", camel: "🐪",
+  eagle: "🦅", kangaroo: "🦘", deer: "🦌", whale: "🐋", dolphin: "🐬", shark: "🦈", wolf: "🐺", fox: "🦊",
+  giraffe: "🦒", zebra: "🦓", goat: "🐐", dinosaur: "🦕", hippo: "🦛", jellyfish: "🪼", crab: "🦀", snail: "🐌", worm: "🪱",
   boy: "👦", girl: "👧", man: "👨", woman: "👩", baby: "👶", mother: "👩", mom: "👩", father: "👨", dad: "👨",
   teacher: "🧑‍🏫", doctor: "🧑‍⚕️", child: "🧒",
   ball: "⚽", cup: "🥤", book: "📖", pencil: "✏️", bag: "🎒", box: "📦", apple: "🍎", banana: "🍌",
   orange: "🍊", cake: "🍰", bottle: "🍼", key: "🔑", phone: "📱", hat: "🧢", shoe: "👟", flower: "🌼",
-  leaf: "🍃", star: "⭐", moon: "🌙", sun: "☀️", cloud: "☁️", kite: "🪁", umbrella: "☂️", balloon: "🎈",
+  leaf: "🍃", leaves: "🍃", root: "🌱", roots: "🌱", stem: "🌿", seed: "🌱", seeds: "🌱", plant: "🪴", cactus: "🌵",
+  star: "⭐", moon: "🌙", sun: "☀️", cloud: "☁️", kite: "🪁", umbrella: "☂️", balloon: "🎈",
+  lightning: "⚡", thunder: "🌩️", snowman: "⛄", frost: "❄️", rainbow: "🌈", soil: "🪴", rock: "🪨",
+  magnet: "🧲", battery: "🔋", bulb: "💡", lamp: "💡", wire: "🔌", shadow: "👤", sound: "🔊",
+  potato: "🥔", potatoes: "🥔", wood: "🪵", metal: "🔩", plastic: "🧴", glass: "🥛",
   car: "🚗", bus: "🚌", bike: "🚲", bicycle: "🚲", train: "🚆", boat: "⛵", plane: "✈️", rocket: "🚀",
+  door: "🚪", termite: "🐜", mound: "⛰️", fibre: "🥗", tract: "🫁", capillary: "🩸", capillaries: "🩸",
+  voltmeter: "⚡", meter: "⚡", meters: "⚡", station: "🛰️", satellite: "🛰️", ozone: "🛡️", crescent: "🌙",
+  gravity: "🌍", fuse: "🔌", sonar: "🚢", sneeze: "🤧", sneezing: "🤧",
+  villi: "🫁", peristalsis: "🍽️", force: "💨", forces: "💨",
+  crate: "📦", crates: "📦",
+  seedling: "🌱", lamb: "🐑", calf: "🐮", foal: "🐴",
+  chick: "🐥", duckling: "🦆", cub: "🐻",
 };
 
 /** Things a subject is positioned relative to. */
@@ -91,7 +104,7 @@ export const ADVERBS: Record<string, string> = {
   calmly: "😌", peacefully: "🕊️", easily: "🟢", asani: "🟢",
   well: "👍", badly: "👎", together: "🧑‍🤝‍🧑", alone: "🧍", sath: "🧑‍🤝‍🧑", akela: "🧍",
   outside: "🌳", inside: "🏠", up: "⬆️", down: "⬇️", bahar: "🌳", andar: "🏠", upar: "⬆️", neeche: "⬇️",
-  high: "🌤️", low: "🌱", far: "🔭", near: "📍", door: "🔭", qareeb: "📍",
+  high: "🌤️", low: "🌱", far: "🔭", near: "📍", dur: "🔭", qareeb: "📍",
   always: "🔄", never: "🚫", again: "🔁", now: "⏱️", soon: "⏳", abhi: "⏱️",
   angrily: "😠", gusse: "😠", excitedly: "🤩", josh: "🤩",
   nicely: "😊", politely: "🙏", brightly: "🌟", strongly: "💪", taqat: "💪",
@@ -234,9 +247,13 @@ export function conceptByKey(key: string | null): ConceptPreset | null {
   return key ? CONCEPTS.find((c) => c.key === key) ?? null : null;
 }
 
-function singular(w: string): string {
+export function singular(w: string): string {
+  if (w === "children") return "child";
+  if (w === "buses") return "bus";
+  if (w === "feet") return "foot";
+  if (w === "teeth") return "tooth";
   if (w.endsWith("ies")) return w.slice(0, -3) + "y";
-  if (w.endsWith("es") && (w.endsWith("ches") || w.endsWith("shes") || w.endsWith("xes"))) return w.slice(0, -2);
+  if (w.endsWith("es") && (w.endsWith("ches") || w.endsWith("shes") || w.endsWith("xes") || w.endsWith("ses"))) return w.slice(0, -2);
   if (w.endsWith("s") && !w.endsWith("ss")) return w.slice(0, -1);
   return w;
 }
@@ -332,7 +349,16 @@ export function parseSceneGraph(raw: string): SceneGraph {
     rightWin = ` ${(parts.slice(1).join(` ${relationRaw} `)).trim()} `;
   }
 
-  const subjectKey = findIn(ALL_VOCAB_GLYPHS, leftWin.trim().split(" ")) || findIn(SUBJECTS, leftWin.trim().split(" "));
+  const isCalledMatch = clean.match(/\bis called (?:a |an )?([a-z]+)\b/);
+  const calledNoun = isCalledMatch ? isCalledMatch[1] : null;
+  const hasBabyModifier = /\bbaby (?:dog|cat|bird|animal|plant|bear|lion|kangaroo|sheep|cow|horse|duck|frog)\b/.test(clean);
+  const leftTokens = leftWin.trim().split(" ").filter((w) => !hasBabyModifier || w !== "baby");
+
+  const NOUN_VOCAB: Record<string, string> = { ...SUBJECTS, ...REFERENCES, ...EXTRA_ABWAAB };
+  const subjectKey =
+    calledNoun ||
+    findIn(SUBJECTS, leftTokens) ||
+    findIn(NOUN_VOCAB, leftTokens);
   const refKey = relationRaw
     ? findIn(REFERENCES, rightWin.trim().split(" "), subjectKey)
     : findIn(REFERENCES, tokens, subjectKey);
@@ -347,13 +373,33 @@ export function parseSceneGraph(raw: string): SceneGraph {
     "what", "why", "how", "who", "when", "where", "can", "could", "will", "would",
     "i", "my", "we", "our", "he", "she", "it", "they", "them", "for", "from",
     "yes", "no", "not", "too", "also", "just", "now", "here",
+    "have", "has", "had", "grow", "grows", "live", "lives", "help", "helps",
+    "make", "makes", "need", "needs", "use", "uses", "take", "takes", "give", "gives",
+    "look", "looks", "see", "sees", "move", "moves", "must", "should", "cannot",
+    "do", "does", "did", "keep", "keeps", "stay", "stays", "form", "forms",
+    "high", "low", "bright", "dark", "warm", "cold", "hot", "fast", "slow",
+    "hard", "soft", "dry", "wet", "clean", "dirty", "fresh", "harm",
+    "slowly", "quickly", "quietly", "loudly", "happily", "easily", "deeply",
+    "underground", "around", "alike", "together", "away", "back", "well",
+    "safely", "tightly", "dramatically", "built", "perched", "soaring", "hopping",
+    "soundproof", "digital", "smart", "international", "national", "series", "parallel",
+    "connect", "expels", "rises", "entire", "off", "each", "altitude",
+    "unbalanced", "biodegradable",
   ]);
 
   let resolvedSubj = subjectKey;
   if (!resolvedSubj) {
     const words = leftWin.trim().split(" ").filter((w) => w.length > 2 && !STOP_NOUNS.has(w) && !COLORS.includes(w));
-    if (words.length > 0) {
-      resolvedSubj = words[words.length - 1];
+    // Check if any word in the sentence matches known vocabulary, first word has highest subject priority:
+    for (const w of words) {
+      const s = singular(w);
+      if (NOUN_VOCAB[w] || NOUN_VOCAB[s] || SUBJECTS[w] || SUBJECTS[s]) {
+        resolvedSubj = (SUBJECTS[w] || NOUN_VOCAB[w]) ? w : s;
+        break;
+      }
+    }
+    if (!resolvedSubj && words.length > 0) {
+      resolvedSubj = words[0]; // In English, the subject comes first
     }
   }
 

@@ -187,6 +187,15 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
 
   const sCamel = say(newSession(), "A camel in the desert");
   check("habitat 'A camel in the desert' contains both camel and desert", types(sCamel).includes("camel") && types(sCamel).includes("desert"));
+
+  const sPuppy = say(newSession(), "A baby dog is called a puppy");
+  check("definition 'A baby dog is called a puppy' resolves ONLY to puppy", types(sPuppy).length === 1 && types(sPuppy)[0] === "puppy");
+
+  const sKitten = say(newSession(), "A baby cat is called a kitten");
+  check("definition 'A baby cat is called a kitten' resolves ONLY to kitten", types(sKitten).length === 1 && types(sKitten)[0] === "kitten");
+
+  const sSeedling = say(newSession(), "A young plant is called a seedling");
+  check("definition 'A young plant is called a seedling' resolves ONLY to seedling", types(sSeedling).length === 1 && types(sSeedling)[0] === "seedling");
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

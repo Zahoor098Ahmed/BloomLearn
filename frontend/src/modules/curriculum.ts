@@ -491,6 +491,10 @@ const BODY_WORDS = [
   "body", "heart", "lung", "lungs", "stomach", "brain", "kidney", "liver", "bone", "bones", "skeleton", "muscle", "blood",
   "chest", "mouth", "teeth", "tooth", "tongue", "nose", "ear", "eye", "skin", "breathe", "breathing", "intestine",
   "head", "hair", "neck", "shoulder", "arm", "elbow", "hand", "finger", "tummy", "leg", "knee", "foot", "feet", "toe",
+  "forehead", "eyebrow", "eyebrows", "eyelash", "eyelashes", "cheek", "cheeks", "lip", "lips", "chin", "throat",
+  "wrist", "wrists", "palm", "palms", "thumb", "thumbs", "fingernail", "fingernails", "ankle", "ankles", "heel", "heels",
+  "toenail", "toenails", "spine", "ribs", "rib", "skull", "bladder", "pancreas", "intestines", "kidneys", "shoulders",
+  "arms", "elbows", "hands", "fingers", "legs", "knees", "toes", "ears", "eyes", "muscles",
 ];
 const ORGANS = ["heart", "lungs", "lung", "stomach", "brain", "kidney", "kidneys", "liver", "intestines", "skeleton", "bones"];
 const FOODS = [

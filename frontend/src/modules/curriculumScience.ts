@@ -686,94 +686,118 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
           "draw": "a strong smiling child gently flexing a bicep muscle showing strength and fitness"
         },
         {
-          "say": "Washing hands keeps germs away",
-          "question": "Why must we wash our hands with soap?",
-          "answer": "To wash away germs",
-          "draw": "a child washing both hands thoroughly with foamy soap bubbles under clean running water at a sink"
+          "say": "The liver cleans toxins from our blood",
+          "question": "Which large organ filters and cleans our blood?",
+          "answer": "The liver",
+          "draw": "the human liver shown clearly in the upper abdomen on a solid pure white background"
         },
         {
-          "say": "Brushing teeth keeps them strong and clean",
-          "question": "How many times a day should we brush teeth?",
-          "answer": "Twice a day",
-          "draw": "a happy child in pyjamas brushing teeth with a toothbrush and toothpaste in a bright bathroom"
+          "say": "The kidneys filter liquid waste from our blood",
+          "question": "Which bean-shaped organs filter liquid waste?",
+          "answer": "The kidneys",
+          "draw": "two healthy bean-shaped kidneys filtering blood in the human body on a solid pure white background"
         },
         {
-          "say": "Bathing keeps our whole body clean",
-          "question": "What do we take with water and soap to stay fresh?",
-          "answer": "A bath or shower",
-          "draw": "a cheerful child wrapping up in a warm fluffy towel after a refreshing clean bath"
+          "say": "The intestines absorb nutrients from food",
+          "question": "Which winding tubes absorb food nutrients?",
+          "answer": "The intestines",
+          "draw": "the human intestines neatly arranged in the digestive tract on a solid pure white background"
         },
         {
-          "say": "Drinking clean water keeps us healthy",
-          "question": "What clear drink does our body need every day?",
-          "answer": "Water",
-          "draw": "a child happily drinking a tall glass of pure fresh water in a sunny kitchen"
+          "say": "The bladder stores liquid waste",
+          "question": "Which organ stores liquid waste before leaving the body?",
+          "answer": "The bladder",
+          "draw": "the human urinary bladder clearly illustrated in the lower abdomen on a solid pure white background"
         },
         {
-          "say": "Sleeping at night rests our body",
-          "question": "How many hours should children sleep?",
-          "answer": "Around eight to ten hours",
-          "draw": "a peaceful child sleeping comfortably in a cosy bed under a soft blanket with starry night outside"
+          "say": "The spine runs down the middle of our back",
+          "question": "What flexible column of bones supports our back?",
+          "answer": "The spine",
+          "draw": "the human vertebral column spine showing interlocking vertebrae on a solid pure white background"
         },
         {
-          "say": "Exercise makes our heart strong",
-          "question": "What active habit keeps our muscles fit?",
-          "answer": "Exercise and play",
-          "draw": "children jumping and skipping rope happily outdoors on a sunny green playground"
+          "say": "The ribs form a protective cage around our heart",
+          "question": "Which curved bones protect our heart and lungs?",
+          "answer": "The ribs (rib cage)",
+          "draw": "the human rib cage showing curved protective bones surrounding the chest on a solid pure white background"
+        },
+        {
+          "say": "The skull protects our brain inside our head",
+          "question": "What hard bony helmet protects our brain?",
+          "answer": "The skull",
+          "draw": "the human skull dome protecting the brain inside on a solid pure white background"
         },
         {
           "say": "Our fingernails protect the tips of fingers",
-          "question": "What hard part grows on the end of each finger?",
+          "question": "What hard keratin shields protect our fingertips?",
           "answer": "Fingernails",
-          "draw": "neat clean child hands showing trimmed clean fingernails held up proudly"
+          "draw": "neat clean hands displaying well-trimmed fingernails on a solid pure white background"
         },
         {
-          "say": "We blink our eyes to keep them moist",
-          "question": "Why do our eyes blink automatically?",
-          "answer": "To stay clean and moist",
-          "draw": "a smiling child looking straight ahead with bright refreshed eyes"
+          "say": "Our toenails protect the tips of toes",
+          "question": "What hard shields protect the tips of our toes?",
+          "answer": "Toenails",
+          "draw": "clean healthy feet showing neat toenails on a solid pure white background"
         },
         {
-          "say": "The chest moves when we breathe",
-          "question": "What rises and falls as we breathe?",
+          "say": "The chest expands when we breathe",
+          "question": "What front torso area holds our heart and lungs?",
           "answer": "The chest",
-          "draw": "a calm child sitting peacefully with hands on chest feeling the gentle rise and fall of breathing"
+          "draw": "the human upper chest area clearly shown with clean outlines on a solid pure white background"
         },
         {
-          "say": "The sense of touch lets us feel soft things",
-          "question": "How do we know a kitten's fur is soft?",
-          "answer": "Through touch",
-          "draw": "a child gently stroking a soft furry kitten with a warm smile of comfort"
+          "say": "The throat swallows food and air",
+          "question": "What muscular tube inside our neck swallows food?",
+          "answer": "The throat",
+          "draw": "an anatomical cutaway of the human throat and vocal area on a solid pure white background"
         },
         {
-          "say": "Our ears help us keep our balance",
-          "question": "Besides hearing, what do our inner ears help with?",
-          "answer": "Balance",
-          "draw": "a child balancing playfully on one foot on a balance beam with arms outstretched and steady ears"
+          "say": "The wrists connect our hands to our arms",
+          "question": "Which flexible joints connect our hands to our arms?",
+          "answer": "The wrists",
+          "draw": "human wrists connecting hands to forearms shown clearly on a solid pure white background"
         },
         {
-          "say": "The tongue has taste buds",
-          "question": "What tiny bumps on our tongue taste food?",
-          "answer": "Taste buds",
-          "draw": "a happy child enjoying a juicy slice of watermelon with a pink tongue tasting sweetness"
+          "say": "The ankles connect our feet to our legs",
+          "question": "Which joints connect our feet to our lower legs?",
+          "answer": "The ankles",
+          "draw": "human ankles connecting the feet to the lower legs on a solid pure white background"
         },
         {
-          "say": "Our voice comes from the throat",
-          "question": "Where do our spoken words sound from?",
-          "answer": "The voice box in the throat",
-          "draw": "a cheerful child singing a joyful song with hands open and mouth singing clearly"
+          "say": "The hips connect our torso to our legs",
+          "question": "Which wide pelvic bones support our upper body?",
+          "answer": "The hips",
+          "draw": "the human pelvis and hip joints connecting torso to legs on a solid pure white background"
         },
         {
-          "say": "Healthy food helps our body grow tall",
-          "question": "What food should we eat to grow strong?",
-          "answer": "Fruits, vegetables and milk",
-          "draw": "a colourful plate of fresh carrots, apples, boiled eggs, and a glass of milk on a kitchen table"
+          "say": "The cheeks form the sides of our face",
+          "question": "What soft fleshy parts are on the sides of our face?",
+          "answer": "The cheeks",
+          "draw": "a friendly smiling child face showing rosy healthy cheeks on a solid pure white background"
         },
         {
-          "say": "We must protect our body from harm",
-          "question": "Why do we wear a helmet while riding a bicycle?",
-          "answer": "To protect our head",
-          "draw": "a smiling child wearing a bright blue safety helmet securely strapped on while sitting on a bicycle"
+          "say": "The lips surround our mouth",
+          "question": "What soft reddish borders surround our mouth?",
+          "answer": "The lips",
+          "draw": "smiling pink lips around a gentle smile on a solid pure white background"
+        },
+        {
+          "say": "The thumbs help us grip objects tightly",
+          "question": "Which strong first digit on each hand helps us grip?",
+          "answer": "The thumb",
+          "draw": "a hand giving an enthusiastic thumbs up clearly showing the strong thumb on a solid pure white background"
+        },
+        {
+          "say": "The heels form the back part of our feet",
+          "question": "Which rounded back part of the foot strikes the ground first?",
+          "answer": "The heel",
+          "draw": "the rounded sturdy heel bone and arch of a foot on a solid pure white background"
+        },
+        {
+          "say": "The palms form the inner surface of our hands",
+          "question": "What flat inner surface of the hand touches objects?",
+          "answer": "The palm",
+          "draw": "an open outstretched hand showing the flat inner palm lines on a solid pure white background"
         }
       ]
     },
