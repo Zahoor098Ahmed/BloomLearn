@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, Image, Pressable, StyleSheet, type LayoutChangeEvent } from "react-native";
 import { lookupImage } from "../modules/imageLibrary";
+import { getPictogramUrl } from "../modules/aacPictograms";
 import { findWordEmoji } from "../modules/sentenceScene";
 import { MAX_DRAWN, type MathScene } from "../modules/mathScene";
 import { colors } from "../theme";
@@ -33,6 +34,11 @@ export default function MathStage({ scene, hideResult = false, onReveal, revealH
   useEffect(() => {
     let active = true;
     setUri(null);
+    const pic = getPictogramUrl(scene.object);
+    if (pic) {
+      setUri(pic);
+      return;
+    }
     const timeout = new Promise<null>((r) => setTimeout(() => r(null), 7000));
     Promise.race([lookupImage(scene.object), timeout]).then((hit) => {
       if (active) setUri(hit?.uri ?? null);

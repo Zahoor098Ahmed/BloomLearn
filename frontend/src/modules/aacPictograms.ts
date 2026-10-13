@@ -264,6 +264,23 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   fish: arasaac(2407),
   horse: arasaac(2408),
   cow: arasaac(2401),
+  camel: arasaac(8522), // Camel / dromedary
+  penguin: arasaac(2494),
+  lion: arasaac(2409),
+  monkey: arasaac(2410),
+  rabbit: arasaac(2411),
+  turtle: arasaac(10241),
+  elephant: arasaac(2372),
+  mouse: arasaac(2820),
+  duck: arasaac(2563),
+  snake: arasaac(2568),
+  bear: arasaac(2868),
+  tiger: arasaac(2590),
+  frog: arasaac(2543),
+  sheep: arasaac(2489),
+  pig: arasaac(2327),
+  butterfly: arasaac(2465),
+  bee: arasaac(2239),
   table: arasaac(3129),
   bed: arasaac(2304),
   house: arasaac(2317),
@@ -271,6 +288,124 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   car: arasaac(2339),
   bus: arasaac(2262),
   ball: arasaac(2269),
+  balloon: arasaac(2408),
+  balloons: arasaac(2408),
+  flower: arasaac(3102),
+  flowers: arasaac(3102),
+  leaf: arasaac(3114),
+  star: arasaac(2752),
+  stars: arasaac(2752),
+  moon: arasaac(2933),
+  sun: arasaac(2798),
+  cloud: arasaac(2883),
+  clouds: arasaac(2883),
+  kite: arasaac(2350),
+  cake: arasaac(8706),
+  cakes: arasaac(8706),
+  bottle: arasaac(2288),
+  hat: arasaac(2572),
+  shoe: arasaac(32922),
+  shoes: arasaac(32922),
+  cup: arasaac(2582),
+  key: arasaac(21851),
+  phone: arasaac(36305),
+  mat: arasaac(2346),
+  wall: arasaac(2860),
+  window: arasaac(2611),
+  fence: arasaac(6651),
+
+  // Habitats & Environments
+  desert: arasaac(2734), // Golden sand dunes with sun
+  ocean: arasaac(32699),
+  sea: arasaac(2925),
+  river: arasaac(2811),
+  pond: arasaac(39264),
+  forest: arasaac(2666),
+  jungle: arasaac(3385),
+  farm: arasaac(3337),
+  beach: arasaac(2826),
+  garden: arasaac(2434),
+  mountain: arasaac(2909),
+  lake: arasaac(6022),
+  arctic: arasaac(7128),
+  ice: arasaac(7128),
+  snow: arasaac(3135),
+
+  // Action verbs & dynamic subjects (high-pedagogical fidelity)
+  crying: arasaac(35881), // Child crying with visible tears
+  cry: arasaac(7147),
+  "baby crying": arasaac(35881),
+  "crying baby": arasaac(35881),
+  "crying child": arasaac(35881),
+  reading: arasaac(2447), // Child reading book
+  read: arasaac(7141),
+  "girl reading": arasaac(2447),
+  "boy reading": arasaac(7141),
+  "reading girl": arasaac(2447),
+  "reading boy": arasaac(7141),
+  run: arasaac(2719),
+  "boy running": arasaac(2719),
+  "girl running": arasaac(2719),
+  sleeping: arasaac(2369), // Person sleeping peacefully
+  "dog sleeping": arasaac(2369),
+  "sleeping dog": arasaac(2369),
+  "baby sleeping": arasaac(6060),
+  flying: arasaac(2478), // Bird in flight with wings outstretched
+  fly: arasaac(2478),
+  "bird flying": arasaac(2478),
+  "flying bird": arasaac(2478),
+  swim: arasaac(2889),
+  "fish swimming": arasaac(2407),
+  "swimming fish": arasaac(2407),
+  eating: arasaac(2349), // Person eating
+  eat: arasaac(2349),
+  "man eating": arasaac(2349),
+  "girl eating": arasaac(2349),
+  drinking: arasaac(2276), // Drinking glass
+  drink: arasaac(2276),
+  jumping: arasaac(2804), // Person jumping in air
+  jump: arasaac(2804),
+  "cat jumping": arasaac(2804),
+  walking: arasaac(2432), // Person walking
+  walk: arasaac(2432),
+  "turtle walking": arasaac(2432),
+  singing: arasaac(2315),
+  "girl singing": arasaac(2315),
+  kicking: arasaac(3199), // Child kicking soccer ball
+  kick: arasaac(3199),
+  laughing: arasaac(13354),
+  laugh: arasaac(13354),
+  "baby laughing": arasaac(13354),
+  "girl laughing": arasaac(13354),
+  smiling: arasaac(13354),
+  smile: arasaac(13354),
+  writing: arasaac(2380), // Hand writing with pencil
+  write: arasaac(2380),
+  "man writing": arasaac(2380),
+  drawing: arasaac(2523),
+  draw: arasaac(2523),
+  climbing: arasaac(8226), // Person climbing
+  climb: arasaac(8226),
+  "boy climbing": arasaac(8226),
+  driving: arasaac(2339),
+  drive: arasaac(2339),
+  "man driving": arasaac(2339),
+  washing: arasaac(2443),
+  wash: arasaac(2443),
+  brushing: arasaac(2326),
+  brush: arasaac(2326),
+  cooking: arasaac(2547),
+  cook: arasaac(2547),
+  "woman cooking": arasaac(2547),
+  praying: arasaac(3345),
+  pray: arasaac(3345),
+  hiding: arasaac(2474),
+  hide: arasaac(2474),
+  looking: arasaac(2474),
+  standing: arasaac(27509),
+  stand: arasaac(27509),
+  sitting: arasaac(3155),
+  sit: arasaac(3155),
 };
 
 /**
@@ -288,7 +423,38 @@ export function getPictogramUrl(label: string): string | null {
   const dictHit = dictUrl(lower);
   if (dictHit) return dictHit;
 
-  // 3. Try individual meaningful words from a multi-word phrase
+  // 3. Try singular form
+  if (lower.endsWith("ies") && lower.length > 4) {
+    const s = lower.slice(0, -3) + "y";
+    if (AAC_PICTOGRAM_MAP[s]) return AAC_PICTOGRAM_MAP[s];
+    const hit = dictUrl(s);
+    if (hit) return hit;
+  }
+  if (lower.endsWith("es") && lower.length > 3) {
+    const s = lower.slice(0, -2);
+    if (AAC_PICTOGRAM_MAP[s]) return AAC_PICTOGRAM_MAP[s];
+    const hit = dictUrl(s);
+    if (hit) return hit;
+  }
+  if (lower.endsWith("s") && !lower.endsWith("ss") && lower.length > 3) {
+    const s = lower.slice(0, -1);
+    if (AAC_PICTOGRAM_MAP[s]) return AAC_PICTOGRAM_MAP[s];
+    const hit = dictUrl(s);
+    if (hit) return hit;
+  }
+
+  // 4. Try base verb form if ending in -ing (e.g. crying -> cry, sleeping -> sleep)
+  if (lower.endsWith("ing") && lower.length > 5) {
+    const stems = [lower.slice(0, -3), lower.slice(0, -3) + "e"];
+    if (lower[lower.length - 4] === lower[lower.length - 5]) stems.push(lower.slice(0, -4)); // running -> run
+    for (const stem of stems) {
+      if (AAC_PICTOGRAM_MAP[stem]) return AAC_PICTOGRAM_MAP[stem];
+      const stemHit = dictUrl(stem);
+      if (stemHit) return stemHit;
+    }
+  }
+
+  // 5. Try individual meaningful words from a multi-word phrase
   const words = lower.split(/[\s,·\-_]+/).filter((w) => w.length > 2);
   for (const w of words) {
     if (AAC_PICTOGRAM_MAP[w]) return AAC_PICTOGRAM_MAP[w];

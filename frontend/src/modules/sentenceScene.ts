@@ -39,7 +39,7 @@ export const SUBJECTS: Record<string, string> = {
   cat: "🐱", kitten: "🐱", dog: "🐶", puppy: "🐶", bird: "🐦", fish: "🐟", rabbit: "🐰", bunny: "🐰",
   frog: "🐸", bear: "🐻", lion: "🦁", tiger: "🐯", elephant: "🐘", monkey: "🐵", horse: "🐴", cow: "🐮",
   pig: "🐷", sheep: "🐑", duck: "🦆", chicken: "🐔", mouse: "🐭", snake: "🐍", turtle: "🐢", butterfly: "🦋",
-  bee: "🐝", spider: "🕷️", ant: "🐜", owl: "🦉", penguin: "🐧",
+  bee: "🐝", spider: "🕷️", ant: "🐜", owl: "🦉", penguin: "🐧", camel: "🐪",
   boy: "👦", girl: "👧", man: "👨", woman: "👩", baby: "👶", mother: "👩", mom: "👩", father: "👨", dad: "👨",
   teacher: "🧑‍🏫", doctor: "🧑‍⚕️", child: "🧒",
   ball: "⚽", cup: "🥤", book: "📖", pencil: "✏️", bag: "🎒", box: "📦", apple: "🍎", banana: "🍌",
@@ -56,6 +56,7 @@ export const REFERENCES: Record<string, string> = {
   house: "🏠", school: "🏫", door: "🚪", window: "🪟", wall: "🧱", fence: "🚧", roof: "🏠",
   car: "🚗", bus: "🚌", boat: "⛵", road: "🛣️", bridge: "🌉", mat: "🟫", rug: "🟫", blanket: "🟫",
   shelf: "🗄️", cupboard: "🗄️", fridge: "🧊", ladder: "🪜", umbrella: "☂️", cave: "🕳️",
+  desert: "🏜️", ocean: "🌊", sea: "🌊", river: "🌊", pond: "💧", forest: "🌲", jungle: "🌴", farm: "🚜", arctic: "❄️", beach: "🏖️", garden: "🏡",
 };
 
 const SIZE_WORDS: Record<string, SceneSize> = {

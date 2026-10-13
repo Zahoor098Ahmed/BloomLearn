@@ -8,7 +8,7 @@
  *   5. additive (never delete)  + the "no dropped words" bug
  */
 
-import { newSession, applyUtterance, applyOps, isFreshScene, type SceneSession } from "./sceneSession";
+import { newSession, applyUtterance, applyOps, isFreshScene, searchPhrase, type SceneSession } from "./sceneSession";
 
 let pass = 0;
 let fail = 0;
@@ -171,6 +171,22 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
   check("fresh 'add a book on the table' keeps building", !isFreshScene("add a book on the table", ["cat", "table"]));
   check("fresh 'cat' (single object) keeps building", !isFreshScene("cat", ["table"]));
   check("fresh 'open the cat's eyes' keeps building", !isFreshScene("open the cat's eyes", ["cat"]));
+}
+
+// 7. Actions & habitat scenarios
+{
+  const sBaby = say(newSession(), "The baby is crying");
+  const baby = item(sBaby, "baby");
+  check("action 'The baby is crying' parses baby with action crying", !!baby && baby.action === "crying");
+  check("action searchPhrase for baby crying resolves to crying", !!baby && searchPhrase(baby) === "crying");
+
+  const sGirl = say(newSession(), "The girl is reading");
+  const girl = item(sGirl, "girl");
+  check("action 'The girl is reading' parses girl with action reading", !!girl && girl.action === "reading");
+  check("action searchPhrase for girl reading resolves to reading", !!girl && searchPhrase(girl) === "reading");
+
+  const sCamel = say(newSession(), "A camel in the desert");
+  check("habitat 'A camel in the desert' contains both camel and desert", types(sCamel).includes("camel") && types(sCamel).includes("desert"));
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

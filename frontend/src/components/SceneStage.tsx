@@ -32,8 +32,18 @@ const NATURAL: Record<string, number> = {
   laptop: 0.68, computer: 0.75, book: 0.55, cup: 0.45, ball: 0.5, phone: 0.4, apple: 0.42,
   key: 0.35, flower: 0.55, hat: 0.5, shoe: 0.5, cat: 0.78, dog: 0.85, bird: 0.55, fish: 0.5,
   boy: 1.0, girl: 1.0, child: 1.0, kid: 1.0, man: 1.1, woman: 1.1, baby: 0.7, kidney: 0.5, heart: 0.5,
+  camel: 1.4, desert: 1.8, penguin: 0.8, lion: 1.2, monkey: 0.85, elephant: 1.6,
+  ocean: 1.8, sea: 1.8, river: 1.8, pond: 1.6, forest: 1.8, jungle: 1.8, farm: 1.8,
+  beach: 1.8, garden: 1.7, mountain: 1.8, lake: 1.8, arctic: 1.8, ice: 1.7, snow: 1.7,
+  crying: 1.0, reading: 1.0, running: 1.0, sleeping: 0.9, swimming: 1.0, eating: 1.0,
+  jumping: 1.0, walking: 1.0, singing: 1.0, kicking: 1.0, writing: 0.85,
 };
 const BASE_W = 0.5; // a lone "normal" object is half the stage wide before fit-scaling
+
+const HABITAT_TYPES = new Set([
+  "desert", "ocean", "sea", "river", "pond", "forest", "jungle",
+  "farm", "arctic", "ice", "snow", "beach", "garden", "mountain", "lake"
+]);
 
 const AIRBORNE_TYPES = new Set([
   "bird", "birds", "butterfly", "butterflies", "airplane", "aeroplane", "plane",
@@ -76,6 +86,20 @@ const BOTTOM_OFFSET: Record<string, number> = {
   man: 0.48,
   woman: 0.48,
   person: 0.48,
+  camel: 0.48,
+  desert: 0.48,
+  penguin: 0.45,
+  lion: 0.48,
+  monkey: 0.45,
+  elephant: 0.48,
+  reading: 0.45,
+  crying: 0.45,
+  running: 0.48,
+  sleeping: 0.35,
+  swimming: 0.40,
+  eating: 0.45,
+  jumping: 0.45,
+  walking: 0.48,
 };
 const bottomOf = (type: string) => BOTTOM_OFFSET[type] ?? 0.44;
 
@@ -139,15 +163,24 @@ function layoutScene(items: SceneItem[]): Placed[] {
           n.x = ref.x;
           n.it.behind = false;
         } else if (rel === "inside") {
-          // Inside open container (box, basket, bag, cup) - nestled cleanly inside the 3D cavity opening:
-          const maxInsideW = ref.w * 0.20;
-          if (n.w > maxInsideW) {
-            n.w = maxInsideW;
-            n.h = n.w / ASPECT;
+          if (HABITAT_TYPES.has(ref.it.type)) {
+            // Natural habitat environment: habitat is the backdrop, subject stands proudly in foreground
+            ref.it.behind = true;
+            n.it.behind = false;
+            n.x = ref.x;
+            const groundY = ref.y + ref.h * 0.20;
+            n.y = groundY - n.h * bottomOf(n.it.type);
+          } else {
+            // Inside open container (box, basket, bag, cup) - nestled cleanly inside the 3D cavity opening:
+            const maxInsideW = ref.w * 0.20;
+            if (n.w > maxInsideW) {
+              n.w = maxInsideW;
+              n.h = n.w / ASPECT;
+            }
+            n.y = ref.y - ref.h * 0.20;
+            n.x = ref.x + ref.w * 0.02;
+            n.it.behind = false;
           }
-          n.y = ref.y - ref.h * 0.20;
-          n.x = ref.x + ref.w * 0.02;
-          n.it.behind = false;
         } else if (rel === "below") {
           // On the ground beneath the reference (under table, bed, chair):
           const floorY = ref.y + ref.h * bottomOf(ref.it.type);
@@ -278,7 +311,15 @@ function Item({ p, uri }: { p: Placed; uri?: string }) {
         }}
       >
         {Array.from({ length: n }).map((_, i) => {
-          const resolvedUri = getPictogramUrl(it.type) || uri || dictUrl(it.type);
+          const actionKey = it.action ? `${it.type} ${it.action}` : null;
+          const reverseActionKey = it.action ? `${it.action} ${it.type}` : null;
+          const resolvedUri =
+            (actionKey ? getPictogramUrl(actionKey) : null) ||
+            (reverseActionKey ? getPictogramUrl(reverseActionKey) : null) ||
+            (it.action ? getPictogramUrl(it.action) || uri || dictUrl(it.action) : null) ||
+            getPictogramUrl(it.type) ||
+            uri ||
+            dictUrl(it.type);
           return (
             <View key={i} style={{ flex: 1, height: "100%", marginLeft: i === 0 ? 0 : "-10%" }}>
               {resolvedUri ? (
@@ -311,8 +352,6 @@ export default function SceneStage({ session, uris = {} }: { session: SceneSessi
 
   return (
     <View style={styles.stage}>
-      {/* Calm subtle ground floor plane so scenes are physically grounded */}
-      <View style={styles.floorPlane} />
       {placed.map((p) => (
         <Item key={p.it.id} p={p} uri={uris[searchPhrase(p.it)]} />
       ))}
@@ -334,16 +373,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     alignItems: "center",
     justifyContent: "center",
-  },
-  floorPlane: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: "24%",
-    backgroundColor: "#f7f9f7",
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0, 0, 0, 0.05)",
   },
   pic: { width: "100%", height: "100%" },
   glaze: { position: "absolute", opacity: 0.5 },

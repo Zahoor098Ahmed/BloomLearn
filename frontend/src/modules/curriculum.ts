@@ -1,6 +1,7 @@
 import type { LanguageCode, SceneGraph } from "../types";
 import { parseSceneGraph } from "./sentenceScene";
 import { parseMath, parseWordProblem, storyWithoutQuestion } from "./mathScene";
+import { SCIENCE_GRADES } from "./curriculumScience";
 
 /**
  * School content for Picture Talk: subject → grade (1–5) → chapter → lessons.
@@ -387,165 +388,8 @@ const MATH: Subject = {
 const SCIENCE: Subject = {
   id: "science",
   title: { en: "Science", ar: "العلوم" },
-  imageStyle: "simple educational science illustration for young children, clear and accurate, plain white background",
-  grades: {
-    1: [
-      ch("sc1-plants", "Plants", "النباتات", "Flowers, seeds and leaves", "الأزهار والبذور والأوراق", [
-        sd("Flowering plants have seeds and flowers", "two flowering plants side by side growing in soil: a rose bush with pink flowers, and a tall sunflower whose big brown centre is full of seeds"),
-        sd("Non-flowering plants do not have seeds and flowers", "two non-flowering plants side by side: a green fern with long feathery fronds, and a soft cushion of green moss on a grey rock; no flowers, no seeds and no fruit anywhere"),
-        sd("A tree", "one big leafy green tree with a brown trunk, standing on a small patch of grass"),
-        sd("A flower", "one bright red flower on a green stem with two leaves, growing from a little mound of soil"),
-        sd("A green leaf", "one single green leaf with its veins clearly visible"),
-      ]),
-      ch("sc1-animals", "Animals", "الحيوانات", "Backbones, and how animals move", "العمود الفقري وكيف تتحرك الحيوانات", [
-        sd("Vertebrates have a backbone", "four vertebrate animals in a row: a fish, a frog, a bird and a cat; each one has a gentle see-through view along its back showing its backbone as a neat white chain of small bones"),
-        sd("Invertebrates do not have a backbone", "four invertebrate animals in a row: an earthworm, a snail, a butterfly and a jellyfish, with soft bodies and no bones"),
-        qa("A fish is swimming", "How does a fish move?", "It swims", "an orange fish swimming in clear blue water, its fins and tail moving"),
-        qa("A bird is flying", "How does a bird move?", "It flies", "a small bird flying in a blue sky with its wings spread wide"),
-        qa("A frog is jumping", "How does a frog move?", "It jumps", "a green frog jumping in mid-air from a lily pad, its back legs stretched out"),
-      ]),
-      ch("sc1-body", "My body", "جسمي", "eyes · ears · hands · heart", "عيون · آذان · أيدي · قلب", [
-        // the parts we use every day first, then the organs inside
-        qa("The eyes", "What do we see with?", "Our eyes", "a smiling child pointing to their own eyes"),
-        qa("The ears", "What do we hear with?", "Our ears", "a smiling child cupping a hand behind one ear to listen"),
-        qa("The nose", "What do we smell with?", "Our nose", "a smiling child smelling a pink flower"),
-        qa("The mouth", "What do we eat and talk with?", "Our mouth", "a smiling child with an open happy mouth, about to bite a red apple"),
-        qa("The hands", "What do we hold and clap with?", "Our hands", "a smiling child clapping their hands"),
-        qa("The feet", "What do we walk and run with?", "Our feet", "a child walking barefoot on soft green grass, feet clearly visible"),
-        qa("The teeth", "What do we chew food with?", "Our teeth", "a smiling child showing clean white teeth"),
-        qa("The tongue", "What do we taste food with?", "Our tongue", "a happy child licking a strawberry ice cream cone"),
-        qa("The hair", "What grows on top of our head?", "Hair", "a smiling child brushing their hair with a hairbrush"),
-        qa("The fingers", "How many fingers are on one hand?", "5", "one open child's hand held up, palm facing us"),
-        qa("The brain", "What helps us think?", "The brain"),
-        qa("The bones", "What makes our body strong and gives it shape?", "Our bones", "a friendly smiling cartoon skeleton waving hello, cute and not scary"),
-        qa("The heart", "What pumps blood?", "The heart"),
-        qa("The lungs", "What helps us breathe?", "The lungs"),
-        qa("The stomach", "Where does food go?", "The stomach"),
-      ]),
-      ch("sc1-sky", "Weather and sky", "الطقس والسماء", "sun · cloud · rain · moon", "sun · cloud · rain · moon", [
-        sd("The sun is above the tree", "a bright yellow sun high in a blue sky, above one green tree standing on grass"),
-        sd("A cloud", "one big fluffy white cloud in a clear blue sky"),
-        sd("Rain", "rain drops falling from a grey cloud onto green grass, with small puddles on the ground"),
-        sd("Snow", "white snowflakes falling on snowy ground with snow-covered pine trees"),
-        sd("A rainbow", "a bright rainbow arching across a blue sky after rain, with the sun peeking from a cloud"),
-        sd("The moon", "a big round full moon in a dark blue night sky with a few small stars"),
-        sd("Three stars", "exactly three bright yellow stars in a dark blue night sky"),
-      ]),
-    ],
-    2: [
-      ch("sc2-living", "Living and non-living things", "الكائنات الحية وغير الحية", "Does it grow, eat and breathe?", "هل ينمو ويأكل ويتنفس؟", [
-        qa("A dog", "Living or non-living?", "Living", "one friendly brown dog standing on grass"),
-        qa("A rock", "Living or non-living?", "Non-living", "one grey rock on the ground"),
-        qa("A tree", "Living or non-living?", "Living", "one leafy green tree"),
-        qa("A car", "Living or non-living?", "Non-living", "one small red car"),
-        qa("A baby", "Living or non-living?", "Living", "one smiling baby sitting on a blanket"),
-      ]),
-      ch("sc2-plantparts", "Parts of a plant", "أجزاء النبات", "root · stem · leaf · flower", "جذر · ساق · ورقة · زهرة", [
-        qa("A green leaf", "Which part makes food for the plant?", "The leaf", "a young plant with several big green leaves"),
-        qa("A flower", "Which part makes seeds?", "The flower", "a plant with one big open flower"),
-        qa("A tree", "Which part holds the plant up?", "The stem (trunk)", "a tree with a thick, strong brown trunk holding up its branches and leaves"),
-        qa("A plant", "Which part takes in water from the soil?", "The root", "a young green plant lifted out of the soil so its roots, stem, leaves and flower can all be seen"),
-      ]),
-      ch("sc2-habitats", "Animal homes", "بيوت الحيوانات", "Where do animals live?", "أين تعيش الحيوانات؟", [
-        qa("A fish is swimming", "Where does a fish live?", "In water", "an orange fish swimming"),
-        qa("A camel", "Where does a camel live?", "In the desert", "one camel with a hump, standing on a plain white background"),
-        qa("A penguin", "Where does a penguin live?", "In very cold places", "one penguin standing on a plain white background"),
-        qa("A monkey is climbing", "Where does a monkey live?", "In the forest", "a brown monkey climbing a tree branch"),
-        qa("A cow", "Where does a cow live?", "On a farm", "one black and white cow standing on a plain white background"),
-      ]),
-      ch("sc2-materials", "Materials", "المواد", "wood · metal · glass · cloth", "خشب · معدن · زجاج · قماش", [
-        qa("A chair", "What is a chair often made of?", "Wood", "one wooden chair"),
-        qa("A spoon", "What is a spoon often made of?", "Metal", "one shiny silver spoon"),
-        qa("A glass", "What is a glass made of?", "Glass", "one clear empty drinking glass"),
-        qa("A shirt", "What is a shirt made of?", "Cloth", "one folded blue cotton shirt"),
-      ]),
-    ],
-    3: [
-      ch("sc3-food", "Healthy food", "الغذاء الصحي", "Food that helps us grow", "غذاء يساعدنا على النمو", [
-        qa("An apple", "Healthy food or junk food?", "Healthy food", "one shiny red apple"),
-        qa("A burger", "Healthy food or junk food?", "Junk food (eat it rarely)", "one burger"),
-        qa("Milk", "Milk makes our ___ and teeth strong.", "bones", "a glass of white milk next to a milk bottle"),
-        qa("A carrot", "Healthy food or junk food?", "Healthy food", "one orange carrot with green leaves"),
-        qa("Candy", "Too much candy is bad for our ___.", "teeth", "a few colourful wrapped candies"),
-      ]),
-      ch("sc3-matter", "Solids, liquids and gases", "المواد الصلبة والسائلة والغازية", "States of matter", "حالات المادة", [
-        qa("A rock", "Solid, liquid or gas?", "Solid", "one grey rock"),
-        qa("Water", "Solid, liquid or gas?", "Liquid", "clear water being poured from a jug into a glass"),
-        qa("A balloon", "The air inside a balloon is a ___.", "gas", "one round red balloon on a string"),
-        qa("Snow", "When snow melts it becomes?", "Water (a liquid)", "a small pile of white snow"),
-      ]),
-      ch("sc3-light", "Light and shadows", "الضوء والظلال", "Where light comes from", "من أين يأتي الضوء", [
-        qa("The sun is above the tree", "What is our main source of light?", "The Sun", "a bright sun shining above a tree, sunlight lighting everything"),
-        qa("A lamp", "Is a lamp a natural or a man-made light?", "Man-made", "a table lamp that is switched on and glowing"),
-        qa("The moon", "Does the Moon make its own light?", "No, it reflects sunlight", "a full moon in a dark night sky"),
-        qa("The boy is standing in front of the wall", "What forms when an object blocks light?", "A shadow", "a boy standing in bright sunlight in front of a plain wall"),
-      ]),
-      ch("sc3-forces", "Push and pull", "الدفع والسحب", "Forces make things move", "القوى تحرك الأشياء", [
-        qa("The boy is kicking a ball", "Push or pull?", "Push", "a boy kicking a football with his foot, the ball starting to move"),
-        qa("The girl is opening the door", "Opening a drawer is a push or a pull?", "Pull", "a girl holding a door handle and opening the door"),
-        qa("The man is riding a bike", "Pressing the pedal is a push or a pull?", "Push", "a man riding a bicycle, his foot on the pedal"),
-        qa("A kite", "Flying a kite with a string is a push or a pull?", "Pull", "a child holding the string of a kite flying in the sky"),
-      ]),
-    ],
-    4: [
-      ch("sc4-classify", "Classifying living things", "تصنيف الكائنات الحية", "Vertebrates and invertebrates", "الفقاريات واللافقاريات", [
-        sd("Vertebrates have a backbone", "four vertebrate animals in a row: a fish, a frog, a bird and a cat; each one has a gentle see-through view along its back showing its backbone as a neat white chain of small bones"),
-        sd("Invertebrates do not have a backbone", "four invertebrate animals in a row: an earthworm, a snail, a butterfly and a jellyfish, with soft bodies and no bones"),
-        qa("A butterfly", "How many legs does an insect have?", "6", "one butterfly seen from above with its wings open"),
-        qa("A spider", "How many legs does a spider have?", "8", "one friendly cartoon spider seen from above"),
-        qa("A bird", "Is a bird a vertebrate?", "Yes", "one small bird sitting on a branch"),
-      ]),
-      ch("sc4-digestion", "Digestive system", "الجهاز الهضمي", "How food is used", "كيف يُستعمل الطعام", [
-        qa("The stomach", "Where is food mixed with juices?", "In the stomach"),
-        qa("The boy is eating", "Where does digestion begin?", "In the mouth", "a boy eating a sandwich"),
-        qa("The girl is brushing her teeth", "Why should we brush our teeth?", "To keep teeth clean and healthy", "a smiling girl brushing her teeth with a toothbrush"),
-        qa("An apple", "Which food has fibre that helps digestion?", "Fruit and vegetables", "one red apple"),
-      ]),
-      ch("sc4-sound", "Sound", "الصوت", "Vibrations we can hear", "اهتزازات نسمعها", [
-        qa("A bell", "Sound is made when things ___.", "vibrate", "a golden bell ringing, with small curved lines around it"),
-        qa("The girl is singing", "What part of the body makes our voice?", "The voice box", "a girl singing happily with music notes in the air"),
-        qa("A drum", "Hitting a drum harder makes the sound?", "Louder", "a child playing a drum with drumsticks"),
-        qa("The boy is listening", "Which organ do we hear with?", "The ear", "a boy listening carefully to music"),
-      ]),
-      ch("sc4-magnets", "Magnets", "المغناطيس", "Attract and repel", "التجاذب والتنافر", [
-        qa("A key", "Will a magnet pull an iron key?", "Yes", "a red horseshoe magnet lying near an iron key on a table"),
-        qa("A pencil", "Will a magnet pull a wooden pencil?", "No", "a red horseshoe magnet lying near a wooden pencil on a table"),
-        qa("A spoon", "Will a magnet pull a steel spoon?", "Yes", "a red horseshoe magnet lying near a steel spoon on a table"),
-        qa("A magnet", "Two north poles facing each other will?", "Push apart (repel)", "two bar magnets, each half red and half blue, lying on a table with their red ends facing each other"),
-      ]),
-    ],
-    5: [
-      ch("sc5-heartlungs", "Heart and lungs", "القلب والرئتان", "Circulation and breathing", "الدورة الدموية والتنفس", [
-        qa("The heart", "Which organ pumps blood around the body?", "The heart"),
-        qa("The lungs", "Which gas do our lungs take in?", "Oxygen"),
-        qa("The lungs", "Which gas do we breathe out?", "Carbon dioxide"),
-        qa("The boy is running", "What happens to your heartbeat when you run?", "It gets faster", "a boy running fast in a park"),
-      ]),
-      ch("sc5-electricity", "Electricity", "الكهرباء", "Circuits and safety", "الدوائر والسلامة", [
-        qa("A lamp", "What makes a bulb glow?", "Electric current", "a glowing light bulb connected by two wires to a battery"),
-        qa("A phone", "What stores electricity in a phone?", "A battery", "one smartphone lying on a table"),
-        qa("A spoon", "Is metal a conductor or an insulator?", "Conductor", "one shiny metal spoon"),
-        qa("A pencil", "Is wood a conductor or an insulator?", "Insulator", "one wooden pencil"),
-      ]),
-      ch("sc5-space", "The solar system", "المجموعة الشمسية", "Sun, Earth and Moon", "الشمس والأرض والقمر", [
-        qa("The sun", "What is at the centre of our solar system?", "The Sun", "the bright glowing sun in dark space"),
-        qa("The moon", "What does the Moon go around?", "The Earth", "the grey moon in dark space"),
-        qa("Three stars", "The Sun is a ___.", "star", "exactly three bright stars in a dark night sky"),
-        qa("A rocket", "How many planets are in our solar system?", "8", "a rocket flying through dark space with stars"),
-      ]),
-      ch("sc5-environment", "Our environment", "بيئتنا", "Clean air, water and land", "هواء وماء وأرض نظيفة", [
-        qa("A tree", "Trees give us which gas?", "Oxygen", "one big leafy green tree in a park"),
-        qa("A car", "Smoke from cars causes?", "Air pollution", "a car with grey smoke coming from its exhaust pipe"),
-        qa("A river", "Throwing rubbish in a river causes?", "Water pollution", "a river with plastic bottles and rubbish floating in the water"),
-        qa("The girl is cleaning", "Reduce, reuse and ___.", "recycle", "a girl picking up litter in a park and putting it into a bin"),
-      ]),
-      ch("sc5-friction", "Forces and friction", "القوى والاحتكاك", "What slows things down", "ما الذي يبطئ الأشياء", [
-        qa("The boy is riding a bike", "Which force slows a moving bike?", "Friction", "a boy riding a bicycle on a road"),
-        qa("A ball", "A ball rolls farther on grass or on ice?", "On ice (less friction)", "one football resting between a patch of green grass and a patch of smooth ice"),
-        qa("A shoe", "Why do shoes have grooves on the bottom?", "To grip the ground (more friction)", "a sports shoe turned over to show the grooves on its sole"),
-      ]),
-    ],
-  },
+  imageStyle: "vibrant and accurate children's educational science illustration, clearly depicting the real-world habitat, environment, or scientific situation with authentic context, colourful and engaging",
+  grades: SCIENCE_GRADES,
 };
 
 export const SUBJECT_LIST: Subject[] = [ENGLISH, MATH, SCIENCE];
@@ -876,7 +720,11 @@ export function validateChapterSentence(chapterId: string, sentence: string): Ch
 const NO_TEXT = "Absolutely no text, no letters, no words, no labels, no watermark.";
 const BASE_STYLE =
   "Calm, simple children's picture-book illustration for a primary school lesson: soft cheerful colours, clean outlines, " +
-  "plain light background with no clutter, the main subjects large, centred and fully in view.";
+  "pure plain white background with no clutter, the main subjects large, centred and fully in view.";
+const SCIENCE_STYLE =
+  "Vibrant, authentic children's educational science illustration: soft cheerful colours, clean outlines, " +
+  "rich natural habitat, environment, or scientific setting clearly showing the real-world situation and concept, " +
+  "the main subjects large, centred and fully in view with no clutter, high pedagogical quality.";
 
 const NUMBER_NAMES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
@@ -945,12 +793,46 @@ function sceneFor(chapterId: string, kind: PictureKind | null, clean: string, gr
     return `"${clean}" — every object in the sentence large and fully visible, and its position exactly as the sentence says`;
   }
 
+  if (kind === "action") {
+    if (/\bcrying\b/i.test(clean)) return "A small baby crying with visible clear teardrops on the face and an expressive upset expression, centred on a plain white background";
+    if (/\breading\b/i.test(clean)) return "A happy young girl sitting comfortably reading an open illustrated colourful storybook with pages, centred on a plain white background";
+    if (/\brunning\b/i.test(clean)) return "A lively boy running forward happily with athletic movement, centred on a plain white background";
+    if (/\bsleeping\b/i.test(clean)) return "A peaceful dog sleeping curled up comfortably with eyes closed, centred on a plain white background";
+    if (/\bflying\b/i.test(clean)) return "A beautiful bird in flight soaring with wide open wings, centred on a plain white background";
+    if (/\bswimming\b/i.test(clean)) return "A bright colourful fish swimming smoothly in clean water, centred on a plain white background";
+    if (/\beating\b/i.test(clean)) return "A person sitting at a small table eating delicious food with a spoon, centred on a plain white background";
+    if (/\bjumping\b/i.test(clean)) return "A child leaping and jumping up in the air with joyful energy, centred on a plain white background";
+    if (/\bwalking\b/i.test(clean)) return "A character walking steadily forward, centred on a plain white background";
+    if (/\bsinging\b/i.test(clean)) return "A child singing happily with mouth open and cheerful musical notes, centred on a plain white background";
+    if (/\bkicking\b/i.test(clean)) return "A child kicking a soccer ball forward with energy, centred on a plain white background";
+    if (/\blaughing\b/i.test(clean)) return "A cheerful child laughing joyfully with a wide smile and bright happy eyes, centred on a plain white background";
+    if (/\bwriting\b/i.test(clean)) return "A person holding a pencil writing neatly on an open notebook page, centred on a plain white background";
+    if (/\bclimbing\b/i.test(clean)) return "A child safely climbing up a ladder with hands and feet, centred on a plain white background";
+    return `"${clean}" — the action clearly and expressively shown, centred on a plain white background`;
+  }
+
+  if (kind === "colour") {
+    return `"${clean}" — the colour bright, vivid and covering the object, centred on a pure plain white background`;
+  }
+
+  if (kind === "size") {
+    return `"${clean}" — the size difference clear and obvious, centred on a pure plain white background`;
+  }
+
   if (kind === "science") {
     const organ = ORGANS.find((o) => new RegExp(`\\b${o}\\b`, "i").test(clean));
     if (organ) {
       const where = /stomach|intestine|liver|kidney/.test(organ) ? "tummy" : /brain/.test(organ) ? "head" : "chest";
       return `A friendly, smiling child seen from the front, with a gentle see-through window on the ${where} showing the ${organ} in the right place, simple and cute, not scary, no blood`;
     }
+    if (/\bcamel\b/i.test(clean)) return "A majestic camel with a hump walking across golden desert sand dunes under a bright warm sunny sky with ripples in the sand";
+    if (/\bpenguin\b/i.test(clean)) return "A penguin standing proudly on glistening white Antarctic ice and snow near cold blue ocean water";
+    if (/\bpolar bear\b/i.test(clean)) return "A large white polar bear walking steadily across snowy Arctic ice floes under a pale blue sky";
+    if (/\b(fish|clownfish|shark|whale|dolphin)\b/i.test(clean)) return `${clean} swimming in clear turquoise water with colourful coral reefs and sea plants`;
+    if (/\b(frog|toad)\b/i.test(clean)) return `${clean} sitting on a water lily pad in a clear pond surrounded by green reeds`;
+    if (/\b(monkey|gorilla)\b/i.test(clean)) return `${clean} swinging from lush green leafy tree branches in a tropical forest`;
+    if (/\b(lion|zebra|giraffe|elephant)\b/i.test(clean)) return `${clean} in the golden African grassland savanna under a warm sunny sky`;
+    if (/\b(cow|sheep|horse|hen|chicken)\b/i.test(clean)) return `${clean} on a sunny green farm meadow with a fence and fresh grass`;
   }
 
   if (kind === "shape") {
@@ -972,7 +854,7 @@ const KIND_FOCUS: Record<PictureKind, string> = {
   thing: "One single, instantly recognisable object or person, filling most of the picture.",
   shape: "Only the shape or object named, with no other objects.",
   clock: "If a clock is shown, its face is simple and its hands are easy to read.",
-  science: "Scientifically accurate but friendly, like a children's science textbook.",
+  science: "Clearly illustrate the natural habitat, real-world scientific situation, or process (such as a camel in the desert, a fish in the coral reef, lungs inside the chest).",
 };
 
 /**
@@ -996,7 +878,10 @@ export function getChapterImagePrompt(chapterId: string, sentence: string, input
   const topic = course ? `For a Grade ${course.grade} ${course.subject.title.en} lesson on ${title}.` : "";
   const focus = kind ? KIND_FOCUS[kind] : "";
 
-  return [`${scene}.`, topic, focus, BASE_STYLE, NO_TEXT].filter(Boolean).join(" ");
+  const isSci = course?.subject.id === "science" || kind === "science";
+  const style = isSci ? SCIENCE_STYLE : BASE_STYLE;
+
+  return [`${scene}.`, topic, focus, style, NO_TEXT].filter(Boolean).join(" ");
 }
 
 /** Flattened list of all curriculum chapters for easy selection */
