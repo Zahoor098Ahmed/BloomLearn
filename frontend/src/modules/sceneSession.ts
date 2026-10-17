@@ -16,6 +16,7 @@
  */
 
 import { parseSceneGraph, SUBJECTS, REFERENCES, ACTIONS, ADVERBS, colorHex, ALL_VOCAB_GLYPHS, findWordEmoji, singular } from "./sentenceScene";
+import { exactPictogramUrl } from "./aacPictograms";
 import type { SceneSize } from "../types";
 
 // Islamic education assets (respectful — objects, places and prayer poses only;
@@ -35,6 +36,8 @@ const EXTRA_GLYPHS: Record<string, string> = {
   clock: "🕐", plate: "🍽️", spoon: "🥄", fork: "🍴", pillow: "🛏️",
   mirror: "🪞", plant: "🪴", pot: "🍲", pan: "🍳", guitar: "🎸", drum: "🥁",
   computermouse: "🖱️", keyboard: "⌨️", camera: "📷", clockwall: "🕰️",
+  // places someone can go to ("the girl is going to the market")
+  market: "🏪", shop: "🏪", park: "🛝", playground: "🛝", hospital: "🏥", library: "📚",
 };
 
 const GLYPHS: Record<string, string> = {
@@ -344,6 +347,43 @@ function applyUtteranceRaw(prev: SceneSession, text: string): SceneSession {
   const exprWord = tokens.map((w) => EXPRESSIONS[w]).find(Boolean) ?? null;
   const actionWord = g.subject?.action ?? null;
   const adverbWord = tokens.find((w) => ADVERBS[w]) ?? null;
+
+  // 3b. going somewhere ("a boy is going home", "the girl walks to school"):
+  // the place, and the walker beside it heading towards it
+  const isPlace = (w: string) => REFERENCE_TYPES.has(w) || (!!GLYPHS[w] && !ACTIONS[w] && !ADVERBS[w]);
+  const placeWord =
+    [
+      ...t.matchAll(
+        // the place is in a lookahead so "is go to go home" still finds "home"
+        /\b(?:go|goes|going|went|walk|walks|walking|run|runs|running|come|comes|coming|return|returns|returning)\s+(?=(?:back\s+)?(?:to(?:wards)?\s+|into\s+)?(?:the\s+|his\s+|her\s+|their\s+|my\s+|our\s+|a\s+)?([a-z]+)\b)/g,
+      ),
+    ]
+      .map((m) => (m[1] === "home" ? "house" : singular(m[1])))
+      .find(isPlace) ?? null;
+  const walker = g.subject?.type && g.subject.type !== placeWord ? g.subject.type : null;
+  if (placeWord && walker) {
+    const running = /\b(run|runs|running)\b/.test(t);
+    const place = findItem(s.items, placeWord) ?? makeItem(placeWord, { x: 0.68, y: 0.52 });
+    if (!s.items.includes(place)) s.items.push(place);
+    const patch: Partial<SceneItem> = {
+      x: clamp(place.x - 0.37),
+      y: place.y,
+      behind: false,
+      color: g.subject?.color ?? null,
+      colorHex: colorHex(g.subject?.color ?? null),
+      size: g.subject?.size ?? "normal",
+      count: g.subject?.count ?? 1,
+      // the "go" pictogram is a person walking towards an arrow
+      action: running ? "running" : "go",
+      relation: "left",
+      reference: place.type,
+    };
+    const existing = findItem(s.items, walker);
+    if (existing) Object.assign(existing, patch);
+    else s.items.push(makeItem(walker, patch));
+    s.note = `${walker} going to the ${place.type}`;
+    return s;
+  }
 
   // 4. relational placement — needs a reference object
   const rel = detectRel(text);
@@ -683,6 +723,91 @@ function applyOpsRaw(prev: SceneSession, ops: SceneOp[]): SceneSession {
   return s;
 }
 
+// --- fixed lesson scenes ---------------------------------------------
+//
+// A school lesson sentence often says more than the rule parser can draw
+// ("A sunflower turns towards the sun"), so each lesson can carry the exact
+// picture as a short spec instead:
+//
+//   "house; boy/go left house"    -> a house, a boy walking towards it
+//   "flower; 3 bee near flower"   -> three bees by a flower
+//   "body: heart, lungs"          -> the labelled body with those parts
+//
+// One item per ";": [count] [colour] [size] type[/action] [relation reference].
+// Relations: on, under, above, in, behind, front, left, right, near.
+
+const SPEC_REL: Record<string, Rel> = {
+  on: "on", under: "below", above: "above", in: "inside", behind: "behind",
+  front: "in front of", left: "left", right: "right", near: "left",
+};
+const SPEC_SIZES: Record<string, SceneSize> = { tiny: "tiny", small: "small", big: "big", huge: "huge" };
+
+export function sceneFromSpec(spec: string): SceneSession {
+  const s = newSession();
+  s.lastHeard = spec;
+  const body = spec.match(/^\s*body\s*:(.*)$/i);
+  if (body) {
+    s.anatomy = true;
+    s.anatomyParts = body[1].split(",").map((p) => p.trim().toLowerCase()).filter(Boolean);
+    s.note = `human body: ${s.anatomyParts.join(" + ")}`;
+    return s;
+  }
+  for (const part of spec.split(";")) {
+    const words = part.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (!words.length) continue;
+    let count = 1;
+    let color: string | null = null;
+    let size: SceneSize = "normal";
+    if (/^[1-5]$/.test(words[0])) count = Number(words.shift());
+    const nameEnd = (() => {
+      const at = words.findIndex((w, i) => i > 0 && SPEC_REL[w]);
+      return at > 0 ? at : words.length;
+    })();
+    // "green beans" / "red planet" are names of their own, not a colour + a thing
+    const ownName = exactPictogramUrl(words.slice(0, nameEnd).join(" ").split("/")[0]);
+    if (words.length > 1 && colorHex(words[0]) && !ownName) color = words.shift()!;
+    if (words.length > 1 && SPEC_SIZES[words[0]]) size = SPEC_SIZES[words.shift()!];
+    const relAt = words.findIndex((w, i) => i > 0 && SPEC_REL[w]);
+    const name = (relAt > 0 ? words.slice(0, relAt) : words).join(" ");
+    const reference = relAt > 0 ? words.slice(relAt + 1).join(" ") : null;
+    const rel = relAt > 0 ? SPEC_REL[words[relAt]] : null;
+    const [type, action = null] = name.split("/");
+    const at = rel
+      ? place(s, type, rel, reference)
+      : { x: clamp(0.5 + (s.items.length % 2 === 0 ? -0.16 : 0.16) * Math.ceil(s.items.length / 2)), y: 0.5, behind: false };
+    s.items.push(
+      makeItem(type, {
+        count,
+        color,
+        colorHex: colorHex(color),
+        size,
+        action,
+        relation: rel,
+        reference: rel ? reference : null,
+        ...at,
+      }),
+    );
+  }
+  // a spec names each thing once ("new moon", "moon", "full moon" are three
+  // things), so only an exact repeat — a reference placed before it was listed
+  // — is merged
+  const kept: SceneItem[] = [];
+  for (const it of s.items) {
+    const twin = kept.find((k) => k.type === it.type);
+    if (!twin) kept.push(it);
+    else {
+      twin.count = Math.max(twin.count, it.count);
+      twin.color ??= it.color;
+      twin.colorHex ??= it.colorHex;
+      twin.action ??= it.action;
+      if (twin.size === "normal") twin.size = it.size;
+    }
+  }
+  s.items = kept;
+  s.note = s.items.map((i) => i.type).join(" + ") || null;
+  return s;
+}
+
 /** Build a text prompt for the optional AI drawing. */
 export function sessionPrompt(s: SceneSession): string {
   if (s.anatomy) {
@@ -720,9 +845,21 @@ export function sessionPrompt(s: SceneSession): string {
  */
 export function searchPhrase(i: SceneItem): string {
   // With an action, show the real AAC verb pictogram ("crying", "running") — a
-  // person doing that, no emoji. Otherwise the object itself, keeping any
-  // compound noun ("office chair") so variants resolve.
-  return i.action ? i.action : i.type;
+  // person doing that, no emoji. The verb pictograms all show a person, so an
+  // animal or thing keeps its own picture ("the fish is swimming" -> a fish,
+  // not a swimmer). Otherwise the object itself, keeping any compound noun
+  // ("office chair") so variants resolve.
+  return i.action && isPerson(i.type) ? i.action : i.type;
+}
+
+const PEOPLE = new Set([
+  "boy", "girl", "man", "woman", "child", "children", "kid", "baby", "teacher", "doctor", "student", "pupil",
+  "mother", "mom", "father", "dad", "person", "people", "farmer", "nurse", "astronaut", "scientist", "swimmer",
+]);
+
+/** People get the verb pictogram for their action; animals and things don't. */
+export function isPerson(type: string): boolean {
+  return PEOPLE.has(headWord(type));
 }
 
 export interface SessionChipEntry {

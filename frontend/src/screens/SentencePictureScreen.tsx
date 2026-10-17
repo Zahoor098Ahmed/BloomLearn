@@ -13,6 +13,7 @@ import { isAiConfigured, generateSentenceImage, transcribeAudio, STORY_STYLE_GUI
 import { sceneImageUrl, composeSceneUrl, composeStoryUrl, aiSceneEnabled } from "../modules/aiScene";
 import { lookupImage, libraryCount, prewarmLibrary, dictionaryWords, findLessonPicture, saveLessonPicture } from "../modules/imageLibrary";
 import { bookVocabSize } from "../modules/bookVocab";
+import { lessonScene } from "../modules/lessonScenes";
 import {
   type SceneSession,
   newSession,
@@ -219,7 +220,7 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
       // background — except for the chapter's own lessons, which are written
       // for the on-device parser and need no agent at all.
       const base = fresh ? newSession() : sessionRef.current;
-      setSession(applyUtterance(base, q));
+      setSession(lessonScene(q) ?? applyUtterance(base, q));
       const isLesson = course.chapter.lessons.some((l) => l.say.trim().toLowerCase() === q.toLowerCase());
       if (!agentEnabled() || isLesson) return;
       setAgentThinking(true);
@@ -324,7 +325,6 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     setImg(null);
     const q = text;
     const t = setTimeout(async () => {
-      if (concept) return;
       if (!validateChapterSentence(activeChapterId, q).valid) return;
       // Two objects in a relation ("cat on the table") -> let SceneComposer draw
       // both with the right depth. A single library picture can only show one.
@@ -563,9 +563,6 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                 onReveal={() => setShowAnswer(true)}
                 revealHint={tt("lsTapToSee")}
               />
-            ) : concept ? (
-              // science concepts ("vertebrates have a backbone") have their own clearer drawing
-              <View style={styles.stageWhite}><ConceptView concept={concept} lang={lang} /></View>
             ) : !chapterValidation.valid && text.trim() ? (
               <View style={styles.invalidStage}>
                 <Ionicons name="alert-circle-outline" size={44} color="#d97706" />
@@ -730,13 +727,6 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
             </Text>
           )}
 
-          {concept && !img && (
-            <View style={styles.captionCard}>
-              <Text style={styles.captionTitle}>{concept.title}</Text>
-              <Text style={styles.captionBody}>{concept.caption}</Text>
-            </View>
-          )}
-
           <TextInput
             value={text}
             onChangeText={typeText}
@@ -771,7 +761,14 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                     <Pressable key={i} onPress={() => goToLesson(i)} style={[styles.example, styles.lessonRow, on && styles.lessonRowOn]}>
                       <Text style={[styles.lessonNum, on && { color: "white", backgroundColor: colors.forest }]}>{i + 1}</Text>
                       <View style={{ flex: 1, gap: 4 }}>
-                        <Text style={styles.exampleText}>{l.question ?? l.say}</Text>
+                        {/* the sentence first — the same words as the box and the picture —
+                            then the question about it */}
+                        <Text style={styles.exampleText}>{l.say}</Text>
+                        {l.question && l.question !== l.say && (
+                          <Text style={styles.questionText}>
+                            {tt("lsQuestion")}: {l.question}
+                          </Text>
+                        )}
                         {/* the current lesson's answer lives here, not above the picture */}
                         {on && l.answer && !math && (showAnswer ? (
                           <Text style={styles.answerText}>
@@ -1273,6 +1270,7 @@ const styles = StyleSheet.create({
   chipText: { fontSize: 13, fontWeight: "700" },
   understood: { fontSize: 11.5, color: colors.textMid, marginTop: -4 },
   answerText: { fontSize: 14, fontWeight: "800", color: colors.forest },
+  questionText: { fontSize: 13.5, color: colors.textLight, fontWeight: "600" },
   answerLink: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start" },
   answerLinkText: { fontSize: 14, fontWeight: "700", color: colors.forest },
   lessonRow: { flexDirection: "row", alignItems: "center", gap: 12 },

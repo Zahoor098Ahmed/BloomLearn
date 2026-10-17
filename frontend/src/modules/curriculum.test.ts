@@ -190,4 +190,28 @@ describe("Curriculum Validation & High Quality Prompt Generation", () => {
       }
     }
   });
+
+  it("answers every Science question from the lesson's own sentence", () => {
+    // The child reads and says the sentence and sees its picture, so the answer
+    // must come from it (or be one of the choices the question offers).
+    const STOP = new Set("the a an and or of to in on it is are its their our we you they with for from by as at no yes not into out very about".split(" "));
+    const stem = (w: string) => w.toLowerCase().replace(/[^a-z]/g, "").replace(/(ing|ed|es|s)$/, "");
+    const words = (s: string) => s.split(/[\s,()'-]+/).map(stem).filter((w) => w.length > 2 && !STOP.has(w));
+    const off: string[] = [];
+    for (const { subject, chapter } of getAllChapters()) {
+      if (subject.id !== "science") continue;
+      for (const l of chapter.lessons) {
+        if (!l.question || !l.answer) {
+          off.push(`${chapter.id}: "${l.say}" has no question/answer`);
+          continue;
+        }
+        const pool = [...words(l.say), ...words(l.question)];
+        // a bare "Yes" / "No" / "Our eyes" has no long word to look for
+        const said = words(l.answer);
+        const grounded = !said.length || said.some((w) => pool.some((p) => p.startsWith(w) || w.startsWith(p)));
+        if (!grounded) off.push(`${chapter.id}: "${l.say}" -> ${l.answer}`);
+      }
+    }
+    assert.deepStrictEqual(off, []);
+  });
 });

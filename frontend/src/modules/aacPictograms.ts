@@ -4,7 +4,7 @@
  * matching TouchChat / Avaz / Proloquo tablet AAC boards.
  */
 
-import { dictUrl } from "./imageLibrary";
+import { dictUrl } from "./pictogramDict";
 
 function arasaac(id: number): string {
   return `https://static.arasaac.org/pictograms/${id}/${id}_500.png`;
@@ -101,7 +101,7 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   calculator: arasaac(5419),
   tape: arasaac(2325),
   eraser: arasaac(2409),
-  paperclip: arasaac(2643),
+  paperclip: arasaac(10309),
   backpack: arasaac(2475),
   bag: arasaac(2475),
   notebook: arasaac(7142),
@@ -154,16 +154,16 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   // Sports category
   soccer: arasaac(3199),
   football: arasaac(3199),
-  basketball: arasaac(5078),
+  basketball: arasaac(10166), // children shooting at a hoop
   running: arasaac(2719),
   swimming: arasaac(2889),
-  baseball: arasaac(2514),
+  baseball: arasaac(8660),
   tennis: arasaac(3222),
   "jump rope": arasaac(5570),
   dancing: arasaac(2652),
   dance: arasaac(2652),
   playground: arasaac(2859),
-  catch: arasaac(2269),
+  catch: arasaac(39647), // catch a ball (39191 is a spider hunting)
   "ride bike": arasaac(5517),
   bicycle: arasaac(2277),
   bike: arasaac(2277),
@@ -216,12 +216,12 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   banana: arasaac(2530),
   bread: arasaac(2494),
   cookie: arasaac(2402),
-  rice: arasaac(2259),
+  rice: arasaac(2259), // a plate of rice (6911 is the rice plant)
   chicken: arasaac(2404),
   snack: arasaac(4695),
   pizza: arasaac(2527),
   sandwich: arasaac(2281),
-  fries: arasaac(2505),
+  fries: arasaac(2505), // crisps / chips
   fruit: arasaac(4653),
   // "Say It For Me" full-sentence cards — explicit direct matches so the
   // sentence's core meaning wins instead of an unrelated filler word
@@ -250,12 +250,12 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   boy: arasaac(7176), // Full body standing boy (ARASAAC 7176)
   child: arasaac(7176),
   kid: arasaac(27509),
-  student: arasaac(7176),
-  pupil: arasaac(7176),
+  student: arasaac(5899), // student
+  pupil: arasaac(5899), // student
   man: arasaac(4665), // Full body standing man
   woman: arasaac(4703), // Full body standing woman
-  father: arasaac(4665),
-  mother: arasaac(4703),
+  father: arasaac(2497), // father
+  mother: arasaac(31148), // mother
   box: arasaac(7054), // Opened cardboard box so objects placed inside look natural
   "cardboard box": arasaac(7054),
   "open box": arasaac(7054),
@@ -264,14 +264,19 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   cat: arasaac(2406), // Original cat (ARASAAC 2406)
   dog: arasaac(2517),
   bird: arasaac(2490),
-  fish: arasaac(2407),
-  horse: arasaac(2408),
-  cow: arasaac(2401),
+  fish: arasaac(2520), // fish
+  horse: arasaac(2294), // horse
+  cow: arasaac(2609), // cow
   camel: arasaac(8522), // Camel / dromedary
-  penguin: arasaac(2494),
-  lion: arasaac(2409),
-  monkey: arasaac(2410),
-  rabbit: arasaac(2411),
+  penguin: arasaac(3243), // penguin
+  lion: arasaac(2449), // lion
+  wolf: arasaac(5892), // wolf
+  fox: arasaac(2623), // fox
+  "fennec fox": arasaac(2623),
+  deer: arasaac(3263), // deer
+  gorilla: arasaac(2410), // gorilla
+  monkey: arasaac(2477), // monkey
+  rabbit: arasaac(2351), // rabbit
   turtle: arasaac(10241),
   elephant: arasaac(2372),
   mouse: arasaac(2820),
@@ -291,44 +296,53 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   shark: arasaac(2589),
   giraffe: arasaac(2437),
   zebra: arasaac(2324),
-  goat: arasaac(2402),
+  goat: arasaac(2295), // goat
   dinosaur: arasaac(2738),
-  hippo: arasaac(2870),
-  jellyfish: arasaac(3446),
-  crab: arasaac(2672),
-  snail: arasaac(2631),
-  worm: arasaac(2636),
-  owl: arasaac(2429),
+  hippo: arasaac(2424), // hippopotamus
+  jellyfish: arasaac(2920), // jellyfish
+  starfish: arasaac(3310), // starfish
+  seahorse: arasaac(2672), // seahorse
+  seal: arasaac(2397), // seal
+  walrus: arasaac(38147), // walrus
+  beaver: arasaac(2820), // beaver
+  crocodile: arasaac(2343), // crocodile
+  alligator: arasaac(23863),
+  tortoise: arasaac(10241),
+  "polar bear": arasaac(2868),
+  crab: arasaac(2312), // crab
+  snail: arasaac(2685), // snail
+  worm: arasaac(2935), // earthworm
+  owl: arasaac(2671), // owl
   root: arasaac(3148),
   roots: arasaac(3148),
-  stem: arasaac(3149),
+  stem: arasaac(3159), // stem
   seed: arasaac(8689),
   seeds: arasaac(8689),
   plant: arasaac(2828),
   plants: arasaac(2828),
-  cactus: arasaac(2975),
+  cactus: arasaac(3070), // cactus
   leaves: arasaac(3114),
-  soil: arasaac(37339),
-  rock: arasaac(6883),
-  rocks: arasaac(6883),
+  soil: arasaac(3160), // ground with a plant and its roots
+  rock: arasaac(6594), // stone (6883 is "rock a baby")
+  rocks: arasaac(6594),
   lightning: arasaac(2819),
-  thunder: arasaac(2819),
+  thunder: arasaac(11389), // thunder
   snowman: arasaac(3131),
-  frost: arasaac(3135),
+  frost: arasaac(25153), // frost
   rainbow: arasaac(2986),
   magnet: arasaac(8138),
   battery: arasaac(8320),
   bulb: arasaac(2285),
-  wire: arasaac(7351),
+  wire: arasaac(7042), // wire roll
   shadow: arasaac(6649),
   sound: arasaac(27073),
   potato: arasaac(2503),
   potatoes: arasaac(2503),
-  tomato: arasaac(2504),
-  carrot: arasaac(2505),
-  wood: arasaac(2793),
-  metal: arasaac(8252),
-  plastic: arasaac(7322),
+  tomato: arasaac(2594), // tomato
+  carrot: arasaac(2619), // carrot
+  wood: arasaac(6143), // wooden plank
+  metal: arasaac(6148), // metal
+  plastic: arasaac(10288), // plastic
   glass: arasaac(2610),
   door: arasaac(3244),
   honeybee: arasaac(2239),
@@ -337,21 +351,19 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   sunset: arasaac(2798),
   sunlight: arasaac(2798),
   solar: arasaac(2798),
-  wooden: arasaac(2793),
-  concrete: arasaac(6883),
-  aluminium: arasaac(8252),
-  nylon: arasaac(5570),
-  silk: arasaac(2781),
-  woollen: arasaac(2781),
-  pan: arasaac(2500),
+  wooden: arasaac(6143), // wooden plank
+  concrete: arasaac(2976), // concrete mixer
+  aluminium: arasaac(8250), // aluminium foil
+  nylon: arasaac(7006), // rope
+  silk: arasaac(7233), // clothes
+  woollen: arasaac(2948), // wool
+  pan: arasaac(2558), // frying pan
   glow: arasaac(2285),
   magnetic: arasaac(8138),
   electromagnet: arasaac(8138),
   electric: arasaac(8320),
   doorbell: arasaac(5938),
-  friction: arasaac(2339),
-  pulling: arasaac(2719),
-  pushing: arasaac(2719),
+  pushing: arasaac(4638), // push
   table: arasaac(3129),
   bed: arasaac(2304),
   house: arasaac(2317),
@@ -378,7 +390,7 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   shoe: arasaac(32922),
   shoes: arasaac(32922),
   cup: arasaac(2582),
-  key: arasaac(21851),
+  key: arasaac(8153), // key
   phone: arasaac(36305),
   mat: arasaac(2346),
   wall: arasaac(2860),
@@ -387,8 +399,9 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
 
   // Habitats & Environments
   desert: arasaac(2734), // Golden sand dunes with sun
-  ocean: arasaac(32699),
-  sea: arasaac(2925),
+  savanna: arasaac(5567), // Savanna with acacia tree and golden plains
+  ocean: arasaac(32818),
+  sea: arasaac(32818), // under the sea (2925 is a bare horizon)
   river: arasaac(2811),
   pond: arasaac(39264),
   forest: arasaac(2666),
@@ -400,7 +413,13 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   lake: arasaac(6022),
   arctic: arasaac(7128),
   ice: arasaac(7128),
+  iceberg: arasaac(6014),
   snow: arasaac(3135),
+  field: arasaac(25916),
+  grass: arasaac(3113),
+  hill: arasaac(38728),
+  cave: arasaac(2729),
+  swamp: arasaac(26290),
 
   // Action verbs & dynamic subjects (high-pedagogical fidelity)
   crying: arasaac(35881), // Child crying with visible tears
@@ -418,16 +437,9 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   "boy running": arasaac(2719),
   "girl running": arasaac(2719),
   sleeping: arasaac(2369), // Person sleeping peacefully
-  "dog sleeping": arasaac(2369),
-  "sleeping dog": arasaac(2369),
   "baby sleeping": arasaac(6060),
-  flying: arasaac(2478), // Bird in flight with wings outstretched
   fly: arasaac(2478),
-  "bird flying": arasaac(2478),
-  "flying bird": arasaac(2478),
   swim: arasaac(2889),
-  "fish swimming": arasaac(2407),
-  "swimming fish": arasaac(2407),
   eating: arasaac(2349), // Person eating
   eat: arasaac(2349),
   "man eating": arasaac(2349),
@@ -436,10 +448,8 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   drink: arasaac(2276),
   jumping: arasaac(2804), // Person jumping in air
   jump: arasaac(2804),
-  "cat jumping": arasaac(2804),
   walking: arasaac(2432), // Person walking
   walk: arasaac(2432),
-  "turtle walking": arasaac(2432),
   singing: arasaac(2315),
   "girl singing": arasaac(2315),
   kicking: arasaac(3199), // Child kicking soccer ball
@@ -453,62 +463,78 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   writing: arasaac(2380), // Hand writing with pencil
   write: arasaac(2380),
   "man writing": arasaac(2380),
-  drawing: arasaac(2523),
-  draw: arasaac(2523),
+  drawing: arasaac(5506), // draw
+  draw: arasaac(5506), // draw
   climbing: arasaac(8226), // Person climbing
   climb: arasaac(8226),
   "boy climbing": arasaac(8226),
-  driving: arasaac(2339),
-  drive: arasaac(2339),
-  "man driving": arasaac(2339),
+  driving: arasaac(2712), // drive
+  drive: arasaac(2712), // drive
+  "man driving": arasaac(2712), // drive
   washing: arasaac(2443),
   wash: arasaac(2443),
   brushing: arasaac(2326),
   brush: arasaac(2326),
-  cooking: arasaac(2547),
-  cook: arasaac(2547),
-  "woman cooking": arasaac(2547),
-  praying: arasaac(3345),
-  pray: arasaac(3345),
-  hiding: arasaac(2474),
-  hide: arasaac(2474),
+  cooking: arasaac(2342), // cook
+  cook: arasaac(2342), // cook
+  "woman cooking": arasaac(2342), // cook
+  praying: arasaac(24368), // pray
+  pray: arasaac(24368), // pray
+  hiding: arasaac(4642), // hide
+  hide: arasaac(4642), // hide
   looking: arasaac(2474),
-  standing: arasaac(27509),
-  stand: arasaac(27509),
-  sitting: arasaac(3155),
-  sit: arasaac(3155),
-  fuse: arasaac(27284),
-  crescent: arasaac(2840),
-  gravity: arasaac(27457),
-  ozone: arasaac(32752),
-  sonar: arasaac(2470),
+  standing: arasaac(13368), // stand
+  stand: arasaac(13368), // stand
+  sitting: arasaac(6611), // sit
+  sit: arasaac(6611), // sit
+  crescent: arasaac(2933), // moon
   fibre: arasaac(4610),
-  tract: arasaac(10077),
-  digestive: arasaac(10077),
-  capillaries: arasaac(36187),
-  capillary: arasaac(36187),
-  voltmeter: arasaac(5419),
-  meter: arasaac(5419),
-  meters: arasaac(5419),
-  station: arasaac(2462),
-  satellite: arasaac(2462),
-  satellites: arasaac(2462),
-  mound: arasaac(2831),
-  termite: arasaac(2505),
-  sneeze: arasaac(31086),
-  sneezing: arasaac(31086),
-  villi: arasaac(10077),
-  peristalsis: arasaac(10077),
-  puppy: arasaac(2362),
-  kitten: arasaac(2364),
-  seedling: arasaac(2838),
-  lamb: arasaac(2390),
-  calf: arasaac(2388),
-  foal: arasaac(2389),
-  chick: arasaac(2387),
-  duckling: arasaac(2391),
-  cub: arasaac(28247),
+  tract: arasaac(2967), // intestine
+  digestive: arasaac(2967), // intestine
+  mound: arasaac(36993), // anthill
+  termite: arasaac(2425), // ant
+  sneeze: arasaac(16703), // sneeze
+  sneezing: arasaac(16703), // sneeze
+  villi: arasaac(2967), // intestine
+  peristalsis: arasaac(2967), // intestine
+  puppy: arasaac(2517), // dog
+  kitten: arasaac(34082), // kitten
+  seedling: arasaac(17183), // sprout
+  lamb: arasaac(34078), // lamb
+  calf: arasaac(2609), // cow
+  foal: arasaac(2294), // horse
+  chick: arasaac(34076), // chick
+  duckling: arasaac(2563), // duck
+  cub: arasaac(2868), // bear
+
+  // Lesson-scene words the bundled word list files elsewhere or lacks
+  stone: arasaac(6594),
+  square: arasaac(4616), // the shape (6184 is a town square)
+  triangle: arasaac(4763), // the shape (2604 is the musical triangle)
+  compass: arasaac(8045), // magnetic compass (9146 is the drawing compass)
+  park: arasaac(2859), // playground (5379 is a car park)
+  "open the fridge": arasaac(21339),
+  "open the door": arasaac(6875),
+  "collect rubbish": arasaac(39799),
+  mri: arasaac(33112), // the scanner (the word list files a scan image)
+  "electrical danger": arasaac(8656),
+  "starry sky": arasaac(6978),
+  steam: arasaac(31478), // water vapour rising (the word list files steamed food)
+  vapour: arasaac(31478),
+  "building a wall": arasaac(2713), // a builder laying bricks
+  coin: arasaac(8633), // coins
+  log: arasaac(7819), // wooden log
+  "palm tree": arasaac(3138),
 };
+
+/**
+ * Only a picture filed under this whole phrase ("girl reading") — never one of
+ * its words, so a missing combination falls through instead of becoming "girl".
+ */
+export function exactPictogramUrl(label: string): string | null {
+  const lower = label.toLowerCase().trim();
+  return AAC_PICTOGRAM_MAP[lower] ?? dictUrl(lower);
+}
 
 /**
  * Get authentic vector pictogram URL for any AAC card, button or category.

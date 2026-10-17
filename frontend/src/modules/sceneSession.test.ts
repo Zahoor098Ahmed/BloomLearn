@@ -8,7 +8,10 @@
  *   5. additive (never delete)  + the "no dropped words" bug
  */
 
-import { newSession, applyUtterance, applyOps, isFreshScene, searchPhrase, type SceneSession } from "./sceneSession";
+import { newSession, applyUtterance, applyOps, isFreshScene, searchPhrase, isPerson, sceneFromSpec, type SceneSession } from "./sceneSession";
+import { lessonSceneSpec } from "./lessonScenes";
+import { getPictogramUrl } from "./aacPictograms";
+import { GRADES, chaptersFor, subjectById } from "./curriculum";
 
 let pass = 0;
 let fail = 0;
@@ -196,6 +199,70 @@ const item = (s: SceneSession, type: string) => s.items.find((i) => i.type === t
 
   const sSeedling = say(newSession(), "A young plant is called a seedling");
   check("definition 'A young plant is called a seedling' resolves ONLY to seedling", types(sSeedling).length === 1 && types(sSeedling)[0] === "seedling");
+}
+
+// 7. going somewhere: the walker beside the place, heading towards it
+{
+  for (const phrase of ["A boy is going home", "a boy is go to go home"]) {
+    const s = say(newSession(), phrase);
+    const boy = item(s, "boy");
+    const house = item(s, "house");
+    check(
+      `motion '${phrase}' -> a walking boy left of a house`,
+      !!boy && !!house && boy.action === "go" && boy.relation === "left" && boy.reference === "house" && boy.x < house.x,
+    );
+  }
+  const school = say(newSession(), "The girl walks to school");
+  check("motion 'The girl walks to school' -> girl going to the school", item(school, "girl")?.reference === "school");
+  const eat = say(newSession(), "The man is going to eat");
+  check("motion 'going to eat' is not a place", types(eat).join() === "man");
+}
+
+// 8. the verb pictogram is a person, so it is only used for people
+{
+  const fish = item(say(newSession(), "The fish is swimming"), "fish")!;
+  check("action an animal keeps its own picture", isPerson("girl") && !isPerson("fish") && searchPhrase(fish) === "fish");
+}
+
+// 9. pictograms checked against their ARASAAC keywords (these ids once showed
+// a balloon for "fish", an eraser for "lion", a housefly for "flying", …)
+{
+  const id = (word: string) => Number(getPictogramUrl(word)?.match(/pictograms\/(\d+)\//)?.[1]);
+  const want: Record<string, number> = {
+    fish: 2520, horse: 2294, cow: 2609, penguin: 3243, lion: 2449, monkey: 2477, rabbit: 2351, owl: 2671,
+    snail: 2685, carrot: 2619, cactus: 3070, puppy: 2517, seedling: 17183, rock: 6594, sea: 32818,
+    square: 4616, triangle: 4763, compass: 8045, park: 2859, catch: 39647, key: 8153,
+  };
+  const wrong = Object.entries(want).filter(([w, n]) => id(w) !== n).map(([w]) => `${w}=${id(w)}`);
+  check("pictograms the fixed ids", !wrong.length, wrong.join(", "));
+  const bird = item(say(newSession(), "The bird is flying"), "bird")!;
+  check("pictograms 'The bird is flying' shows the bird, not a housefly", searchPhrase(bird) === "bird" && id("bird") === 2490);
+}
+
+// 10. every Science lesson has a fixed picture, and every thing in it has a pictogram
+{
+  const missing: string[] = [];
+  const noPicture: string[] = [];
+  for (const grade of GRADES)
+    for (const ch of chaptersFor(subjectById("science"), grade))
+      for (const l of ch.lessons) {
+        const spec = lessonSceneSpec(l.say);
+        if (!spec) {
+          missing.push(l.say);
+          continue;
+        }
+        const scene = sceneFromSpec(spec);
+        if (!scene.anatomy && !scene.items.length) noPicture.push(`${l.say} (empty)`);
+        for (const it of scene.items) {
+          const action = it.action && isPerson(it.type) ? getPictogramUrl(it.action) : null;
+          if (!action && !getPictogramUrl(it.type)) noPicture.push(`${l.say} (${it.type})`);
+        }
+      }
+  check("lessons every Science lesson has a scene spec", !missing.length, missing.slice(0, 5).join(" | "));
+  check("lessons every scene item has a pictogram", !noPicture.length, noPicture.slice(0, 5).join(" | "));
+  const going = sceneFromSpec("house; boy/go left house");
+  check("lessons spec places the boy left of the house", item(going, "boy")?.relation === "left" && types(going).join() === "house,boy");
+  check("lessons spec body parts open the body diagram", sceneFromSpec("body: heart, lungs").anatomyParts.join() === "heart,lungs");
 }
 
 console.log(`\n${pass} passed, ${fail} failed`);

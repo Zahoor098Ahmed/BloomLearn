@@ -37,7 +37,8 @@ The app lives in **`frontend/`**. Run every command (`npm`, `npx expo`, `npx eas
 - `src/components/SceneStage.tsx` / `SceneComposer.tsx` - Draw the understood scene
 - `src/modules/voice.ts` / `audio.ts` - Live speech recognition, with record + Whisper fallback
 - `src/modules/sentenceScene.ts` / `sceneSession.ts` / `sceneAgent.ts` - Sentence → scene understanding (rule parser, optional LLM agent)
-- `src/modules/imageLibrary.ts` / `aacPictograms.ts` / `bookVocab.ts` - Picture lookup and on-device library
+- `src/modules/imageLibrary.ts` / `aacPictograms.ts` / `bookVocab.ts` - Picture lookup and on-device library; `pictogramDict.ts` is the pure ARASAAC word → id lookup. Pin a new id in `AAC_PICTOGRAM_MAP` only after checking its ARASAAC keywords (`https://api.arasaac.org/api/pictograms/en/<id>`) — wrong ids once drew a balloon for "fish"
+- `src/modules/lessonScenes.ts` / `lessonScenes.data.ts` - The fixed on-device picture for each lesson sentence (spec like `"house; boy/go left house"` or `"body: heart, lungs"`, read by `sceneFromSpec`). Every Science lesson has one; `npm run test:scene` checks that and that every item has a pictogram
 - `src/modules/aiImage.ts` / `aiScene.ts` - AI picture generation (OpenAI / Pollinations)
 - `src/modules/tts.ts` - Read aloud via `expo-speech`
 - `src/modules/i18n.ts` - Translations

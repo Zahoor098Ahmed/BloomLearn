@@ -206,6 +206,7 @@ export type TKey =
   | 'lsNext'
   | 'lsShowAnswer'
   | 'lsAnswer'
+  | 'lsQuestion'
   | 'lsAllLessons'
   | 'sbSource'
   | 'prReportTitle'
@@ -441,6 +442,7 @@ const T: AllTranslations = {
     lsNext: "Next lesson",
     lsShowAnswer: "Show answer",
     lsAnswer: "Answer",
+    lsQuestion: "Question",
     lsAllLessons: "All lessons in this chapter",
     sbSource: "Chapter topics follow Pakistan's Single National Curriculum (2020) and the Cambridge Primary curriculum. Lessons are written for BloomLearn, not copied from any textbook — check them with your school book.",
     prReportTitle: "Learning report",
@@ -672,6 +674,7 @@ const T: AllTranslations = {
     lsNext: "الدرس التالي",
     lsShowAnswer: "أظهر الإجابة",
     lsAnswer: "الإجابة",
+    lsQuestion: "السؤال",
     lsAllLessons: "كل دروس هذا الفصل",
     sbSource: "مواضيع الفصول تتبع المنهج الوطني الموحد في باكستان (2020) ومنهج كامبريدج للمرحلة الابتدائية. الدروس مكتوبة لتطبيق BloomLearn وليست منسوخة من أي كتاب مدرسي — راجعها مع كتاب مدرستك.",
     prReportTitle: "تقرير التعلّم",

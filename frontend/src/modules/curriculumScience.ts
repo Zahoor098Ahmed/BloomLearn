@@ -23,8 +23,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Non-flowering plants do not have seeds and flowers",
-          "question": "Do ferns have flowers?",
-          "answer": "No, they have fronds and spores",
+          "question": "Do ferns and moss have flowers or seeds?",
+          "answer": "No, they have no flowers and no seeds",
           "draw": "two non-flowering green plants growing in a forest: a vibrant green fern with delicate feathery fronds and a soft cushion of emerald moss on a woodland rock, no flowers or seeds"
         },
         {
@@ -41,8 +41,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A green leaf makes food",
-          "question": "What colour are most leaves?",
-          "answer": "Green",
+          "question": "What does a green leaf make?",
+          "answer": "Food for the plant",
           "draw": "one healthy vibrant green leaf on a branch with clear vein patterns basking in warm natural morning sunlight"
         },
         {
@@ -71,14 +71,14 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A green fern grows in the shade",
-          "question": "Is a fern a flowering or non-flowering plant?",
-          "answer": "Non-flowering",
+          "question": "Where does a green fern grow?",
+          "answer": "In the shade",
           "draw": "lush green fern fronds with delicate feathery leaves growing in the cool shade of woodland trees with morning dew"
         },
         {
           "say": "Soft green moss grows on rocks",
-          "question": "Where does moss like to grow?",
-          "answer": "On damp rocks and tree bark",
+          "question": "Where does soft green moss grow?",
+          "answer": "On rocks",
           "draw": "a patch of velvety green moss growing on a smooth river stone beside a gentle forest stream"
         },
         {
@@ -131,8 +131,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A water lily floats on the pond",
-          "question": "Where does a water lily flower grow?",
-          "answer": "On water",
+          "question": "Where does a water lily float?",
+          "answer": "On the pond",
           "draw": "a beautiful pink water lily flower floating gracefully on round green pads in a calm clear garden pond"
         },
         {
@@ -143,8 +143,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A tulip grows from a bulb",
-          "question": "What spring flower has cup-shaped petals?",
-          "answer": "A tulip",
+          "question": "What does a tulip grow from?",
+          "answer": "A bulb",
           "draw": "a vibrant red and yellow tulip standing straight on a tall green stem in a colourful spring garden bed"
         },
         {
@@ -173,20 +173,20 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A strawberry plant grows sweet berries",
-          "question": "Where do strawberries grow?",
-          "answer": "On low strawberry plants",
+          "question": "What does a strawberry plant grow?",
+          "answer": "Sweet berries",
           "draw": "a low green strawberry plant in garden soil with bright red strawberries and tiny white flowers"
         },
         {
           "say": "A jasmine flower smells sweet",
-          "question": "What white flower has a lovely fragrance?",
-          "answer": "Jasmine",
+          "question": "How does a jasmine flower smell?",
+          "answer": "Sweet",
           "draw": "clusters of star-shaped white jasmine flowers with dark green leaves blooming on a garden trellis"
         },
         {
           "say": "A pumpkin vine grows on the ground",
-          "question": "What big orange vegetable grows on a vine?",
-          "answer": "A pumpkin",
+          "question": "Where does a pumpkin vine grow?",
+          "answer": "On the ground",
           "draw": "a leafy green pumpkin vine sprawling on the ground with a large round orange pumpkin resting on soil"
         },
         {
@@ -221,8 +221,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Plants make clean air for us to breathe",
-          "question": "What gas do plants give out for us?",
-          "answer": "Oxygen",
+          "question": "What do plants make for us to breathe?",
+          "answer": "Clean air",
           "draw": "a healthy green forest with lush trees releasing fresh clean air under a clear blue morning sky"
         },
         {
@@ -257,8 +257,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Gardening helps plants grow healthy",
-          "question": "What does a gardener do to care for plants?",
-          "answer": "Water and weed them",
+          "question": "What helps plants grow healthy?",
+          "answer": "Gardening",
           "draw": "a child in gardening gloves planting colourful seedlings into fertile dark garden soil in a sunny backyard"
         }
       ]
@@ -294,14 +294,14 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A bird is flying in the sky",
-          "question": "How does a bird move through the air?",
-          "answer": "It flies with wings",
+          "question": "Where is the bird flying?",
+          "answer": "In the sky",
           "draw": "a bluebird flying freely through a clear blue sky with open wings above green treetops"
         },
         {
           "say": "A frog is jumping on a lily pad",
-          "question": "How does a frog move on land?",
-          "answer": "It jumps with long back legs",
+          "question": "Where is the frog jumping?",
+          "answer": "On a lily pad",
           "draw": "a bright green frog jumping in mid-air from a green lily pad across a calm clear pond with ripples"
         },
         {
@@ -330,20 +330,20 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A duck is swimming in the pond",
-          "question": "What helps a duck paddle through water?",
-          "answer": "Webbed feet",
+          "question": "Where is the duck swimming?",
+          "answer": "In the pond",
           "draw": "a mother duck with yellow ducklings swimming smoothly across a calm pond with reed plants"
         },
         {
           "say": "A horse is galloping in the meadow",
-          "question": "How does a fast horse move?",
-          "answer": "It gallops",
+          "question": "What is the horse doing in the meadow?",
+          "answer": "It is galloping",
           "draw": "a majestic brown horse with a flowing black mane galloping across a wide open green pasture"
         },
         {
           "say": "An eagle is soaring high",
-          "question": "Which large bird flies high in mountain skies?",
-          "answer": "An eagle",
+          "question": "How does an eagle fly?",
+          "answer": "It soars high",
           "draw": "a noble eagle with broad outstretched wings soaring gracefully high above mountain peaks in a sunny sky"
         },
         {
@@ -354,20 +354,20 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A butterfly has colourful wings",
-          "question": "How many wings does a butterfly have?",
-          "answer": "Four wings",
+          "question": "What kind of wings does a butterfly have?",
+          "answer": "Colourful wings",
           "draw": "a vibrant orange monarch butterfly resting on a purple flower with open patterned wings in a sunlit meadow"
         },
         {
           "say": "A honeybee is buzzing near flowers",
-          "question": "What useful insect gathers nectar from flowers?",
-          "answer": "A honeybee",
+          "question": "Where is the honeybee buzzing?",
+          "answer": "Near the flowers",
           "draw": "a striped honeybee hovering over bright yellow clover blossoms collecting sweet nectar in a sunny garden"
         },
         {
           "say": "An elephant has a long trunk",
-          "question": "Which giant animal uses its trunk to drink?",
-          "answer": "An elephant",
+          "question": "What long body part does an elephant have?",
+          "answer": "A long trunk",
           "draw": "a huge grey elephant with large floppy ears using its long trunk to spray clean water by a river"
         },
         {
@@ -378,26 +378,26 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A penguin is waddling on the ice",
-          "question": "Can a penguin fly in the air?",
-          "answer": "No, it swims and waddles",
+          "question": "Where is the penguin waddling?",
+          "answer": "On the ice",
           "draw": "an Emperor penguin with a yellow neck waddling across glistening white ice in Antarctica with blue sea behind"
         },
         {
           "say": "A lion is roaring on the rocks",
-          "question": "Which big cat is known as the king of beasts?",
-          "answer": "A lion",
+          "question": "Where is the lion roaring?",
+          "answer": "On the rocks",
           "draw": "a magnificent male lion with a full golden mane standing proudly on a sunlit rock in the African savanna"
         },
         {
           "say": "A giraffe has a very long neck",
-          "question": "Why does a giraffe have a long neck?",
-          "answer": "To reach tall tree leaves",
+          "question": "What does a giraffe have?",
+          "answer": "A very long neck",
           "draw": "a tall spotted giraffe stretching its long neck to eat tender green leaves from an acacia tree"
         },
         {
           "say": "A kangaroo is hopping with a joey",
-          "question": "Where does a mother kangaroo carry her baby?",
-          "answer": "In her pouch",
+          "question": "What is a baby kangaroo called?",
+          "answer": "A joey",
           "draw": "a brown kangaroo hopping across an open grassland with a cute baby joey peeking out from her pouch"
         },
         {
@@ -420,26 +420,26 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A dolphin is leaping out of waves",
-          "question": "Is a dolphin a fish or a mammal?",
-          "answer": "A mammal",
+          "question": "What is the dolphin leaping out of?",
+          "answer": "The waves",
           "draw": "a playful grey dolphin leaping high out of sparkling blue ocean waves under a warm sunny sky"
         },
         {
           "say": "A polar bear has thick white fur",
-          "question": "Why does a polar bear have thick fur?",
-          "answer": "To stay warm in snow",
+          "question": "What kind of fur does a polar bear have?",
+          "answer": "Thick white fur",
           "draw": "a large white polar bear walking on a snow-covered ice shelf in the chilly Arctic landscape"
         },
         {
           "say": "A cheetah is running very fast",
-          "question": "Which land animal is the fastest runner?",
-          "answer": "A cheetah",
+          "question": "How is the cheetah running?",
+          "answer": "Very fast",
           "draw": "a slender spotted cheetah sprinting at top speed across golden grassland with dust rising behind"
         },
         {
           "say": "A cow is chewing fresh grass",
-          "question": "What food does a cow eat on the farm?",
-          "answer": "Grass",
+          "question": "What is the cow chewing?",
+          "answer": "Fresh grass",
           "draw": "a black and white spotted cow standing peacefully in a lush green pasture chewing grass near a wooden fence"
         },
         {
@@ -450,14 +450,14 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A hen sits on her eggs",
-          "question": "What bird lays eggs in the coop?",
-          "answer": "A hen",
+          "question": "What does a hen sit on?",
+          "answer": "Her eggs",
           "draw": "a brown hen sitting warmly on smooth white eggs in a straw nest inside a sunny barn"
         },
         {
           "say": "A tiny ant carries a crumb",
-          "question": "Can an ant lift heavy things?",
-          "answer": "Yes, many times its own weight",
+          "question": "What does the tiny ant carry?",
+          "answer": "A crumb",
           "draw": "a little black ant walking on a forest path carrying a breadcrumb twice its size"
         },
         {
@@ -468,37 +468,37 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "An owl stays awake at night",
-          "question": "When does an owl hunt for food?",
+          "question": "When does an owl stay awake?",
           "answer": "At night",
           "draw": "a wise brown owl with large round yellow eyes perched on a tree branch under a glowing crescent moon"
         },
         {
           "say": "A parrot has bright green feathers",
-          "question": "What bird can copy human sounds?",
-          "answer": "A parrot",
+          "question": "What colour are the parrot's feathers?",
+          "answer": "Bright green",
           "draw": "a colourful green parrot with red and yellow wing feathers perched on a tropical branch"
         },
         {
           "say": "A squirrel is burying an acorn",
-          "question": "What nut does a squirrel store for winter?",
+          "question": "What is the squirrel burying?",
           "answer": "An acorn",
           "draw": "a bushy-tailed brown squirrel holding an acorn between its paws beside an autumn oak tree"
         },
         {
           "say": "A crab has two strong pincers",
-          "question": "Where does a crab walk sideways?",
-          "answer": "On the seashore",
+          "question": "How many strong pincers does a crab have?",
+          "answer": "Two",
           "draw": "a red seashore crab with two curved pincers walking sideways along wet beach sand near foamy waves"
         },
         {
           "say": "A starfish lives on the ocean floor",
-          "question": "How many arms does a common starfish have?",
-          "answer": "Five arms",
+          "question": "Where does a starfish live?",
+          "answer": "On the ocean floor",
           "draw": "a bright orange five-armed starfish resting on sandy ocean floor beside a colourful sea anemone"
         },
         {
           "say": "A camel is walking in the desert",
-          "question": "Where does a camel live?",
+          "question": "Where is the camel walking?",
           "answer": "In the desert",
           "draw": "a majestic camel with a hump walking across golden desert sand dunes under a bright sunny sky with a few palm trees"
         },
@@ -590,7 +590,7 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         {
           "say": "The fingers",
           "question": "How many fingers are on one hand?",
-          "answer": "Five",
+          "answer": "Five fingers",
           "draw": "a child holding up an open hand showing five clean outstretched fingers clearly against a soft background"
         },
         {
@@ -886,20 +886,20 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "The sunrise brings a new morning",
-          "question": "Where does the sun rise?",
-          "answer": "In the east",
+          "question": "What does the sunrise bring?",
+          "answer": "A new morning",
           "draw": "a breathtaking golden-orange sunrise rising over gentle hills with birds flying across morning light"
         },
         {
           "say": "The sunset brings evening colours",
-          "question": "What colours fill the sky as the sun goes down?",
-          "answer": "Orange, pink and purple",
+          "question": "What does the sunset bring?",
+          "answer": "Evening colours",
           "draw": "a gorgeous sunset painting the evening sky in warm shades of orange, pink and purple over a peaceful lake"
         },
         {
           "say": "A sunny day is warm and bright",
-          "question": "What do we wear on a sunny day?",
-          "answer": "Sun hat and light clothes",
+          "question": "What is a sunny day like?",
+          "answer": "Warm and bright",
           "draw": "a child wearing a sun hat playing happily with a beach ball on a warm sunny day under a blue sky"
         },
         {
@@ -982,8 +982,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A hot day makes us thirsty",
-          "question": "What drink should we have often on a hot day?",
-          "answer": "Water",
+          "question": "How does a hot day make us feel?",
+          "answer": "Thirsty",
           "draw": "a child holding a tall glass of cool water with ice cubes on a warm sunny terrace"
         },
         {
@@ -1018,8 +1018,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Drying clothes on a sunny clothesline",
-          "question": "What helps wet laundry dry quickly outdoors?",
-          "answer": "Sun and wind",
+          "question": "Where do clothes dry in the sun?",
+          "answer": "On a clothesline",
           "draw": "clean colourful clothes hanging on an outdoor clothesline swaying gently in the warm sunshine"
         },
         {
@@ -1054,8 +1054,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "We appreciate sunny and rainy days alike",
-          "question": "Why is rain important for the earth?",
-          "answer": "It gives water to plants and animals",
+          "question": "Which days do we appreciate?",
+          "answer": "Sunny and rainy days",
           "draw": "a healthy green garden blooming vibrantly after a gentle rain with sun breaking through the clouds"
         }
       ]
@@ -1303,20 +1303,20 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Living things respond to their surroundings",
-          "question": "What do living things do when touched?",
-          "answer": "They react and respond",
+          "question": "What do living things respond to?",
+          "answer": "Their surroundings",
           "draw": "a sensitive mimosa plant closing its delicate leaves gently when touched by a child's finger"
         },
         {
           "say": "Living things produce young ones of their own kind",
-          "question": "What is having babies called?",
-          "answer": "Reproduction",
+          "question": "What do living things produce?",
+          "answer": "Young ones of their own kind",
           "draw": "a mother hen proudly surrounded by six tiny chirping yellow chicks in a sunny farmyard"
         },
         {
           "say": "We must treat all living creatures with kindness",
-          "question": "Why should we protect living things?",
-          "answer": "They are part of our world",
+          "question": "How must we treat all living creatures?",
+          "answer": "With kindness",
           "draw": "a smiling child gently pouring water into a bird bath as garden birds gather happily"
         }
       ]
@@ -1340,8 +1340,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Roots absorb water and nutrients",
-          "question": "What do roots drink from the soil?",
-          "answer": "Water and minerals",
+          "question": "What do roots absorb from the soil?",
+          "answer": "Water and nutrients",
           "draw": "healthy underground white root hairs absorbing fresh groundwater from dark rich soil"
         },
         {
@@ -1376,8 +1376,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Petals are colourful and smell sweet",
-          "question": "Why do flowers have bright petals?",
-          "answer": "To attract bees and butterflies",
+          "question": "What are petals like?",
+          "answer": "Colourful and sweet-smelling",
           "draw": "velvety bright red rose petals opening gracefully in morning garden sunlight"
         },
         {
@@ -1388,7 +1388,7 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A fruit protects the seeds inside",
-          "question": "Where are the seeds of an apple found?",
+          "question": "Where are a fruit's seeds?",
           "answer": "Inside the fruit",
           "draw": "a ripe red apple sliced in half showing shiny dark brown seeds resting safely in its core"
         },
@@ -1406,8 +1406,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Branches spread leaves out into the sunlight",
-          "question": "What grows out from a tree trunk?",
-          "answer": "Branches",
+          "question": "What do branches spread into the sunlight?",
+          "answer": "Leaves",
           "draw": "strong wooden tree branches reaching wide into the blue sky covered with fresh green foliage"
         },
         {
@@ -1424,8 +1424,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Fibrous roots spread out like a net",
-          "question": "What kind of roots do grasses have?",
-          "answer": "Fibrous roots",
+          "question": "How do fibrous roots spread?",
+          "answer": "Out like a net",
           "draw": "a clump of green grass lifted gently showing a dense network of thin fibrous roots"
         },
         {
@@ -1454,8 +1454,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Onions are layered bulbs",
-          "question": "What underground plant bulb has papery skin?",
-          "answer": "An onion",
+          "question": "What are onions?",
+          "answer": "Layered bulbs",
           "draw": "a peeled purple-red onion showing concentric crisp juicy layers on a cutting board"
         },
         {
@@ -1484,14 +1484,14 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Sunflowers produce nutritious seeds",
-          "question": "Where do sunflower seeds grow?",
-          "answer": "In the flower head",
+          "question": "What do sunflowers produce?",
+          "answer": "Nutritious seeds",
           "draw": "a mature sunflower head bending gently with hundreds of striped grey seeds in its centre"
         },
         {
           "say": "A pinecone protects pine tree seeds",
-          "question": "What woody cone drops from pine trees?",
-          "answer": "A pinecone",
+          "question": "What does a pinecone protect?",
+          "answer": "Pine tree seeds",
           "draw": "a textured brown pinecone resting on pine needles on the forest floor beside pine branches"
         },
         {
@@ -1502,80 +1502,80 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Leaf veins carry food and water",
-          "question": "What lines can you see on a leaf?",
-          "answer": "Veins",
+          "question": "What do leaf veins carry?",
+          "answer": "Food and water",
           "draw": "a close-up backlit view of a broad green leaf showing a clear intricate network of veins"
         },
         {
           "say": "Tendrils help climbing plants hold on",
-          "question": "What curly green parts help pea vines climb?",
+          "question": "What helps climbing plants hold on?",
           "answer": "Tendrils",
           "draw": "curly green tendrils of a sweet pea vine tightly coiling around a wooden garden stick"
         },
         {
           "say": "Spines on a cactus are modified leaves",
-          "question": "What do cactus needles do?",
-          "answer": "Conserve water and deter animals",
+          "question": "What are the spines on a cactus?",
+          "answer": "Modified leaves",
           "draw": "sharp golden spines radiating from the green ribbed stem of a round desert cactus"
         },
         {
           "say": "Water lily stems are hollow and float",
-          "question": "Why are water lily leaf stalks hollow?",
-          "answer": "To float easily on water",
+          "question": "What are water lily stems like?",
+          "answer": "Hollow, so they float",
           "draw": "long flexible green stems connecting floating water lily pads to the muddy pond bottom"
         },
         {
           "say": "A dandelion seed floats with a tiny parachute",
-          "question": "How does a dandelion spread its seeds?",
-          "answer": "By wind",
+          "question": "How does a dandelion seed float?",
+          "answer": "With a tiny parachute",
           "draw": "a fluffy white dandelion seed head with delicate parachute seeds blowing away in the breeze"
         },
         {
           "say": "Maple seeds spin like tiny helicopters",
-          "question": "How do winged maple seeds travel?",
-          "answer": "They spin in the wind",
+          "question": "How do maple seeds spin?",
+          "answer": "Like tiny helicopters",
           "draw": "two winged maple seeds twirling gently as they fall from a green tree towards the ground"
         },
         {
           "say": "Coconut seeds can float across the ocean",
-          "question": "How does a hard coconut seed travel to new islands?",
-          "answer": "It floats on sea waves",
+          "question": "How do coconut seeds travel?",
+          "answer": "They float across the ocean",
           "draw": "a brown coconut floating on turquoise tropical sea waves towards a sandy island beach"
         },
         {
           "say": "Sepals protect the young flower bud",
-          "question": "What small green leaves cup underneath a flower?",
+          "question": "What protects the young flower bud?",
           "answer": "Sepals",
           "draw": "small green pointed sepals holding the base of a blooming yellow buttercup flower"
         },
         {
           "say": "Sap flows through plant stems like blood",
-          "question": "What sweet fluid carries sugar in trees?",
-          "answer": "Tree sap",
+          "question": "What flows through plant stems like blood?",
+          "answer": "Sap",
           "draw": "clear amber sap gently oozing from the bark of a healthy maple tree in spring"
         },
         {
           "say": "Annual plants complete their life in one season",
-          "question": "How long do garden marigolds live?",
-          "answer": "One growing season",
+          "question": "How long do annual plants live?",
+          "answer": "One season",
           "draw": "bright orange marigold flowers blooming profusely in a sunny seasonal flowerbed"
         },
         {
           "say": "Perennial plants return year after year",
-          "question": "Do apple trees die in winter?",
-          "answer": "No, they grow again every spring",
+          "question": "What do perennial plants do?",
+          "answer": "They return year after year",
           "draw": "an orchard of hardy fruit trees blossoming with pink flowers after surviving the winter"
         },
         {
           "say": "Plants make clean oxygen for the world",
-          "question": "Which gas is released by green leaves in sunlight?",
-          "answer": "Oxygen",
+          "question": "What do plants make for the world?",
+          "answer": "Clean oxygen",
           "draw": "a sunlit green canopy of leaves releasing fresh pure air into the blue atmosphere"
         },
         {
           "say": "All plant parts work together as a team",
-          "question": "Why does a plant need roots, stems, and leaves?",
-          "answer": "To live and grow healthy",
+          "question": "How do all the plant parts work?",
+          "answer": "Together as a team",
           "draw": "a complete healthy flowering plant showing roots in soil, strong stem, green leaves, and bloom"
         }
       ]
@@ -1593,7 +1593,7 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "A camel is walking in the desert",
-          "question": "Where does a camel live?",
+          "question": "Where is the camel walking?",
           "answer": "In the desert",
           "draw": "a majestic camel with a hump walking gracefully across golden desert sand dunes under a bright sunny blue sky with gentle ripples in the warm sand"
         },
@@ -1605,8 +1605,8 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A penguin is standing on the ice",
-          "question": "Where does a penguin live?",
-          "answer": "In cold polar regions (Antarctica)",
+          "question": "Where is the penguin standing?",
+          "answer": "On the ice",
           "draw": "an Emperor penguin standing proudly on glistening white Antarctic ice and snow near cold blue ocean water with distant snowy mountains"
         },
         {
@@ -1623,32 +1623,32 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A polar bear is walking on the snow",
-          "question": "Where does a polar bear live?",
-          "answer": "In the Arctic ice",
+          "question": "Where is the polar bear walking?",
+          "answer": "On the snow",
           "draw": "a large furry white polar bear walking steadily across snowy Arctic ice floes under a pale blue northern sky"
         },
         {
           "say": "A frog is sitting by the pond",
-          "question": "Where does a frog live?",
-          "answer": "In a freshwater pond",
+          "question": "Where is the frog sitting?",
+          "answer": "By the pond",
           "draw": "a bright green frog sitting on a green water lily pad floating on a calm pond surrounded by tall reed grass and water plants"
         },
         {
           "say": "A lion is resting in the savanna",
-          "question": "Where does a lion live?",
-          "answer": "In the grassland savanna",
+          "question": "Where is the lion resting?",
+          "answer": "In the savanna",
           "draw": "a majestic golden lion with a grand mane resting on sun-warmed rocks in the African savanna with acacia trees under a golden sunset"
         },
         {
           "say": "An eagle is perched on a high mountain rock",
-          "question": "Where does an eagle live?",
-          "answer": "In high mountains",
+          "question": "Where is the eagle perched?",
+          "answer": "On a high mountain rock",
           "draw": "a noble bald eagle perched high on a rugged mountain rock looking across a panoramic river valley under a blue sky"
         },
         {
           "say": "An earthworm is burrowing in garden soil",
-          "question": "Where does an earthworm live?",
-          "answer": "Underground in moist soil",
+          "question": "Where is the earthworm burrowing?",
+          "answer": "In garden soil",
           "draw": "a pink earthworm moving through dark nutrient-rich garden soil near plant roots"
         },
         {
@@ -1659,182 +1659,182 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A beaver builds a wooden lodge in the river",
-          "question": "Where does a beaver build its home?",
-          "answer": "In a river or stream",
+          "question": "What does a beaver build in the river?",
+          "answer": "A wooden lodge",
           "draw": "a brown beaver swimming in a clear woodland stream near its sturdy domed stick lodge built in the water"
         },
         {
           "say": "A squirrel lives in a tree hollow nest",
-          "question": "Where does a tree squirrel sleep?",
-          "answer": "In a tree hollow (drey)",
+          "question": "Where does a squirrel live?",
+          "answer": "In a tree hollow nest",
           "draw": "a cute grey squirrel peeking out from a cosy round hollow inside a large oak tree trunk"
         },
         {
           "say": "A rabbit lives in an underground burrow",
-          "question": "Where does a wild rabbit hide safely?",
+          "question": "Where does a rabbit live?",
           "answer": "In an underground burrow",
           "draw": "a fluffy wild rabbit popping its head up out of a grassy burrow entrance in a green meadow"
         },
         {
           "say": "A crab scuttles along the sandy seashore",
-          "question": "Where does a seashore crab live?",
-          "answer": "On the beach and tidal rocks",
+          "question": "Where does a crab scuttle?",
+          "answer": "Along the sandy seashore",
           "draw": "a small red crab walking sideways across wet golden beach sand as gentle ocean foam washes nearby"
         },
         {
           "say": "An owl sleeps in a quiet barn loft",
-          "question": "Where do barn owls often roost during the day?",
-          "answer": "In barns and hollow trees",
+          "question": "Where does an owl sleep?",
+          "answer": "In a quiet barn loft",
           "draw": "a gentle white barn owl resting peacefully on a wooden rafter inside a quiet rustic barn loft"
         },
         {
           "say": "A sea turtle swims in the warm tropical sea",
-          "question": "Where does a sea turtle spend most of its life?",
-          "answer": "In the sea",
+          "question": "Where does a sea turtle swim?",
+          "answer": "In the warm tropical sea",
           "draw": "a large green sea turtle gliding gracefully through sunlit turquoise ocean water above a vibrant coral reef"
         },
         {
           "say": "A kangaroo hops across the open grassland",
-          "question": "Where do wild kangaroos live?",
-          "answer": "In the Australian outback and grassland",
+          "question": "Where does a kangaroo hop?",
+          "answer": "Across the open grassland",
           "draw": "a mother kangaroo hopping across dry golden grassland with red soil and eucalyptus trees in the background"
         },
         {
           "say": "A crocodile basks on the muddy riverbank",
-          "question": "Where does a crocodile live?",
-          "answer": "In rivers and swamps",
+          "question": "Where does a crocodile bask?",
+          "answer": "On the muddy riverbank",
           "draw": "a large scaly green crocodile resting in the warm sun on a muddy riverbank beside tropical swamp waters"
         },
         {
           "say": "An octopus hides inside a rocky underwater cave",
-          "question": "Where does an octopus hide from predators?",
-          "answer": "In underwater rock dens",
+          "question": "Where does an octopus hide?",
+          "answer": "Inside a rocky underwater cave",
           "draw": "a clever spotted octopus peeking out from an underwater rocky crevice on the ocean floor among seaweeds"
         },
         {
           "say": "A bat roosts upside down in a dark cave",
-          "question": "Where do colonies of bats sleep?",
-          "answer": "In caves or dark attics",
+          "question": "Where does a bat roost upside down?",
+          "answer": "In a dark cave",
           "draw": "a furry brown bat hanging upside down by its claws from the ceiling of a cool rocky cave"
         },
         {
           "say": "A zebra grazes on the open plains",
-          "question": "Where do herds of zebras roam?",
-          "answer": "On the savanna plains",
+          "question": "Where does a zebra graze?",
+          "answer": "On the open plains",
           "draw": "a herd of striped black and white zebras grazing together on the wide green plains under an open sky"
         },
         {
           "say": "A spider spins a sticky web in a garden bush",
-          "question": "Where does a garden spider live?",
-          "answer": "On its silk web in bushes",
+          "question": "What does a spider spin in a garden bush?",
+          "answer": "A sticky web",
           "draw": "a round spider web glistening with morning dew suspended between green garden leaves with a small spider in the centre"
         },
         {
           "say": "A seal lounges on slippery coastal rocks",
-          "question": "Where do harbour seals rest?",
-          "answer": "On rocky sea coastlines",
+          "question": "Where does a seal lounge?",
+          "answer": "On slippery coastal rocks",
           "draw": "a sleek grey spotted seal lying comfortably on a smooth wet coastal boulder while ocean waves crash gently"
         },
         {
           "say": "A fox sleeps in a cosy underground den",
-          "question": "Where does a mother fox raise her cubs?",
-          "answer": "In a den",
+          "question": "Where does a fox sleep?",
+          "answer": "In a cosy underground den",
           "draw": "a red fox curled up peacefully with two bushy-tailed cubs in a warm sheltered earthen den under tree roots"
         },
         {
           "say": "A gorilla lives in the misty mountain forest",
-          "question": "Where do mountain gorillas live?",
-          "answer": "In dense mountain forests",
+          "question": "Where does a gorilla live?",
+          "answer": "In the misty mountain forest",
           "draw": "a gentle silverback gorilla sitting peacefully among green leafy vegetation in a misty green bamboo forest"
         },
         {
           "say": "A duck floats on a calm freshwater lake",
-          "question": "Where do mallard ducks live?",
-          "answer": "On lakes and ponds",
+          "question": "Where does a duck float?",
+          "answer": "On a calm freshwater lake",
           "draw": "a pair of colourful mallard ducks floating serenely on a crystal clear lake reflecting surrounding pine trees"
         },
         {
           "say": "A fennec fox survives in the hot desert",
-          "question": "What special fox has large ears for the desert?",
-          "answer": "The fennec fox",
+          "question": "Where does a fennec fox live?",
+          "answer": "In the hot desert",
           "draw": "a small sandy-coloured fennec fox with very large ears sitting alert on a warm desert sand dune"
         },
         {
           "say": "A parrot nests in tall rainforest trees",
-          "question": "Where do colourful macaws and parrots live?",
-          "answer": "In the tropical rainforest",
+          "question": "Where does a parrot nest?",
+          "answer": "In tall rainforest trees",
           "draw": "a pair of brilliant red and blue macaw parrots perched on a high leafy rainforest branch surrounded by mist"
         },
         {
           "say": "An ant colony builds an underground mound",
-          "question": "Where does an ant colony live?",
-          "answer": "In an ant hill or nest",
+          "question": "What does an ant colony build?",
+          "answer": "An underground mound",
           "draw": "an earthen ant hill in a grassy clearing with busy black ants walking in organized lines along a path"
         },
         {
           "say": "A jellyfish drifts in the open sea",
-          "question": "Where does a translucent jellyfish drift?",
-          "answer": "In open ocean water",
+          "question": "Where does a jellyfish drift?",
+          "answer": "In the open sea",
           "draw": "a glowing translucent pink and blue jellyfish pulsing gently through deep blue ocean waters"
         },
         {
           "say": "A wolf roams the snowy northern forest",
-          "question": "Where does a pack of wolves live?",
-          "answer": "In the boreal forest and tundra",
+          "question": "Where does a wolf roam?",
+          "answer": "In the snowy northern forest",
           "draw": "a grey wolf standing proudly on a snowy ridge amidst evergreen pine trees under a winter sky"
         },
         {
           "say": "A hippo wallows in muddy African rivers",
-          "question": "Why does a hippopotamus stay in river water?",
-          "answer": "To keep cool in hot sun",
+          "question": "Where does a hippo wallow?",
+          "answer": "In muddy African rivers",
           "draw": "a large grey hippopotamus submerged up to its eyes in a calm African river under the shade of riverside trees"
         },
         {
           "say": "A woodpecker pecks a hole in a tree trunk",
-          "question": "Where does a woodpecker carve its home?",
-          "answer": "Inside tree trunks",
+          "question": "What does a woodpecker peck?",
+          "answer": "A hole in a tree trunk",
           "draw": "a red-crested woodpecker clinging to a tall tree trunk pecking a neat nesting hole with its strong beak"
         },
         {
           "say": "A walrus rests on floating Arctic ice",
-          "question": "Where do large tusked walruses live?",
-          "answer": "In Arctic coastal waters and ice",
+          "question": "Where does a walrus rest?",
+          "answer": "On floating Arctic ice",
           "draw": "a group of large brown walruses with long white tusks resting together on a sea ice floe in cold northern waters"
         },
         {
           "say": "A sheep grazes on high green hills",
-          "question": "Where do sheep flocks graze?",
-          "answer": "On grassy hills and pastures",
+          "question": "Where does a sheep graze?",
+          "answer": "On high green hills",
           "draw": "fluffy white sheep grazing peacefully across rolling emerald green hills bordered by low stone walls"
         },
         {
           "say": "A termite mound rises high above the ground",
-          "question": "What tall structure do termites build?",
+          "question": "What rises high above the ground?",
           "answer": "A termite mound",
           "draw": "a tall red clay termite mound towering above dry golden savanna grass in the sunshine"
         },
         {
           "say": "A snail hides under damp rotting logs",
-          "question": "Where does a garden snail stay during dry heat?",
-          "answer": "Under damp leaves and logs",
+          "question": "Where does a snail hide?",
+          "answer": "Under damp rotting logs",
           "draw": "a striped garden snail resting in the moist shade beneath a mossy fallen log in a woodland garden"
         },
         {
           "say": "A dolphin leaps in warm coastal waters",
-          "question": "Where do playful dolphins swim in pods?",
-          "answer": "In warm seas and bays",
+          "question": "Where does a dolphin leap?",
+          "answer": "In warm coastal waters",
           "draw": "two sleek grey dolphins jumping together in a graceful arc above clear coastal waves under sunny skies"
         },
         {
           "say": "Animals have special features to survive in their habitat",
-          "question": "What is habitat adaptation?",
-          "answer": "Special traits for living in an environment",
+          "question": "What helps animals survive in their habitat?",
+          "answer": "Special features",
           "draw": "an educational illustration showing animals in their natural homes: a camel in desert, a fish in water, and a polar bear in snow"
         },
         {
           "say": "We must protect animal habitats from pollution",
-          "question": "Why is conserving forests and oceans vital?",
-          "answer": "So animals have safe homes",
+          "question": "What must we protect animal habitats from?",
+          "answer": "Pollution",
           "draw": "a clean pristine nature scene with flourishing forests, pure blue rivers, and happy wild animals living in peace"
         }
       ]
@@ -2125,236 +2125,236 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Milk makes our bones and teeth strong",
-          "question": "What mineral in milk builds strong bones?",
-          "answer": "Calcium",
+          "question": "What does milk make strong?",
+          "answer": "Our bones and teeth",
           "draw": "a tall glass of fresh white milk beside a ceramic milk pitcher on a cheerful breakfast table"
         },
         {
           "say": "A carrot is rich in vitamin A for healthy eyes",
-          "question": "Healthy food or junk food?",
-          "answer": "Healthy food",
+          "question": "Which vitamin is a carrot rich in?",
+          "answer": "Vitamin A, for healthy eyes",
           "draw": "two fresh crunchy orange carrots with leafy green tops lying on a rustic wooden chopping board"
         },
         {
           "say": "Candy has too much sugar for our teeth",
-          "question": "What happens if we eat too much sugary candy?",
-          "answer": "It causes tooth decay",
+          "question": "What does candy have too much of?",
+          "answer": "Sugar",
           "draw": "a pile of colourful wrapped sugary candies in a candy jar with warning of tooth decay"
         },
         {
           "say": "A banana gives us quick healthy energy",
-          "question": "What yellow fruit is packed with potassium?",
-          "answer": "A banana",
+          "question": "What does a banana give us?",
+          "answer": "Quick healthy energy",
           "draw": "a bunch of ripe yellow bananas with a single peeled banana ready to eat on a kitchen counter"
         },
         {
           "say": "Green spinach provides iron for our blood",
-          "question": "What dark leafy green vegetable builds blood strength?",
-          "answer": "Spinach",
+          "question": "What does green spinach provide for our blood?",
+          "answer": "Iron",
           "draw": "a bowl of crisp fresh green spinach leaves washed clean in a sunlit kitchen"
         },
         {
           "say": "Eggs provide high quality protein for growth",
-          "question": "What breakfast food builds our muscles?",
-          "answer": "Eggs",
+          "question": "What do eggs provide for growth?",
+          "answer": "High quality protein",
           "draw": "two boiled eggs, one sliced open showing the firm white and golden yellow yolk on a plate"
         },
         {
           "say": "Fresh water keeps our body hydrated and clean",
-          "question": "How many glasses of water should we drink daily?",
-          "answer": "Six to eight glasses",
+          "question": "What does fresh water do for our body?",
+          "answer": "Keeps it hydrated and clean",
           "draw": "a clear glass jug of pure drinking water filled with ice cubes and lemon slices in the sunlight"
         },
         {
           "say": "Fizzy soda drinks harm our teeth and stomach",
-          "question": "Healthy drink or unhealthy drink?",
-          "answer": "Unhealthy drink (high sugar)",
+          "question": "What do fizzy soda drinks harm?",
+          "answer": "Our teeth and stomach",
           "draw": "a can of dark bubbly fizzy soda with heaps of sugar cubes beside it showing high sugar content"
         },
         {
           "say": "Fish contains healthy omega oils for the brain",
-          "question": "What lean protein is great for brain health?",
-          "answer": "Fish",
+          "question": "What healthy oils does fish contain?",
+          "answer": "Omega oils, for the brain",
           "draw": "a grilled fresh fish fillet garnished with lemon slices and green parsley on a white dinner plate"
         },
         {
           "say": "Whole wheat bread provides long-lasting energy",
-          "question": "What grain food gives carbohydrates for active play?",
-          "answer": "Whole wheat bread",
+          "question": "What does whole wheat bread provide?",
+          "answer": "Long-lasting energy",
           "draw": "a loaf of wholesome brown whole wheat bread with several thick slices cut on a wooden breadboard"
         },
         {
           "say": "Yogurt contains good bacteria for digestion",
-          "question": "What creamy dairy food helps our tummy?",
-          "answer": "Yogurt",
+          "question": "What does yogurt contain?",
+          "answer": "Good bacteria for digestion",
           "draw": "a bowl of creamy white yogurt topped with fresh red strawberries and a drizzle of honey"
         },
         {
           "say": "Oily potato chips have too much salt and fat",
-          "question": "Healthy snack or junk food snack?",
-          "answer": "Junk food snack",
+          "question": "What do oily potato chips have too much of?",
+          "answer": "Salt and fat",
           "draw": "a bag of salty fried potato crisps scattered on a table next to grease paper"
         },
         {
           "say": "Sweet juicy oranges are packed with vitamin C",
-          "question": "Which citrus fruit prevents colds?",
-          "answer": "Oranges",
+          "question": "Which vitamin are oranges packed with?",
+          "answer": "Vitamin C",
           "draw": "a ripe round orange cut into bright juicy wedges revealing sweet citrus pulp on a blue plate"
         },
         {
           "say": "A bowl of brown rice is a wholesome grain",
-          "question": "What grain is a staple food in many countries?",
-          "answer": "Rice",
+          "question": "What kind of food is brown rice?",
+          "answer": "A wholesome grain",
           "draw": "a warm steaming ceramic bowl of wholesome brown rice with a wooden spoon on a placemat"
         },
         {
           "say": "Fresh colourful salad provides essential vitamins",
-          "question": "What dish mixes raw vegetables for health?",
-          "answer": "A salad",
+          "question": "What does fresh salad provide?",
+          "answer": "Essential vitamins",
           "draw": "a large glass salad bowl filled with colourful lettuce, sliced cucumbers, cherry tomatoes, and sweet corn"
         },
         {
           "say": "Chicken provides protein to repair body tissues",
-          "question": "Which poultry meat helps us grow strong?",
-          "answer": "Chicken",
+          "question": "What does chicken provide?",
+          "answer": "Protein to repair the body",
           "draw": "tender grilled chicken breast served alongside steamed green broccoli florets on a dinner plate"
         },
         {
           "say": "Sweet mango is full of vitamins and flavour",
-          "question": "Which tropical fruit is known as the king of fruits?",
-          "answer": "Mango",
+          "question": "What is sweet mango full of?",
+          "answer": "Vitamins and flavour",
           "draw": "a plump golden-yellow mango sliced into a neat checkerboard pattern ready to enjoy in summer"
         },
         {
           "say": "Almonds and walnuts are nutritious brain nuts",
-          "question": "What crunchy nuts provide healthy fats?",
-          "answer": "Nuts (almonds, walnuts)",
+          "question": "Which nuts are good for the brain?",
+          "answer": "Almonds and walnuts",
           "draw": "a wooden bowl filled with shelled almonds, walnuts, and raisins on a breakfast bar"
         },
         {
           "say": "Lentils and beans give plant-based protein",
-          "question": "What pulse dish (daal) is healthy and hearty?",
-          "answer": "Lentils (daal)",
+          "question": "What do lentils and beans give us?",
+          "answer": "Plant-based protein",
           "draw": "a warm bowl of golden lentil daal seasoned with fresh coriander leaves and served with flatbread"
         },
         {
           "say": "Tomatoes contain lycopene that protects our cells",
-          "question": "What red vegetable-fruit makes delicious soups?",
-          "answer": "Tomatoes",
+          "question": "What do tomatoes contain that protects our cells?",
+          "answer": "Lycopene",
           "draw": "vine-ripened bright red tomatoes still on the green vine resting in a garden basket"
         },
         {
           "say": "Oatmeal porridge warms our tummy in the morning",
-          "question": "What grain cereal keeps us full until lunchtime?",
-          "answer": "Oats (oatmeal)",
+          "question": "What warms our tummy in the morning?",
+          "answer": "Oatmeal porridge",
           "draw": "a warm bowl of rolled oat porridge topped with banana slices, blueberries, and a sprinkle of cinnamon"
         },
         {
           "say": "Too much chocolate can give us tooth cavities",
-          "question": "Should we eat chocolate all day?",
-          "answer": "No, only as a rare treat",
+          "question": "What can too much chocolate give us?",
+          "answer": "Tooth cavities",
           "draw": "a small bar of dark chocolate broken into squares next to a glass of water"
         },
         {
           "say": "Cucumbers are cool and full of refreshing water",
-          "question": "Which green vegetable is great for hydration in summer?",
-          "answer": "Cucumber",
+          "question": "What are cucumbers full of?",
+          "answer": "Refreshing water",
           "draw": "cool crisp green cucumber slices arranged neatly on a plate sprinkled with mint"
         },
         {
           "say": "Watermelon is ninety percent refreshing water",
-          "question": "Which giant green fruit is red and juicy inside?",
-          "answer": "Watermelon",
+          "question": "How much of a watermelon is water?",
+          "answer": "Ninety percent",
           "draw": "a large smiling slice of bright red watermelon with black seeds on a sunny picnic table"
         },
         {
           "say": "Cheese provides calcium and protein from dairy",
-          "question": "What yellow food is made from milk curd?",
-          "answer": "Cheese",
+          "question": "What does cheese provide?",
+          "answer": "Calcium and protein",
           "draw": "a block of wholesome yellow cheddar cheese with several neat slices on a wooden cheese board"
         },
         {
           "say": "Green peas grow inside pods and give vitamins",
-          "question": "What tiny round green vegetables are sweet?",
-          "answer": "Peas",
+          "question": "Where do green peas grow?",
+          "answer": "Inside pods",
           "draw": "a bowl of tender steamed sweet green peas with a small pat of melting butter"
         },
         {
           "say": "Eating breakfast fuels our morning learning",
-          "question": "Which meal of the day breaks the night fast?",
-          "answer": "Breakfast",
+          "question": "What fuels our morning learning?",
+          "answer": "Eating breakfast",
           "draw": "a balanced healthy breakfast plate with a boiled egg, wholemeal toast, an apple, and milk"
         },
         {
           "say": "A balanced diet has food from all five groups",
-          "question": "What is a balanced diet?",
-          "answer": "A diet with carbs, protein, dairy, fruits and veg",
+          "question": "How many food groups are in a balanced diet?",
+          "answer": "All five groups",
           "draw": "an educational plate diagram showing quarters of fruits, vegetables, grains, and proteins with water"
         },
         {
           "say": "Papaya aids smooth digestion",
-          "question": "Which orange tropical fruit with black seeds is easy to digest?",
-          "answer": "Papaya",
+          "question": "What does papaya help?",
+          "answer": "Smooth digestion",
           "draw": "a ripe papaya cut in half showing smooth orange flesh and tiny round black seeds inside"
         },
         {
           "say": "Garlic and ginger boost our body immunity",
-          "question": "What aromatic roots help fight sickness?",
-          "answer": "Garlic and ginger",
+          "question": "What do garlic and ginger boost?",
+          "answer": "Our body immunity",
           "draw": "fresh white garlic cloves and a knobby root of golden ginger on a cutting board"
         },
         {
           "say": "Eating slowly helps our stomach digest comfortably",
-          "question": "How should we chew our meals?",
-          "answer": "Slowly and thoroughly",
+          "question": "How should we eat to help our stomach?",
+          "answer": "Slowly",
           "draw": "a happy child sitting at a dining table calmly chewing healthy food with a pleasant smile"
         },
         {
           "say": "Washing fruit before eating removes dirt and germs",
-          "question": "What must we do to an apple before biting it?",
-          "answer": "Wash it with clean water",
+          "question": "What does washing fruit remove?",
+          "answer": "Dirt and germs",
           "draw": "a child gently rinsing shiny red apples and green grapes under running tap water in the sink"
         },
         {
           "say": "Green beans are full of dietary fibre",
-          "question": "What long thin green vegetable is cooked in stews?",
-          "answer": "Green beans",
+          "question": "What are green beans full of?",
+          "answer": "Dietary fibre",
           "draw": "a handful of crisp fresh green snap beans on a kitchen table"
         },
         {
           "say": "Sweet potatoes are full of healthy vitamins",
-          "question": "What orange root vegetable is sweeter than normal potatoes?",
-          "answer": "Sweet potato",
+          "question": "What are sweet potatoes full of?",
+          "answer": "Healthy vitamins",
           "draw": "a baked sweet potato split open showing steaming soft orange flesh with a fork"
         },
         {
           "say": "Strawberries have tiny seeds on the outside",
-          "question": "What red berry has seeds on its skin?",
-          "answer": "A strawberry",
+          "question": "Where are a strawberry's tiny seeds?",
+          "answer": "On the outside",
           "draw": "a bowl of bright red ripe strawberries with green calyx leaves glistening with freshness"
         },
         {
           "say": "Drinking coconut water restores electrolytes naturally",
-          "question": "What natural drink is inside a green coconut?",
-          "answer": "Coconut water",
+          "question": "What does coconut water restore?",
+          "answer": "Electrolytes",
           "draw": "a fresh green young coconut with a straw inserted into clear refreshing coconut water"
         },
         {
           "say": "Avoid eating food left open to houseflies",
-          "question": "Why should food always be covered?",
-          "answer": "To keep flies and germs away",
+          "question": "What food should we avoid eating?",
+          "answer": "Food left open to houseflies",
           "draw": "a clear food cover dome protecting a clean plate of fruit from insects on a dining table"
         },
         {
           "say": "Good nutrition gives us energy to run and play",
-          "question": "Why do athletes eat healthy food?",
-          "answer": "For energy, stamina, and strength",
+          "question": "What does good nutrition give us?",
+          "answer": "Energy to run and play",
           "draw": "happy children playing soccer energetically on a green field fuelled by healthy food"
         },
         {
           "say": "Say thank you for the nutritious food we enjoy",
-          "question": "Why should we avoid wasting food?",
-          "answer": "Food is precious",
+          "question": "What should we say for our food?",
+          "answer": "Thank you",
           "draw": "a child finishing a wholesome meal with a clean plate and a grateful cheerful smile"
         }
       ]
@@ -2390,230 +2390,230 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "An ice cube melts into liquid water",
-          "question": "What state does ice turn into when warmed?",
+          "question": "What does an ice cube melt into?",
           "answer": "Liquid water",
           "draw": "a clear ice cube melting on a small dish with cool liquid water pooling around its edges in the sun"
         },
         {
           "say": "A wooden block keeps its shape anywhere",
-          "question": "Does a solid change shape on its own?",
-          "answer": "No, solids keep their shape",
+          "question": "Does a wooden block change its shape?",
+          "answer": "No, it keeps its shape",
           "draw": "a smooth solid wooden building cube resting squarely on a flat table"
         },
         {
           "say": "Milk takes the shape of its container",
-          "question": "What property does a liquid have?",
-          "answer": "It takes container shape and flows",
+          "question": "What shape does milk take?",
+          "answer": "The shape of its container",
           "draw": "creamy white milk being poured into a tall glass and filling the bottom smoothly"
         },
         {
           "say": "Steam rising from a hot kettle is water vapour",
-          "question": "What gaseous state comes from boiling water?",
-          "answer": "Gas (steam / water vapour)",
+          "question": "What is the steam from a kettle?",
+          "answer": "Water vapour",
           "draw": "white steam vapour rising into the air from the spout of a hot whistling metal kettle"
         },
         {
           "say": "Water freezes into solid ice in the freezer",
-          "question": "What happens to liquid water at zero degrees?",
-          "answer": "It freezes into solid ice",
+          "question": "What does water freeze into?",
+          "answer": "Solid ice",
           "draw": "an ice tray pulled from a freezer showing solid crystalline ice cubes ready to pop out"
         },
         {
           "say": "A metal coin is hard and solid",
-          "question": "Can you squash a metal coin easily?",
-          "answer": "No, solids are rigid",
+          "question": "Is a metal coin hard or soft?",
+          "answer": "Hard and solid",
           "draw": "a shiny hard steel coin resting flat on a wooden tabletop"
         },
         {
           "say": "Orange juice pours into a glass",
-          "question": "Why is juice called a liquid?",
-          "answer": "Because it pours and flows",
+          "question": "Why is orange juice a liquid?",
+          "answer": "It pours into a glass",
           "draw": "bright orange juice pouring smoothly from a carton into a tall breakfast glass"
         },
         {
           "say": "Wind is moving air in the atmosphere",
-          "question": "What gas is moving when trees sway?",
-          "answer": "Air (mixture of gases)",
+          "question": "What is wind?",
+          "answer": "Moving air",
           "draw": "invisible air blowing through green trees causing leaves and branches to bend gracefully"
         },
         {
           "say": "Butter melts into liquid when heated in a pan",
-          "question": "What state change happens when butter gets hot?",
-          "answer": "Melting (solid to liquid)",
+          "question": "What happens to butter in a hot pan?",
+          "answer": "It melts into liquid",
           "draw": "a golden pat of solid butter melting smoothly into warm liquid butter in a cooking pan"
         },
         {
           "say": "Water puddles evaporate into air on sunny days",
-          "question": "Where does puddle water go when it dries up?",
-          "answer": "It evaporates into gas (water vapour)",
+          "question": "What happens to puddles on sunny days?",
+          "answer": "They evaporate into the air",
           "draw": "a shallow rainwater puddle on a sunny paved road slowly shrinking as warm sunlight dries it"
         },
         {
           "say": "Clouds are made of tiny water droplets floating high",
-          "question": "What state of matter forms fluffy clouds?",
-          "answer": "Liquid droplets and ice crystals in air",
+          "question": "What are clouds made of?",
+          "answer": "Tiny water droplets",
           "draw": "a fluffy white cloud floating in the blue sky formed by condensed water vapour"
         },
         {
           "say": "A glass marble is a hard smooth solid",
-          "question": "Can you bend a glass marble?",
-          "answer": "No, it is a rigid solid",
+          "question": "Is a glass marble a solid, liquid or gas?",
+          "answer": "A hard smooth solid",
           "draw": "a colourful swirled glass marble resting on a polished tabletop"
         },
         {
           "say": "Cooking oil flows slowly as a thick liquid",
-          "question": "Is cooking oil a solid, liquid or gas?",
-          "answer": "Liquid",
+          "question": "How does cooking oil flow?",
+          "answer": "Slowly, as a thick liquid",
           "draw": "golden olive oil pouring in a smooth viscous stream from a bottle onto fresh salad"
         },
         {
           "say": "Bubbles blown from soap water are filled with air",
-          "question": "What is trapped inside a soap bubble?",
-          "answer": "Air (gas)",
+          "question": "What are soap bubbles filled with?",
+          "answer": "Air",
           "draw": "colourful shimmering soap bubbles floating through the air reflecting sunlight"
         },
         {
           "say": "Candle wax melts when lit and hardens when cool",
-          "question": "What happens to liquid wax as it cools down?",
-          "answer": "It solidifies into hard wax",
+          "question": "What happens to candle wax when it cools?",
+          "answer": "It hardens",
           "draw": "melted liquid wax pooling near a candle wick and cooling into solid white drops on the side"
         },
         {
           "say": "Water drops condense on the outside of a cold glass",
-          "question": "What is condensation?",
-          "answer": "Gas cooling into liquid",
+          "question": "Where do water drops form on a cold glass?",
+          "answer": "On the outside",
           "draw": "tiny droplets of water condensing on the outside of a chilled drinking glass on a warm day"
         },
         {
           "say": "A pencil is a solid object we write with",
-          "question": "Does a pencil change shape when moved?",
-          "answer": "No, it stays the same",
+          "question": "Is a pencil a solid, liquid or gas?",
+          "answer": "A solid",
           "draw": "a solid wooden yellow pencil with a graphite lead tip lying on a desk"
         },
         {
           "say": "Honey is a thick slow-moving liquid",
-          "question": "Why does honey pour slowly?",
-          "answer": "It is thick (viscous) liquid",
+          "question": "How does honey move?",
+          "answer": "Slowly, as a thick liquid",
           "draw": "thick golden honey dripping slowly from a wooden honey dipper into a ceramic bowl"
         },
         {
           "say": "Oxygen is the gas we breathe in to live",
-          "question": "Which invisible gas do humans need from air?",
+          "question": "Which gas do we breathe in to live?",
           "answer": "Oxygen",
           "draw": "a child taking a refreshing deep breath of pure fresh air outdoors among green trees"
         },
         {
           "say": "A brick wall is made of solid sturdy bricks",
-          "question": "Why do houses stay up in storms?",
-          "answer": "Solids have great strength",
+          "question": "What is a brick wall made of?",
+          "answer": "Solid sturdy bricks",
           "draw": "a sturdy red brick wall bonded with mortar standing firm in the garden"
         },
         {
           "say": "Hot soup is a nourishing liquid",
-          "question": "What state is the broth in chicken soup?",
-          "answer": "Liquid",
+          "question": "Is hot soup a solid, liquid or gas?",
+          "answer": "A liquid",
           "draw": "a warm steaming bowl of vegetable soup with a spoon resting in the liquid"
         },
         {
           "say": "Helium gas makes party balloons float high",
-          "question": "Why do helium balloons float in air?",
-          "answer": "Helium is lighter than air",
+          "question": "Which gas makes party balloons float?",
+          "answer": "Helium",
           "draw": "a colourful bunch of helium balloons floating up towards the ceiling at a birthday party"
         },
         {
           "say": "Snow is soft solid water flakes",
           "question": "Is snow a solid, liquid or gas?",
-          "answer": "Solid (ice crystals)",
+          "answer": "A soft solid",
           "draw": "a child holding a handful of soft white winter snow shaped into a round snowball"
         },
         {
           "say": "Tea pours from a teapot into a teacup",
-          "question": "What property allows tea to pour?",
-          "answer": "Liquids flow easily",
+          "question": "Where does tea pour from?",
+          "answer": "A teapot",
           "draw": "warm brown tea pouring in a smooth stream from a ceramic teapot into a delicate cup"
         },
         {
           "say": "Smoke rising from incense is gas and particles",
-          "question": "What state carries fragrant incense aroma?",
-          "answer": "Gas spreading in air",
+          "question": "What is smoke made of?",
+          "answer": "Gas and tiny particles",
           "draw": "a thin curling ribbon of fragrant smoke rising from a burning stick into room air"
         },
         {
           "say": "A metal spoon sinks in water while ice floats",
-          "question": "Why does solid ice float on liquid water?",
-          "answer": "Ice is less dense than water",
+          "question": "Which one floats, the spoon or the ice?",
+          "answer": "The ice floats",
           "draw": "clear ice cubes bobbing on top of cold water in a glass tumbler"
         },
         {
           "say": "Raindrops are liquid water falling from the sky",
-          "question": "What state of matter is rain?",
-          "answer": "Liquid",
+          "question": "What are raindrops?",
+          "answer": "Liquid water falling from the sky",
           "draw": "clear round liquid raindrops splashing gently onto a broad green leaf"
         },
         {
           "say": "Carbon dioxide gas makes fizzy drinks bubble",
-          "question": "What gas causes bubbles in soda water?",
+          "question": "Which gas makes fizzy drinks bubble?",
           "answer": "Carbon dioxide",
           "draw": "tiny fizzy bubbles of carbon dioxide gas rising rapidly through clear sparkling water"
         },
         {
           "say": "A clay pot is moulded soft then baked hard",
-          "question": "What state change occurs in baking clay?",
-          "answer": "Soft wet clay becomes a hard rigid solid",
+          "question": "What happens to soft clay when it is baked?",
+          "answer": "It becomes hard",
           "draw": "a potter shaping a smooth clay pot on a turning pottery wheel"
         },
         {
           "say": "Paint is a liquid that dries into a solid coat",
-          "question": "What happens when wall paint dries?",
-          "answer": "The liquid evaporates leaving a solid colour layer",
+          "question": "What does liquid paint dry into?",
+          "answer": "A solid coat",
           "draw": "a child painting a colourful picture with wet poster paint on thick paper"
         },
         {
           "say": "Perfume gas spreads its scent across the room",
-          "question": "What process spreads smell through air?",
-          "answer": "Diffusion of gas particles",
+          "question": "How does perfume spread across the room?",
+          "answer": "As a gas",
           "draw": "a fine mist of pleasant perfume spraying from a glass bottle into the ambient air"
         },
         {
           "say": "An iron key cannot be compressed by hand",
-          "question": "Can you squeeze a solid smaller with fingers?",
-          "answer": "No, solids cannot be easily compressed",
+          "question": "Can you squeeze an iron key smaller by hand?",
+          "answer": "No, it cannot be compressed",
           "draw": "a hand trying to squeeze an iron key, showing that the solid retains its exact size and form"
         },
         {
           "say": "Water vapour is invisible in the air around us",
-          "question": "Can you normally see water vapour gas?",
-          "answer": "No, it is invisible humidity",
+          "question": "Can we see water vapour in the air?",
+          "answer": "No, it is invisible",
           "draw": "a sunny landscape with invisible moisture in the clean fresh atmosphere"
         },
         {
           "say": "Wax crayons are colourful solid drawing tools",
-          "question": "What state of matter are crayons?",
-          "answer": "Solid wax",
+          "question": "Are wax crayons solid or liquid?",
+          "answer": "Solid",
           "draw": "a box of bright colourful wax crayons lying open on a drawing sheet"
         },
         {
           "say": "Lava from a volcano is melted liquid rock",
-          "question": "What is molten rock erupting from Earth called?",
-          "answer": "Lava (liquid rock)",
+          "question": "What is lava?",
+          "answer": "Melted liquid rock",
           "draw": "glowing red molten lava flowing slowly down a volcanic slope into dark cooling rock"
         },
         {
           "say": "Gases expand to fill any room or container completely",
-          "question": "Do gases have a fixed volume?",
-          "answer": "No, gases fill whatever space they have",
+          "question": "How much space does a gas fill?",
+          "answer": "The whole room or container",
           "draw": "an open room with fresh air circulating freely from an open window"
         },
         {
           "say": "Heating and cooling change states of matter",
-          "question": "How can you turn a solid into a liquid?",
-          "answer": "By heating it (melting)",
+          "question": "What changes the states of matter?",
+          "answer": "Heating and cooling",
           "draw": "an educational three-state diagram showing solid ice, liquid water, and gas steam transforming with temperature"
         },
         {
           "say": "Everything in the universe is made of matter",
-          "question": "What are the three main states of matter on Earth?",
-          "answer": "Solid, liquid, and gas",
+          "question": "What is everything in the universe made of?",
+          "answer": "Matter",
           "draw": "a fun science lab table with a wooden block (solid), beaker of water (liquid), and balloon (gas)"
         }
       ]
@@ -2649,62 +2649,62 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A shadow forms when an object blocks light",
-          "question": "What forms behind an object in the light?",
-          "answer": "A dark shadow",
+          "question": "When does a shadow form?",
+          "answer": "When an object blocks light",
           "draw": "a standing child in bright sunshine casting a crisp dark shadow across the smooth pavement"
         },
         {
           "say": "A flashlight shines a beam of light in the dark",
-          "question": "What portable tool helps us see at night?",
-          "answer": "A flashlight (torch)",
+          "question": "What does a flashlight shine in the dark?",
+          "answer": "A beam of light",
           "draw": "a bright circular beam of light shining from a handheld flashlight into a dim room"
         },
         {
           "say": "A burning candle gives off light and heat",
-          "question": "Is a candle flame a light source?",
-          "answer": "Yes, it produces light",
+          "question": "What does a burning candle give off?",
+          "answer": "Light and heat",
           "draw": "a lit wax candle with a gentle golden flame glowing softly in a dark room"
         },
         {
           "say": "A clear glass window is transparent",
-          "question": "What allows light to pass completely through?",
-          "answer": "Transparent material",
+          "question": "Is a clear glass window transparent or opaque?",
+          "answer": "Transparent",
           "draw": "a clean transparent glass window pane through which garden trees and flowers are seen perfectly clearly"
         },
         {
           "say": "A wooden door is opaque and blocks all light",
-          "question": "What happens when light hits an opaque door?",
-          "answer": "It blocks light and casts a shadow",
+          "question": "Is a wooden door transparent or opaque?",
+          "answer": "Opaque, it blocks all light",
           "draw": "a solid wooden bedroom door blocking light from a hallway and creating a dark shadow"
         },
         {
           "say": "Frosted glass is translucent and blurs light",
-          "question": "What lets only some light through without clear images?",
-          "answer": "Translucent material",
+          "question": "Is frosted glass transparent, translucent or opaque?",
+          "answer": "Translucent",
           "draw": "frosted bathroom glass letting through soft diffuse daylight while blurring shapes behind it"
         },
         {
           "say": "A shiny mirror reflects light clearly",
-          "question": "What happens when light rays strike a flat mirror?",
-          "answer": "They bounce off (reflect)",
+          "question": "What does a shiny mirror do to light?",
+          "answer": "It reflects it clearly",
           "draw": "a bright ray of sunlight reflecting off a clean hand mirror onto a bedroom wall"
         },
         {
           "say": "Shadows are longer in early morning and evening",
-          "question": "When are outdoor shadows the longest?",
-          "answer": "At sunrise and sunset",
+          "question": "When are shadows longer?",
+          "answer": "In early morning and evening",
           "draw": "long slender shadows cast by trees across an open meadow during late golden afternoon sun"
         },
         {
           "say": "Shadows are short at midday when sun is overhead",
-          "question": "When are shadows shortest outdoors?",
-          "answer": "At noon (midday)",
+          "question": "When are shadows short?",
+          "answer": "At midday",
           "draw": "a small short shadow directly beneath a child standing in bright midday sunshine"
         },
         {
           "say": "Fireflies glow with natural bioluminescent light",
-          "question": "Which tiny flying insect glows in summer nights?",
-          "answer": "A firefly",
+          "question": "How do fireflies glow?",
+          "answer": "With their own natural light",
           "draw": "three glowing fireflies emitting soft yellow-green light among dark evening garden bushes"
         },
         {
@@ -2715,86 +2715,86 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A campfire illuminates the night campsite",
-          "question": "What outdoor fire gives campers light and warmth?",
+          "question": "What lights up the night campsite?",
           "answer": "A campfire",
           "draw": "cheerful orange and yellow campfire flames lighting up smiling faces of children sitting around it under stars"
         },
         {
           "say": "Hand shadow puppets make animal shapes on a wall",
-          "question": "How can you make a bird on a wall with hands?",
-          "answer": "By blocking light with shaped hands",
+          "question": "What do hand shadow puppets make on a wall?",
+          "answer": "Animal shapes",
           "draw": "a child using hands in front of a lamp to cast a fun bird-shaped shadow on a bedroom wall"
         },
         {
           "say": "A street light illuminates the road at night",
-          "question": "What lights up neighborhood roads after sunset?",
-          "answer": "Street lights",
+          "question": "What lights up the road at night?",
+          "answer": "A street light",
           "draw": "a tall yellow street lamp casting a warm cone of light over a quiet suburban street corner"
         },
         {
           "say": "Light passes through clean clear water",
-          "question": "Is pure water transparent to light?",
-          "answer": "Yes, transparent",
+          "question": "Can light pass through clean clear water?",
+          "answer": "Yes",
           "draw": "sunlight shining through clear swimming pool water illuminating the patterned tiles at the bottom"
         },
         {
           "say": "A book blocks light and casts a book-shaped shadow",
-          "question": "Is a thick book opaque or transparent?",
-          "answer": "Opaque",
+          "question": "What shape is the shadow of a book?",
+          "answer": "Book-shaped",
           "draw": "a closed hardcover book held up against a lamp, casting an exact rectangular shadow on the wall"
         },
         {
           "say": "A lighthouse warns ships with a rotating beam",
-          "question": "What coastal tower shines light across the sea?",
-          "answer": "A lighthouse",
+          "question": "How does a lighthouse warn ships?",
+          "answer": "With a rotating beam",
           "draw": "a tall red-and-white striped coastal lighthouse sweeping a powerful beam of light across dark ocean waves"
         },
         {
           "say": "Traffic lights keep cars and pedestrians safe",
-          "question": "What are the three colours of traffic light?",
-          "answer": "Red, yellow, and green",
+          "question": "Who do traffic lights keep safe?",
+          "answer": "Cars and pedestrians",
           "draw": "a bright traffic signal at a pedestrian crossing showing a glowing red stop and green go light"
         },
         {
           "say": "Sunglasses reduce glare from bright sunlight",
-          "question": "Why do people wear dark glasses on sunny days?",
-          "answer": "To protect eyes from bright glare",
+          "question": "What do sunglasses reduce?",
+          "answer": "Glare from bright sunlight",
           "draw": "a stylish pair of dark tinted sunglasses resting on an outdoor table under the sun"
         },
         {
           "say": "A prism splits white light into rainbow colours",
-          "question": "What glass shape reveals the colours of white light?",
-          "answer": "A triangular prism",
+          "question": "What does a prism split white light into?",
+          "answer": "Rainbow colours",
           "draw": "a clear triangular glass prism bending a beam of white light into a brilliant rainbow spectrum on white paper"
         },
         {
           "say": "Stars in space are distant burning light sources",
-          "question": "Are stars natural light sources?",
-          "answer": "Yes, giant glowing stars",
+          "question": "What are stars in space?",
+          "answer": "Distant burning light sources",
           "draw": "distant brilliant stars glowing like diamonds across the deep velvet blue expanse of space"
         },
         {
           "say": "A shiny metal spoon acts like a curved mirror",
-          "question": "What does your reflection look like inside a spoon?",
-          "answer": "Upside down",
+          "question": "What does a shiny metal spoon act like?",
+          "answer": "A curved mirror",
           "draw": "a child looking curiously at their upside-down reflection in the bowl of a shiny silver spoon"
         },
         {
           "say": "Tracing paper is translucent for copying drawings",
-          "question": "What paper lets enough light through to trace shapes?",
-          "answer": "Tracing paper",
+          "question": "What is tracing paper used for?",
+          "answer": "Copying drawings",
           "draw": "a sheet of translucent tracing paper placed over a line drawing on a wooden desk"
         },
         {
           "say": "Neon signs glow with bright colourful light",
-          "question": "What decorative lights glow in city shop windows?",
-          "answer": "Neon lights",
+          "question": "How do neon signs glow?",
+          "answer": "With bright colourful light",
           "draw": "a colourful glowing neon sign in an art studio window shining bright pink and cyan"
         },
         {
           "say": "A sundial uses shadows to tell the time",
-          "question": "What ancient clock uses the sun's shadow?",
-          "answer": "A sundial",
+          "question": "What does a sundial use to tell the time?",
+          "answer": "Shadows",
           "draw": "a stone garden sundial with a metal pointer casting a sharp shadow onto carved hour numbers"
         },
         {
@@ -2805,74 +2805,74 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A cinema projector shines light onto a large screen",
-          "question": "What makes movie pictures appear on a theater screen?",
-          "answer": "A bright projector",
+          "question": "Where does a cinema projector shine light?",
+          "answer": "Onto a large screen",
           "draw": "a projector beam cutting through the darkened cinema air throwing colourful images onto a big screen"
         },
         {
           "say": "Cardboard is opaque and makes a dark shadow",
-          "question": "Can sunlight pass through a cardboard sheet?",
-          "answer": "No, cardboard is opaque",
+          "question": "What kind of shadow does cardboard make?",
+          "answer": "A dark shadow",
           "draw": "a piece of thick brown cardboard casting a solid dark shadow on a sunny lawn"
         },
         {
           "say": "A magnifying glass focuses sunlight into a bright point",
-          "question": "What curved glass lens bends light rays together?",
-          "answer": "A magnifying glass",
+          "question": "What does a magnifying glass focus sunlight into?",
+          "answer": "A bright point",
           "draw": "a magnifying glass with a round lens resting on a printed book showing enlarged words"
         },
         {
           "say": "A bicycle reflector bounces headlight beams back",
-          "question": "What safety plastic piece on a bike shines in headlights?",
-          "answer": "A bicycle reflector",
+          "question": "What does a bicycle reflector bounce back?",
+          "answer": "Headlight beams",
           "draw": "a red plastic honeycomb reflector mounted on the back fender of a bicycle glowing brightly in car lights"
         },
         {
           "say": "The northern lights paint the night sky with glowing colours",
-          "question": "What natural light spectacle glows in polar skies?",
-          "answer": "The aurora (northern lights)",
+          "question": "What paints the night sky with glowing colours?",
+          "answer": "The northern lights",
           "draw": "swirling curtains of brilliant emerald green aurora borealis glowing above a snowy Arctic forest"
         },
         {
           "say": "A glow stick glows through a safe chemical reaction",
-          "question": "What fun tube glows without electricity?",
-          "answer": "A glow stick",
+          "question": "How does a glow stick glow?",
+          "answer": "Through a safe chemical reaction",
           "draw": "a child wearing bright glowing green and pink chemical glow bracelets at an evening festival"
         },
         {
           "say": "A stained glass window makes colourful patterns of light",
-          "question": "What decorative church windows colour the sunlight?",
-          "answer": "Stained glass",
+          "question": "What does a stained glass window make?",
+          "answer": "Colourful patterns of light",
           "draw": "a magnificent stained glass window casting vibrant ruby and sapphire light patterns across a stone floor"
         },
         {
           "say": "Darkness is simply the absence of light",
-          "question": "What do we call a space where no light shines?",
-          "answer": "Darkness",
+          "question": "What is darkness?",
+          "answer": "The absence of light",
           "draw": "a room with thick curtains closed in darkness until a child opens a corner to let a beam of light in"
         },
         {
           "say": "Plant leaves need light energy to make food",
-          "question": "Why do plants grow towards sunny windows?",
-          "answer": "They need light to produce food",
+          "question": "What do plant leaves need to make food?",
+          "answer": "Light energy",
           "draw": "a green potted seedling bending its stem gently towards the bright sunny window"
         },
         {
           "say": "We need light to read books safely without straining eyes",
-          "question": "Why should we read in good lighting?",
-          "answer": "To protect our eyesight",
+          "question": "What do we need to read books safely?",
+          "answer": "Light",
           "draw": "a child sitting comfortably reading an open picture book under a warm clear reading lamp"
         },
         {
           "say": "Light travels faster than anything else in the universe",
-          "question": "What travels faster: light or sound?",
-          "answer": "Light (that is why we see lightning before hearing thunder)",
+          "question": "What travels faster than anything else?",
+          "answer": "Light",
           "draw": "a flash of lightning across a stormy sky illustrating that light reaches our eyes before thunder reaches our ears"
         },
         {
           "say": "Sunlight brings warmth, health, and joy to our planet",
-          "question": "Why is the sun essential for all life on Earth?",
-          "answer": "It provides all light and warmth",
+          "question": "What does sunlight bring to our planet?",
+          "answer": "Warmth, health and joy",
           "draw": "a radiant sunny morning over a flourishing valley of flowers, trees, and running streams"
         }
       ]
@@ -2986,14 +2986,14 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Squashing playdough changes its shape with a push",
-          "question": "What can a force do to soft objects?",
-          "answer": "Change their shape",
+          "question": "What does a push do to playdough?",
+          "answer": "Changes its shape",
           "draw": "child hands pressing and pushing colourful modelling clay flat into a round pancake shape on a table"
         },
         {
           "say": "Stretching an elastic rubber band is pulling both ends",
-          "question": "What does a pulling force do to a rubber band?",
-          "answer": "Stretches it longer",
+          "question": "How do we stretch a rubber band?",
+          "answer": "By pulling both ends",
           "draw": "two hands pulling both ends of a wide yellow rubber band, stretching it wide without snapping"
         },
         {
@@ -3010,68 +3010,68 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A horse pulls a cart along a country road",
-          "question": "What force moves the cart forward?",
-          "answer": "Pull force from the horse",
+          "question": "Push or pull?",
+          "answer": "Pull",
           "draw": "a strong brown horse harnessed and pulling a wooden farm wagon loaded with hay along a dirt lane"
         },
         {
           "say": "Gravity pulls an apple down from a tree",
-          "question": "What invisible earth force pulls things downwards?",
+          "question": "What pulls an apple down from a tree?",
           "answer": "Gravity",
           "draw": "a ripe red apple detaching from a branch and falling straight down towards the ground due to gravity"
         },
         {
           "say": "A magnet pulls iron paperclips without touching",
-          "question": "What force attracts steel paperclips to a magnet?",
-          "answer": "Magnetic force",
+          "question": "What pulls iron paperclips without touching?",
+          "answer": "A magnet",
           "draw": "a red horseshoe magnet pulling several shiny metal paperclips up from a tabletop"
         },
         {
           "say": "Friction is the force that slows rolling things down",
-          "question": "What force makes a rolling ball stop on grass?",
+          "question": "What force slows rolling things down?",
           "answer": "Friction",
           "draw": "a soccer ball slowing to a stop as it rolls across thick green lawn grass"
         },
         {
           "say": "Pushing heavy furniture requires more force",
-          "question": "Why is pushing a sofa harder than a chair?",
-          "answer": "Heavy things need more force",
+          "question": "What does pushing heavy furniture need?",
+          "answer": "More force",
           "draw": "two people pushing a heavy sofa together across a wooden floor with effort"
         },
         {
           "say": "Pulling a suitcase on wheels is easy",
-          "question": "How do wheels make moving loads easier?",
-          "answer": "They reduce friction",
+          "question": "Push or pull?",
+          "answer": "Pull",
           "draw": "a traveller comfortably pulling a wheeled travel suitcase by its handle across an airport floor"
         },
         {
           "say": "Catching a fast ball pushes back on the glove",
-          "question": "What does a force do to moving objects?",
-          "answer": "Stops their movement",
+          "question": "Push or pull?",
+          "answer": "Push",
           "draw": "a child wearing a baseball mitt catching a ball firmly, stopping its flight in mid-air"
         },
         {
           "say": "A bulldozer pushes massive piles of soil",
-          "question": "What heavy machine uses a big blade to push earth?",
-          "answer": "A bulldozer",
+          "question": "Push or pull?",
+          "answer": "Push",
           "draw": "a yellow construction bulldozer pushing a huge mound of soil and gravel on a building site"
         },
         {
           "say": "Pulling an elevator cable lifts passengers up",
-          "question": "What force lifts an elevator car?",
-          "answer": "A pulling force on steel cables",
+          "question": "Push or pull?",
+          "answer": "Pull",
           "draw": "an elevator cabin suspended by strong steel cables moving smoothly upward inside a building shaft"
         },
         {
           "say": "Pressing the brakes pushes brake pads onto bicycle wheels",
-          "question": "How do bicycle brakes stop the bike?",
-          "answer": "Friction pushes against the wheel rim",
+          "question": "Push or pull?",
+          "answer": "Push",
           "draw": "a hand squeezing a bicycle brake lever on the handlebar to slow down safely"
         },
         {
           "say": "Rowing a boat pulls oars through the water",
-          "question": "How do oars move a rowboat forward?",
-          "answer": "They push water backward to move boat forward",
+          "question": "Push or pull?",
+          "answer": "Pull",
           "draw": "a rower pulling wooden oars through clear lake water, pushing ripples behind the wooden boat"
         },
         {
@@ -3100,38 +3100,38 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Blowing air pushes a toy sailboat across the tub",
-          "question": "Can air apply a pushing force?",
-          "answer": "Yes, moving air pushes objects",
+          "question": "What pushes the toy sailboat?",
+          "answer": "Blowing air",
           "draw": "a child gently blowing on a paper sailboat floating in a water basin, pushing it forward"
         },
         {
           "say": "Twisting a bottle cap applies a turning force",
-          "question": "What force unscrews a tight bottle lid?",
-          "answer": "Turning force (torque)",
+          "question": "What force does twisting a bottle cap use?",
+          "answer": "A turning force",
           "draw": "hands firmly twisting a plastic bottle cap counter-clockwise to open a drink"
         },
         {
           "say": "A rocket pushes hot gases down to lift into space",
-          "question": "How does a space rocket launch?",
-          "answer": "Pushes gas down to push rocket up",
+          "question": "What does a rocket push down?",
+          "answer": "Hot gases",
           "draw": "a towering space rocket blasting off with roaring flames pushing downward onto the launchpad"
         },
         {
           "say": "Balanced forces keep objects stationary",
-          "question": "What happens when two equal pushes meet?",
-          "answer": "The object does not move (balance)",
+          "question": "What do balanced forces do to an object?",
+          "answer": "Keep it still",
           "draw": "two children pushing with equal force on opposite sides of a box, keeping it completely still"
         },
         {
           "say": "Unbalanced forces cause objects to speed up or change direction",
-          "question": "What makes things move or turn?",
-          "answer": "An unbalanced force",
+          "question": "What do unbalanced forces cause?",
+          "answer": "Speeding up or changing direction",
           "draw": "a football changing direction sharply in the air after being kicked with a strong push"
         },
         {
           "say": "Forces make the world move and work every day",
-          "question": "Name the two fundamental directions of force?",
-          "answer": "Push and pull",
+          "question": "What makes the world move and work?",
+          "answer": "Forces",
           "draw": "a fun cartoon illustration showing various daily actions: pushing a pram, pulling a wagon, kicking a ball, and lifting a box"
         }
       ]
@@ -3151,14 +3151,14 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "Vertebrates have a backbone inside their body",
-          "question": "What main internal feature defines vertebrates?",
-          "answer": "A backbone (spine)",
+          "question": "What do vertebrates have inside their body?",
+          "answer": "A backbone",
           "draw": "four vertebrate animals: a trout fish in a stream, a green frog on a log, an eagle in the sky, and a spotted cat on grass, showing their gentle backbones"
         },
         {
           "say": "Invertebrates do not have an internal backbone",
-          "question": "What group of animals has no spine?",
-          "answer": "Invertebrates",
+          "question": "Do invertebrates have a backbone?",
+          "answer": "No",
           "draw": "four invertebrate creatures in nature: an earthworm in dark soil, a spiral-shelled garden snail on a leaf, a monarch butterfly, and a swimming jellyfish"
         },
         {
@@ -3169,230 +3169,230 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A spider has eight legs and two body sections",
-          "question": "How many legs does an arachnid spider have?",
+          "question": "How many legs does a spider have?",
           "answer": "Eight legs",
           "draw": "a garden spider with eight slender legs sitting in the centre of a dewy spiral web between two green leaves"
         },
         {
           "say": "Mammals have hair and feed milk to their young",
-          "question": "What defines mammals?",
-          "answer": "Fur/hair and mother feeding milk",
+          "question": "What do mammals feed their young?",
+          "answer": "Milk",
           "draw": "a mother lioness resting lovingly in the savanna shade with two fluffy cubs drinking milk"
         },
         {
           "say": "Birds have feathers, beaks, and wings",
-          "question": "What covering is unique only to birds?",
-          "answer": "Feathers",
+          "question": "What do birds have?",
+          "answer": "Feathers, beaks and wings",
           "draw": "a colourful parrot perched on a branch showing soft wing feathers, a curved beak, and shiny eyes"
         },
         {
           "say": "Reptiles have dry scaly skin and lay eggs on land",
-          "question": "What skin covering do lizards and snakes have?",
-          "answer": "Dry scales",
+          "question": "What kind of skin do reptiles have?",
+          "answer": "Dry scaly skin",
           "draw": "a bright green chameleon with scaly skin and a curled tail perched carefully on a tree branch"
         },
         {
           "say": "Amphibians have moist skin and live in water and land",
-          "question": "What group starts life as tadpoles in water?",
-          "answer": "Amphibians (frogs, toads)",
+          "question": "Where do amphibians live?",
+          "answer": "In water and on land",
           "draw": "a green tree frog with smooth moist skin sitting beside a pond with swimming tadpoles"
         },
         {
           "say": "Fish have gills to breathe underwater and fins to swim",
-          "question": "How do fish absorb oxygen from water?",
-          "answer": "Through gills",
+          "question": "What do fish breathe with?",
+          "answer": "Gills",
           "draw": "a striped clownfish swimming in clear water showing open fluttering gills and moving fins near coral"
         },
         {
           "say": "An earthworm belongs to segmented annelids",
-          "question": "What kind of invertebrate is an earthworm?",
-          "answer": "A segmented worm (annelid)",
+          "question": "What group does an earthworm belong to?",
+          "answer": "Segmented annelids",
           "draw": "a healthy pink earthworm with clear ringed body segments moving through rich damp garden soil"
         },
         {
           "say": "A snail is a mollusc with a soft body and hard shell",
-          "question": "What group of soft-bodied animals includes snails?",
-          "answer": "Molluscs",
+          "question": "What kind of animal is a snail?",
+          "answer": "A mollusc",
           "draw": "a garden snail with delicate tentacles crawling over a wet stone carrying its coiled calcium shell"
         },
         {
           "say": "A crab has an exoskeleton on the outside",
-          "question": "What protects a crab's soft body?",
-          "answer": "A hard outer exoskeleton",
+          "question": "Where is a crab's exoskeleton?",
+          "answer": "On the outside",
           "draw": "a red seashore crab with a hard shell armour and two strong pincers on wet beach sand"
         },
         {
           "say": "A jellyfish has a gelatinous body without bones",
-          "question": "Does a jellyfish have bones or blood?",
-          "answer": "No, simple soft jelly body",
+          "question": "Does a jellyfish have bones?",
+          "answer": "No, its body is like jelly",
           "draw": "a translucent bell-shaped jellyfish drifting serenely through deep blue ocean waters with trailing tentacles"
         },
         {
           "say": "A starfish is an echinoderm with spiny skin",
-          "question": "How many arms does a common sea star have?",
-          "answer": "Five arms",
+          "question": "What kind of skin does a starfish have?",
+          "answer": "Spiny skin",
           "draw": "an orange starfish with tiny tube feet resting on a sandy tide pool rock surrounded by sea anemones"
         },
         {
           "say": "A whale is a mammal that breathes air with lungs",
-          "question": "Is a blue whale a fish or a mammal?",
-          "answer": "A mammal",
+          "question": "What does a whale breathe with?",
+          "answer": "Lungs",
           "draw": "a massive blue whale surfacing in the ocean and blowing a high fountain of mist from its blowhole into the sky"
         },
         {
           "say": "A bat is the only mammal that can truly fly",
-          "question": "Can any mammal fly with wings?",
-          "answer": "Yes, the bat",
+          "question": "Which mammal can truly fly?",
+          "answer": "The bat",
           "draw": "a furry fruit bat flying smoothly through the twilight evening air with wide leathery wings"
         },
         {
           "say": "A penguin is a flightless bird adapted for swimming",
-          "question": "Why do penguins have flipper wings?",
-          "answer": "To swim fast like torpedoes",
+          "question": "Can a penguin fly?",
+          "answer": "No, it is made for swimming",
           "draw": "a penguin diving gracefully through clear icy polar water surrounded by shimmering bubbles"
         },
         {
           "say": "A crocodile is a large predatory reptile",
-          "question": "Is a crocodile cold-blooded or warm-blooded?",
-          "answer": "Cold-blooded (reptile)",
+          "question": "What kind of animal is a crocodile?",
+          "answer": "A large reptile",
           "draw": "a large green crocodile with textured scaly back resting on a sunny riverbank with its mouth slightly open"
         },
         {
           "say": "A salamander is an amphibian with a long tail",
-          "question": "What lizard-shaped animal has smooth moist skin?",
-          "answer": "A salamander",
+          "question": "What kind of tail does a salamander have?",
+          "answer": "A long tail",
           "draw": "a black and yellow spotted salamander walking across damp mossy rocks near a forest brook"
         },
         {
           "say": "A butterfly undergoes complete metamorphosis",
-          "question": "What four stages make up a butterfly life cycle?",
+          "question": "What are the stages of a butterfly's life?",
           "answer": "Egg, caterpillar, chrysalis, butterfly",
           "draw": "an educational lifecycle diagram showing a tiny egg on a leaf, a striped caterpillar, a hanging chrysalis, and an emerging butterfly"
         },
         {
           "say": "An ant colony is organized with a queen and workers",
-          "question": "What social insects live in large underground nests?",
-          "answer": "Ants",
+          "question": "Who lives in an ant colony?",
+          "answer": "A queen and worker ants",
           "draw": "black worker ants collaborating to carry food items into an underground ant mound"
         },
         {
           "say": "A scorpion is an arachnid with a venomous tail",
-          "question": "Is a scorpion an insect or an arachnid?",
-          "answer": "An arachnid (eight legs)",
+          "question": "What kind of tail does a scorpion have?",
+          "answer": "A venomous tail",
           "draw": "a desert scorpion with two front claws and a curved stinging tail resting on dry sand"
         },
         {
           "say": "An octopus is an intelligent sea mollusc with eight arms",
           "question": "How many arms does an octopus have?",
-          "answer": "Eight arms with suckers",
+          "answer": "Eight arms",
           "draw": "a curious brown octopus exploring a rocky underwater reef with its flexible arms covered in suction cups"
         },
         {
           "say": "A centipede has many body segments and legs",
-          "question": "What many-legged creature scurries under damp logs?",
-          "answer": "A centipede",
+          "question": "What does a centipede have many of?",
+          "answer": "Body segments and legs",
           "draw": "a brown centipede crawling across damp tree bark on a shaded forest floor"
         },
         {
           "say": "Cold-blooded animals take warmth from their surroundings",
-          "question": "How do reptiles warm up in the morning?",
-          "answer": "By basking in the sun",
+          "question": "Where do cold-blooded animals get warmth?",
+          "answer": "From their surroundings",
           "draw": "a desert lizard basking comfortably on a flat sun-warmed stone under the morning sky"
         },
         {
           "say": "Warm-blooded animals maintain a constant body temperature",
-          "question": "Which two animal groups are warm-blooded?",
-          "answer": "Mammals and birds",
+          "question": "What do warm-blooded animals keep the same?",
+          "answer": "Their body temperature",
           "draw": "a fluffy robin bird fluffing its warm feathers in the snow to stay cosy and warm"
         },
         {
           "say": "A ladybug is a beetle with hardened wing covers",
-          "question": "What hard wing covers protect a beetle's flying wings?",
-          "answer": "Elytra",
+          "question": "What kind of insect is a ladybug?",
+          "answer": "A beetle with hard wing covers",
           "draw": "a shiny red ladybug lifting its spotty red wing covers to spread transparent wings for flight"
         },
         {
           "say": "A seahorse is a unique fish with an equine head",
-          "question": "Is a seahorse a fish, reptile or mammal?",
-          "answer": "A fish",
+          "question": "What kind of head does a seahorse have?",
+          "answer": "A head like a horse",
           "draw": "a tiny golden seahorse anchoring its curled tail around a strand of green seagrass underwater"
         },
         {
           "say": "A platypus is an unusual egg-laying mammal",
-          "question": "What Australian mammal has a duck bill and lays eggs?",
-          "answer": "The platypus",
+          "question": "What is unusual about the platypus?",
+          "answer": "It is a mammal that lays eggs",
           "draw": "a brown platypus swimming smoothly in a freshwater stream showing its duck bill and webbed paws"
         },
         {
           "say": "Fungi like mushrooms are not plants or animals",
-          "question": "Do mushrooms make food with green chlorophyll?",
-          "answer": "No, they absorb nutrients",
+          "question": "Are mushrooms plants or animals?",
+          "answer": "Neither, they are fungi",
           "draw": "a cluster of wild forest mushrooms growing on a decaying tree stump in a lush woodland"
         },
         {
           "say": "Bacteria are tiny single-celled microscopic organisms",
-          "question": "What microscopic organisms live everywhere?",
-          "answer": "Bacteria",
+          "question": "How big are bacteria?",
+          "answer": "Tiny, only seen with a microscope",
           "draw": "friendly colourful cartoon rod-shaped and round beneficial bacteria seen under a microscope lens"
         },
         {
           "say": "Algae are simple plant-like organisms in water",
-          "question": "What green organisms float in pond water?",
-          "answer": "Algae",
+          "question": "Where do algae live?",
+          "answer": "In water",
           "draw": "delicate green algae strands swaying in clear sunlight inside a freshwater stream"
         },
         {
           "say": "Carnivores are animals that eat only meat",
-          "question": "What diet classification does a tiger belong to?",
-          "answer": "Carnivore",
+          "question": "What do carnivores eat?",
+          "answer": "Only meat",
           "draw": "a powerful Bengal tiger with orange and black stripes moving stealthily through tall grassland"
         },
         {
           "say": "Herbivores are animals that eat only plants",
-          "question": "What diet classification does a deer or cow belong to?",
-          "answer": "Herbivore",
+          "question": "What do herbivores eat?",
+          "answer": "Only plants",
           "draw": "a gentle spotted deer grazing peacefully on wild forest herbs and green shrub leaves"
         },
         {
           "say": "Omnivores eat both plants and other animals",
-          "question": "Are humans, bears, and crows herbivores or omnivores?",
-          "answer": "Omnivores",
+          "question": "What do omnivores eat?",
+          "answer": "Both plants and animals",
           "draw": "a brown bear catching salmon in a river while wild berries grow on bushes nearby"
         },
         {
           "say": "An ostrich is the largest living bird on Earth",
-          "question": "Can an ostrich fly in the air?",
-          "answer": "No, it runs fast on land",
+          "question": "Which is the largest living bird?",
+          "answer": "The ostrich",
           "draw": "a tall ostrich with long legs running with great speed across open dusty savanna grassland"
         },
         {
           "say": "A turtle has a bony shell fused to its skeleton",
-          "question": "Can a turtle ever walk out of its shell?",
-          "answer": "No, the shell is part of its skeleton",
+          "question": "What is a turtle's shell joined to?",
+          "answer": "Its skeleton",
           "draw": "a box turtle showing its hard patterned carapace walking across green clover leaves"
         },
         {
           "say": "A mosquito is an insect that undergoes aquatic larval stages",
-          "question": "Where do mosquito wrigglers live before flying?",
-          "answer": "In still water",
+          "question": "Where do young mosquitoes live?",
+          "answer": "In water (aquatic larval stages)",
           "draw": "tiny mosquito larvae wriggling near the surface of still pond water beside reed stems"
         },
         {
           "say": "Classifying organisms helps scientists study biodiversity",
-          "question": "Why do biologists sort living things into groups?",
-          "answer": "To understand relationships and traits",
+          "question": "What does classifying organisms help scientists study?",
+          "answer": "Biodiversity",
           "draw": "an educational classification tree chart showing branching kingdoms of plants, animals, and fungi"
         },
         {
           "say": "Every living creature plays an important role in nature",
-          "question": "What do we call the balance of living creatures?",
-          "answer": "Ecosystem balance",
+          "question": "What does every living creature play in nature?",
+          "answer": "An important role",
           "draw": "a thriving biodiverse forest glade with birds in trees, deer on grass, and fish in the river"
         },
         {
           "say": "Protecting endangered animals preserves our planet heritage",
-          "question": "Why should we protect rare animal species?",
-          "answer": "To prevent extinction",
+          "question": "Why should we protect endangered animals?",
+          "answer": "To preserve our planet's heritage",
           "draw": "a panda bear happily munching green bamboo in a protected peaceful mountain nature reserve"
         }
       ]
@@ -3410,248 +3410,248 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "Digestion begins inside the mouth",
-          "question": "Where does the digestive journey start?",
-          "answer": "In the mouth",
+          "question": "Where does digestion begin?",
+          "answer": "Inside the mouth",
           "draw": "a child taking a mindful bite of a fresh red apple with clean teeth ready to chew"
         },
         {
           "say": "Teeth break food down into smaller pieces",
-          "question": "What part of the mouth crushes food?",
-          "answer": "The teeth",
+          "question": "What do teeth do to food?",
+          "answer": "Break it into smaller pieces",
           "draw": "an anatomical diagram showing clean front incisors and back molars chewing food into tiny pieces"
         },
         {
           "say": "Saliva moistens food and starts chemical breakdown",
-          "question": "What watery fluid in the mouth contains digestive enzymes?",
-          "answer": "Saliva",
+          "question": "What does saliva do to food?",
+          "answer": "Moistens it and starts breaking it down",
           "draw": "saliva glands releasing gentle fluid in the mouth to soften a bite of bread into a soft bolus"
         },
         {
           "say": "The tongue pushes swallowed food into the throat",
-          "question": "What muscular organ rolls food and pushes it down?",
-          "answer": "The tongue",
+          "question": "Where does the tongue push swallowed food?",
+          "answer": "Into the throat",
           "draw": "a smiling child swallowing a sip of water with the tongue moving smoothly inside the mouth"
         },
         {
           "say": "The food pipe carries food down to the stomach",
-          "question": "What muscular tube connects mouth to stomach?",
-          "answer": "The esophagus (food pipe)",
+          "question": "Where does the food pipe carry food?",
+          "answer": "Down to the stomach",
           "draw": "an educational illustration of the throat and esophagus gently squeezing a bolus of food down towards the chest"
         },
         {
           "say": "The stomach churns food with acidic juices",
-          "question": "What organ mixes food with gastric acid?",
-          "answer": "The stomach",
+          "question": "What does the stomach churn food with?",
+          "answer": "Acidic juices",
           "draw": "a friendly anatomical view of the stomach sac churning food with natural digestive juices"
         },
         {
           "say": "Gastric acid kills harmful bacteria in food",
-          "question": "How does stomach acid protect us?",
-          "answer": "Kills germs and breaks proteins",
+          "question": "What does gastric acid kill?",
+          "answer": "Harmful bacteria in food",
           "draw": "stomach lining showing natural protective fluid breaking down food safely inside the abdomen"
         },
         {
           "say": "The small intestine absorbs nutrients into the bloodstream",
-          "question": "Where are vitamins, minerals, and sugars absorbed?",
-          "answer": "Small intestine",
+          "question": "What does the small intestine absorb?",
+          "answer": "Nutrients",
           "draw": "the long coiled small intestine with millions of tiny villi absorbing nutrients into surrounding blood vessels"
         },
         {
           "say": "Villi are tiny hair-like folds that soak up nutrients",
-          "question": "What microscopic folds line the small intestine?",
-          "answer": "Villi",
+          "question": "What do villi soak up?",
+          "answer": "Nutrients",
           "draw": "a magnified diagram of velvet-like villi absorbing nutrients from digested food into capillary blood"
         },
         {
           "say": "The liver produces green bile to digest fats",
-          "question": "Which large organ makes bile?",
-          "answer": "The liver",
+          "question": "What does the liver produce?",
+          "answer": "Green bile",
           "draw": "the liver shown in reddish-brown sitting above the stomach producing golden-green bile fluid"
         },
         {
           "say": "The gall bladder stores bile until needed",
-          "question": "Where is bile stored before entering the intestine?",
-          "answer": "The gall bladder",
+          "question": "What does the gall bladder store?",
+          "answer": "Bile",
           "draw": "a small pear-shaped green gall bladder tucked beneath the liver releasing bile into the intestine"
         },
         {
           "say": "The pancreas makes enzymes to digest sugars and fats",
-          "question": "Which gland helps control blood sugar and digestion?",
-          "answer": "The pancreas",
+          "question": "What does the pancreas make?",
+          "answer": "Enzymes to digest sugars and fats",
           "draw": "the yellowish leaf-shaped pancreas resting behind the stomach producing digestive enzymes"
         },
         {
           "say": "The large intestine absorbs water from remaining waste",
-          "question": "Where does liquid waste have water removed?",
-          "answer": "Large intestine",
+          "question": "What does the large intestine absorb?",
+          "answer": "Water from waste",
           "draw": "the wide horseshoe-shaped large intestine absorbing water to leave solid waste ready for removal"
         },
         {
           "say": "Fibre in fruit and vegetables keeps digestion smooth",
-          "question": "Why do we need dietary fibre?",
-          "answer": "Prevents constipation and aids movement",
+          "question": "What keeps digestion smooth?",
+          "answer": "Fibre in fruit and vegetables",
           "draw": "a colourful plate of high-fibre foods including raw carrots, apples, oats, and green beans"
         },
         {
           "say": "Drinking plenty of water prevents constipation",
-          "question": "What clear liquid keeps digestion moving easily?",
-          "answer": "Water",
+          "question": "What does drinking plenty of water prevent?",
+          "answer": "Constipation",
           "draw": "a child drinking a tall glass of clean water with a contented healthy smile"
         },
         {
           "say": "Chewing food thoroughly helps the stomach work easily",
-          "question": "Why should we chew each bite twenty times?",
-          "answer": "To make digestion easier and faster",
+          "question": "Why should we chew food thoroughly?",
+          "answer": "It helps the stomach work easily",
           "draw": "a child sitting peacefully at a dining table chewing a healthy sandwich without rushing"
         },
         {
           "say": "Front incisor teeth cut and slice food",
-          "question": "What flat front teeth bite into an apple?",
-          "answer": "Incisors",
+          "question": "What do front incisor teeth do?",
+          "answer": "Cut and slice food",
           "draw": "four clean sharp upper front incisor teeth biting cleanly into a crisp red apple slice"
         },
         {
           "say": "Pointy canine teeth tear tougher food",
-          "question": "Which pointy teeth are beside the incisors?",
-          "answer": "Canines",
+          "question": "What do pointy canine teeth do?",
+          "answer": "Tear tougher food",
           "draw": "pointed canine teeth clearly visible on a dental anatomy model showing their tearing shape"
         },
         {
           "say": "Broad molar teeth grind food into paste",
-          "question": "What flat back teeth grind bread and grains?",
-          "answer": "Molars",
+          "question": "What do broad molar teeth do?",
+          "answer": "Grind food into paste",
           "draw": "wide flat back molars with grooves grinding food into a smooth paste during chewing"
         },
         {
           "say": "Brushing teeth twice daily removes harmful plaque",
-          "question": "How often should you brush your teeth?",
-          "answer": "Twice a day (morning and night)",
+          "question": "How often should we brush our teeth?",
+          "answer": "Twice a day",
           "draw": "a child holding a blue toothbrush with foamy white toothpaste brushing clean molars in the mirror"
         },
         {
           "say": "Flossing cleans between teeth where brushes cannot reach",
-          "question": "What string tool cleans gaps between teeth?",
-          "answer": "Dental floss",
+          "question": "Where does flossing clean?",
+          "answer": "Between the teeth",
           "draw": "a child gently holding dental floss cleaning between teeth to remove food particles"
         },
         {
           "say": "Sugary sweets cause acid that damages tooth enamel",
-          "question": "Why does eating candy all day cause cavities?",
-          "answer": "Sugar feeds bacteria that make acid",
+          "question": "What do sugary sweets damage?",
+          "answer": "Tooth enamel",
           "draw": "a cross-section of a tooth showing hard white enamel protected from sugary acid by brushing"
         },
         {
           "say": "The entire digestive tract is like a long tube",
-          "question": "How long is an adult digestive tract from end to end?",
-          "answer": "About nine metres long",
+          "question": "What is the digestive tract like?",
+          "answer": "A long tube",
           "draw": "a complete educational overview of the digestive tract from mouth, esophagus, stomach, to intestines"
         },
         {
           "say": "Healthy gut bacteria help break down food",
-          "question": "Are all bacteria in the stomach bad?",
-          "answer": "No, millions of good bacteria help us",
+          "question": "What do healthy gut bacteria do?",
+          "answer": "Help break down food",
           "draw": "cheerful cartoon beneficial probiotic bacteria thriving inside the digestive intestine"
         },
         {
           "say": "Eating too fast can cause hiccups and tummy ache",
-          "question": "Why should we eat slowly without gulping air?",
-          "answer": "To avoid swallowing air and indigestion",
+          "question": "What can eating too fast cause?",
+          "answer": "Hiccups and tummy ache",
           "draw": "a child taking small calm sips and bites during a relaxed family lunch"
         },
         {
           "say": "Peristalsis is the wave motion pushing food down",
-          "question": "What muscular squeezing moves food through intestines?",
-          "answer": "Peristalsis",
+          "question": "What is peristalsis?",
+          "answer": "The wave motion that pushes food down",
           "draw": "muscular walls of the digestive tube gently squeezing in coordinated waves pushing food along"
         },
         {
           "say": "The stomach takes about three to four hours to empty",
-          "question": "How long does food stay in the stomach?",
+          "question": "How long does the stomach take to empty?",
           "answer": "About three to four hours",
           "draw": "a diagram clock showing food gradually becoming smooth liquid chyme in the stomach over three hours"
         },
         {
           "say": "Nutrients enter the blood and travel to every cell",
-          "question": "Where do absorbed vitamins and sugars go?",
-          "answer": "Into the bloodstream to fuel cells",
+          "question": "Where do nutrients travel in the blood?",
+          "answer": "To every cell",
           "draw": "tiny glowing nutrient particles flowing from the intestine wall into red blood capillaries"
         },
         {
           "say": "Waste is eliminated from the body regularly",
-          "question": "Why must the body expel undigested waste?",
-          "answer": "To keep the body clean and free of toxins",
+          "question": "What does the body get rid of regularly?",
+          "answer": "Waste",
           "draw": "a healthy child washing hands with soap at the sink after using the restroom properly"
         },
         {
           "say": "A rumbling tummy means the stomach is empty",
-          "question": "What causes stomach growls when hungry?",
-          "answer": "Muscles churning air and digestive fluids",
+          "question": "What does a rumbling tummy mean?",
+          "answer": "The stomach is empty",
           "draw": "a playful illustration of an empty stomach gently contracting as lunchtime approaches"
         },
         {
           "say": "Spicy food can sometimes irritate a sensitive stomach",
-          "question": "What should you drink if food is too spicy?",
-          "answer": "Milk or yogurt (not cold soda)",
+          "question": "What can spicy food irritate?",
+          "answer": "A sensitive stomach",
           "draw": "a cooling glass of white milk beside a small dish of mild curry on a dining table"
         },
         {
           "say": "Exercising right after heavy meals can cause cramps",
-          "question": "When is the best time to run after eating?",
-          "answer": "Wait about an hour after a meal",
+          "question": "What can exercising right after a big meal cause?",
+          "answer": "Cramps",
           "draw": "a child resting quietly reading a book after lunch before going outside to play sports"
         },
         {
           "say": "Eating fresh fruit on an empty stomach absorbs fast",
-          "question": "When do fruit vitamins absorb easily?",
-          "answer": "Between meals or before lunch",
+          "question": "When does fresh fruit absorb fast?",
+          "answer": "On an empty stomach",
           "draw": "a bowl of freshly sliced cantaloupe and berries served as a refreshing morning snack"
         },
         {
           "say": "Tooth enamel is the hardest substance in the human body",
-          "question": "What protective white layer covers each tooth?",
-          "answer": "Enamel",
+          "question": "What is the hardest substance in the human body?",
+          "answer": "Tooth enamel",
           "draw": "a gleaming white clean tooth model showing its strong outer enamel cap under bright light"
         },
         {
           "say": "Saliva contains enzymes like amylase that digest starch",
-          "question": "What starts breaking down bread into sugars in the mouth?",
-          "answer": "Amylase enzyme in saliva",
+          "question": "Which enzyme in saliva digests starch?",
+          "answer": "Amylase",
           "draw": "a piece of bread breaking down softly into simple sugars right inside the mouth"
         },
         {
           "say": "Eating curd and yogurt replenishes beneficial probiotics",
-          "question": "What fermented food supports digestive health?",
-          "answer": "Yogurt or curd",
+          "question": "Which foods give us good probiotics?",
+          "answer": "Curd and yogurt",
           "draw": "a ceramic pot of fresh creamy yogurt with a wooden spoon on a kitchen table"
         },
         {
           "say": "Washing hands before eating stops stomach bugs",
-          "question": "Why must we wash hands before touching dinner?",
-          "answer": "To prevent swallowing germs",
+          "question": "What does washing hands before eating stop?",
+          "answer": "Stomach bugs",
           "draw": "a child lathering hands thoroughly with soap under a water tap before sitting down to eat"
         },
         {
           "say": "The liver detoxifies harmful substances in our blood",
-          "question": "Which organ filters and cleans chemicals from blood?",
+          "question": "Which organ cleans harmful substances from our blood?",
           "answer": "The liver",
           "draw": "the liver shown with clean blood flowing smoothly into the circulatory system"
         },
         {
           "say": "Eating colourful vegetables gives diverse phytonutrients",
-          "question": "Why is a rainbow plate of food best for digestion?",
-          "answer": "Gives all vitamins and antioxidants",
+          "question": "What do colourful vegetables give us?",
+          "answer": "Diverse phytonutrients",
           "draw": "a bright plate featuring red bell pepper, orange carrot, yellow corn, green broccoli, and purple cabbage"
         },
         {
           "say": "A healthy digestive system gives us continuous energy",
-          "question": "How do we feel when our digestion works well?",
-          "answer": "Energetic, light, and happy",
+          "question": "What does a healthy digestive system give us?",
+          "answer": "Continuous energy",
           "draw": "a lively happy child leaping joyfully in a park with endless energy for learning and play"
         },
         {
           "say": "Listening to body hunger and fullness cues keeps us fit",
-          "question": "When should we stop eating at a meal?",
-          "answer": "When we feel comfortably full",
+          "question": "What keeps us fit when we eat?",
+          "answer": "Listening to hunger and fullness",
           "draw": "a child happily putting down a fork and wiping lips with a napkin after finishing a balanced portion"
         }
       ]
@@ -3669,248 +3669,248 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "Sound is produced when objects vibrate back and forth",
-          "question": "What rapid movement creates sound?",
-          "answer": "Vibrations",
+          "question": "How is sound produced?",
+          "answer": "When objects vibrate",
           "draw": "a metal tuning fork vibrating rapidly on a wooden block with small curved sound waves radiating through the air"
         },
         {
           "say": "Plucking a guitar string makes it vibrate and sing",
-          "question": "How does a guitar make music?",
-          "answer": "Its strings vibrate",
+          "question": "What happens when you pluck a guitar string?",
+          "answer": "It vibrates and makes sound",
           "draw": "a hand plucking a taut acoustic guitar string, showing rapid blurry vibrations creating musical notes in the air"
         },
         {
           "say": "Striking a drum skin harder makes a louder sound",
-          "question": "What makes a drum sound louder?",
-          "answer": "A stronger hit (larger vibration)",
+          "question": "How do we make a drum sound louder?",
+          "answer": "Strike it harder",
           "draw": "a drumstick striking a drum skin forcefully with small vibration ripples and musical notes floating upward"
         },
         {
           "say": "A ringing brass bell vibrates when struck by its clapper",
-          "question": "Why does a church bell ring loudly?",
-          "answer": "The metal vibrates when struck",
+          "question": "What makes a brass bell vibrate?",
+          "answer": "Its clapper striking it",
           "draw": "a shiny golden brass bell swinging and ringing with radiating sound wave lines spreading outward"
         },
         {
           "say": "Our voice is made by vibrating vocal cords in the throat",
-          "question": "What vibrates in our throat when we talk or sing?",
-          "answer": "Vocal cords",
+          "question": "What makes our voice?",
+          "answer": "Vibrating vocal cords",
           "draw": "a smiling child singing a cheerful melody with hands on chest feeling throat vibrations and notes in the air"
         },
         {
           "say": "Sound waves travel through air to reach our ears",
-          "question": "How does sound travel across a room?",
-          "answer": "As invisible sound waves in air",
+          "question": "How does sound reach our ears?",
+          "answer": "Sound waves travel through the air",
           "draw": "an educational illustration showing concentric invisible sound waves travelling from a speaker to a child's ear"
         },
         {
           "say": "The outer ear collects sound waves like a funnel",
-          "question": "What part of the ear catches sounds around us?",
-          "answer": "The outer ear (pinna)",
+          "question": "What does the outer ear collect?",
+          "answer": "Sound waves",
           "draw": "a close-up illustration of the human ear collecting sound waves and guiding them into the ear canal"
         },
         {
           "say": "The eardrum vibrates when sound waves strike it",
-          "question": "What thin membrane inside the ear vibrates?",
+          "question": "What vibrates when sound waves strike it?",
           "answer": "The eardrum",
           "draw": "a cross-section diagram of the ear showing the delicate eardrum vibrating and moving tiny hearing bones"
         },
         {
           "say": "Three tiny ear bones amplify the vibrations",
-          "question": "What are the smallest bones in the human body?",
-          "answer": "Hammer, anvil, and stirrup (ear bones)",
+          "question": "How many tiny bones are in the ear?",
+          "answer": "Three",
           "draw": "the three tiny auditory ossicles inside the ear vibrating in sequence to carry sound to the cochlea"
         },
         {
           "say": "A high-pitched sound comes from fast vibrations",
-          "question": "Does a bird chirp with high or low pitch?",
-          "answer": "High pitch (fast vibrations)",
+          "question": "What makes a high-pitched sound?",
+          "answer": "Fast vibrations",
           "draw": "a little yellow canary bird singing high-pitched trills perched on a flowering branch"
         },
         {
           "say": "A low-pitched sound comes from slow vibrations",
-          "question": "Does a lion roar with high or low pitch?",
-          "answer": "Low pitch (slow vibrations)",
+          "question": "What makes a low-pitched sound?",
+          "answer": "Slow vibrations",
           "draw": "a massive male lion letting out a deep low-pitched rumble from a rocky hill"
         },
         {
           "say": "A soft whisper makes tiny quiet vibrations",
           "question": "Is a whisper loud or quiet?",
-          "answer": "Quiet (low volume)",
+          "answer": "Quiet",
           "draw": "a child gently whispering a sweet secret into a friend's ear with a warm smile"
         },
         {
           "say": "A jet airplane engine makes loud roaring sound waves",
-          "question": "Is a jet engine loud or quiet?",
-          "answer": "Very loud (high volume)",
+          "question": "Is a jet airplane engine loud or quiet?",
+          "answer": "Loud",
           "draw": "a large commercial passenger airplane taking off with powerful jet engines roaring on the runway"
         },
         {
           "say": "Sound travels faster through water than through air",
-          "question": "Can sound travel through ocean water?",
-          "answer": "Yes, faster than through air",
+          "question": "Does sound travel faster through water or air?",
+          "answer": "Through water",
           "draw": "two dolphins clicking and whistling underwater with sound waves spreading rapidly through the clear sea"
         },
         {
           "say": "Sound travels fastest of all through solid materials",
-          "question": "Can you hear tapping on a wooden table?",
-          "answer": "Yes, solids carry sound very well",
+          "question": "Through what does sound travel fastest?",
+          "answer": "Solid materials",
           "draw": "a child pressing an ear against a long wooden table hearing clear taps from the far end"
         },
         {
           "say": "Sound cannot travel through empty space where there is no air",
-          "question": "Can sound travel in a vacuum?",
-          "answer": "No, sound needs a medium",
+          "question": "Can sound travel through empty space?",
+          "answer": "No, there is no air",
           "draw": "an astronaut floating peacefully in silent starry space where no sound waves can travel"
         },
         {
           "say": "An echo is a sound that bounces off a hard wall or cliff",
-          "question": "What do we call reflected sound?",
-          "answer": "An echo",
+          "question": "What is an echo?",
+          "answer": "Sound bouncing off a hard wall or cliff",
           "draw": "a child shouting hello towards a steep rocky mountain canyon and hearing the echo return"
         },
         {
           "say": "Bats use echolocation to navigate in the dark",
-          "question": "How do bats locate flying moths at night?",
-          "answer": "Echolocation (bouncing sound)",
+          "question": "What do bats use to find their way in the dark?",
+          "answer": "Echolocation",
           "draw": "a bat flying in the dark night emitting ultrasonic sound waves that bounce off a flying insect"
         },
         {
           "say": "Whales sing melodic songs across hundreds of miles of ocean",
-          "question": "How do humpback whales communicate?",
-          "answer": "Underwater songs and calls",
+          "question": "What do whales sing across the ocean?",
+          "answer": "Melodic songs",
           "draw": "a giant humpback whale singing underwater with sound waves rippling through deep ocean blue"
         },
         {
           "say": "A flute produces sound by blowing across an air column",
-          "question": "How does a flute player change musical pitch?",
-          "answer": "By covering finger holes",
+          "question": "How does a flute make sound?",
+          "answer": "By blowing air across it",
           "draw": "a musician playing a shiny silver flute with finger holes pressed producing clear sweet notes"
         },
         {
           "say": "A violin uses a horsehair bow to vibrate steel strings",
-          "question": "What instrument rests under the chin?",
-          "answer": "A violin",
+          "question": "What does a violin use to vibrate its strings?",
+          "answer": "A horsehair bow",
           "draw": "a child gracefully drawing a violin bow across strings producing warm musical tones in a concert hall"
         },
         {
           "say": "Piano hammers strike metal strings inside the wooden body",
-          "question": "What happens inside a piano when you press a key?",
-          "answer": "A felt hammer strikes a string",
+          "question": "What do piano hammers strike?",
+          "answer": "Metal strings",
           "draw": "the open lid of a grand piano showing felt hammers striking steel strings to make rich harmony"
         },
         {
           "say": "A tuning fork dipping in water splashes tiny droplets",
-          "question": "What happens when a vibrating tuning fork touches water?",
-          "answer": "Water splashes due to vibrations",
+          "question": "What happens when a tuning fork dips in water?",
+          "answer": "It splashes tiny droplets",
           "draw": "the prongs of a vibrating metal tuning fork touching a dish of water, splashing tiny ripples and droplets"
         },
         {
           "say": "Thunder follows lightning because sound is slower than light",
-          "question": "Why do we hear thunder after seeing lightning?",
-          "answer": "Light travels much faster than sound",
+          "question": "Why do we hear thunder after lightning?",
+          "answer": "Sound is slower than light",
           "draw": "a thunderstorm showing bright instant lightning followed moments later by rolling thunder"
         },
         {
           "say": "Very loud noise can harm our sensitive hearing",
-          "question": "Why should we avoid listening to loud headphones?",
-          "answer": "To protect delicate ear cells",
+          "question": "What can very loud noise harm?",
+          "answer": "Our hearing",
           "draw": "a child wearing safe volume-limited headphones enjoying pleasant music at a comfortable level"
         },
         {
           "say": "Earmuffs protect ears around noisy power tools",
-          "question": "What safety gear protects hearing in construction?",
-          "answer": "Hearing protection earmuffs",
+          "question": "What protects our ears from noisy tools?",
+          "answer": "Earmuffs",
           "draw": "a worker wearing yellow noise-cancelling safety earmuffs beside a loud machinery worksite"
         },
         {
           "say": "A stethoscope helps a doctor listen to heartbeats",
-          "question": "What tool amplifies internal body sounds?",
+          "question": "What helps a doctor listen to heartbeats?",
           "answer": "A stethoscope",
           "draw": "a friendly doctor placing the cold metal disc of a stethoscope on a smiling child's chest to hear the heart"
         },
         {
           "say": "A whistle makes a sharp high-pitched alert sound",
-          "question": "Why do sports referees blow a whistle?",
-          "answer": "It cuts through crowd noise with high pitch",
+          "question": "What sound does a whistle make?",
+          "answer": "A sharp high-pitched sound",
           "draw": "a sports coach blowing a shiny silver whistle with radiating sound waves stopping game play on a pitch"
         },
         {
           "say": "A barking dog uses its voice box to guard its home",
-          "question": "What sound does an alert dog make?",
-          "answer": "A bark",
+          "question": "Why does a dog bark?",
+          "answer": "To guard its home",
           "draw": "a watchful German shepherd dog barking briskly near a garden gate to alert its owners"
         },
         {
           "say": "Crickets rub their wings together to chirp in summer",
-          "question": "How do male crickets make their evening chirp?",
-          "answer": "By rubbing wings together (stridulation)",
+          "question": "How do crickets chirp?",
+          "answer": "By rubbing their wings together",
           "draw": "a brown field cricket rubbing its textured wings together on a leaf under an evening summer sky"
         },
         {
           "say": "A soundproof room has foam pads on walls to absorb sound",
-          "question": "What soft material stops sound from bouncing?",
-          "answer": "Acoustic foam pads",
+          "question": "What absorbs sound in a soundproof room?",
+          "answer": "Foam pads on the walls",
           "draw": "a recording music studio with textured foam tiles on walls absorbing all echoes"
         },
         {
           "say": "A megaphone projects the voice louder and farther",
-          "question": "What cone-shaped tool amplifies human speech?",
-          "answer": "A megaphone",
+          "question": "What does a megaphone do to the voice?",
+          "answer": "Makes it louder and carry farther",
           "draw": "a teacher speaking through a white and red megaphone projecting clear instructions across a sports field"
         },
         {
           "say": "Ticking clocks make steady rhythmic mechanical clicks",
-          "question": "What quiet repetitive sound comes from an analog clock?",
-          "answer": "Tick tock",
+          "question": "What sound does a ticking clock make?",
+          "answer": "Steady clicks",
           "draw": "an antique brass mantle clock ticking quietly on a wooden fireplace shelf"
         },
         {
           "say": "Rustling autumn leaves make a gentle crinkly sound",
-          "question": "What soft sound happens when wind blows through dry leaves?",
-          "answer": "Rustling",
+          "question": "What sound do autumn leaves make?",
+          "answer": "A gentle crinkly sound",
           "draw": "dry golden autumn leaves swirling and rustling along a stone garden path in a soft breeze"
         },
         {
           "say": "Sirens on ambulances warn drivers to clear the road",
-          "question": "Why do emergency vehicles use loud two-tone sirens?",
-          "answer": "To clear traffic quickly",
+          "question": "Why do ambulances use sirens?",
+          "answer": "To warn drivers to clear the road",
           "draw": "a white ambulance with flashing blue lights and loud wailing siren moving down a city road"
         },
         {
           "say": "A sonar system on ships maps the ocean floor with sound pings",
-          "question": "What technology uses sound echoes underwater?",
-          "answer": "Sonar",
+          "question": "What does sonar use to map the ocean floor?",
+          "answer": "Sound pings",
           "draw": "a research ship sending sound wave pings down to map the underwater ocean floor topography"
         },
         {
           "say": "Music combines melody, rhythm, and pleasant harmony",
-          "question": "What is organized pleasant sound called?",
-          "answer": "Music",
+          "question": "What does music combine?",
+          "answer": "Melody, rhythm and harmony",
           "draw": "children in a school choir singing harmoniously together with a teacher playing piano"
         },
         {
           "say": "Sound volume is measured in decibels",
-          "question": "What unit measures the loudness of sounds?",
-          "answer": "Decibels (dB)",
+          "question": "What is sound volume measured in?",
+          "answer": "Decibels",
           "draw": "an educational sound level meter showing decibel levels from whispering (30 dB) to jet engine (120 dB)"
         },
         {
           "say": "We should keep our environment free of excessive noise pollution",
-          "question": "What is unwanted disturbing loud sound called?",
+          "question": "What should we keep our environment free of?",
           "answer": "Noise pollution",
           "draw": "a peaceful green neighborhood with gentle birdsong and quiet electric cars instead of honking horns"
         },
         {
           "say": "Our ears are precious organs that connect us to the world",
-          "question": "Why should we never poke sharp objects into our ears?",
-          "answer": "It can rupture the eardrum",
+          "question": "Why are our ears precious?",
+          "answer": "They connect us to the world",
           "draw": "a child gently cleaning the outer ear with a soft towel after a bath with care"
         },
         {
           "say": "We enjoy the soothing sounds of nature like rainfall and ocean waves",
-          "question": "What natural sound helps people relax?",
-          "answer": "Gentle rain and ocean waves",
+          "question": "Which soothing sounds of nature do we enjoy?",
+          "answer": "Rainfall and ocean waves",
           "draw": "a peaceful rainforest scene with raindrops falling on broad leaves and a gentle brook trickling over stones"
         }
       ]
@@ -3976,44 +3976,44 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "A magnetic compass needle points North",
-          "question": "Which direction does a freely floating compass needle point?",
+          "question": "Which way does a compass needle point?",
           "answer": "North",
           "draw": "a brass pocket compass with a red magnetic needle pointing steadily towards magnetic North"
         },
         {
           "say": "The Earth behaves like a giant bar magnet",
-          "question": "Why does a compass work everywhere on Earth?",
-          "answer": "Earth has its own magnetic field",
+          "question": "What does the Earth behave like?",
+          "answer": "A giant bar magnet",
           "draw": "an educational globe of Earth surrounded by giant invisible magnetic field lines looping from pole to pole"
         },
         {
           "say": "A magnetic field is the invisible area of force around a magnet",
-          "question": "What surrounds every magnet?",
-          "answer": "A magnetic field",
+          "question": "What is a magnetic field?",
+          "answer": "The invisible force around a magnet",
           "draw": "iron filings sprinkled on white paper around a bar magnet forming beautiful curved magnetic field lines"
         },
         {
           "say": "A horseshoe magnet has its two poles close together",
-          "question": "What U-shaped magnet is shaped like a horse shoe?",
-          "answer": "A horseshoe magnet",
+          "question": "Where are the poles of a horseshoe magnet?",
+          "answer": "Close together",
           "draw": "a classic red horseshoe magnet with painted silver poles resting on a wooden science lab table"
         },
         {
           "say": "A bar magnet is a straight rectangular magnet",
           "question": "What shape is a bar magnet?",
-          "answer": "A straight bar or cylinder",
+          "answer": "Straight and rectangular",
           "draw": "a neat bar magnet resting on a table beside iron pins attracted to its ends"
         },
         {
           "say": "A ring magnet has a hole in the middle",
-          "question": "What circular magnet looks like a doughnut?",
-          "answer": "A ring magnet",
+          "question": "What does a ring magnet have in the middle?",
+          "answer": "A hole",
           "draw": "two colourful ring magnets floating on a wooden pencil because like poles repel each other"
         },
         {
           "say": "Fridge magnets hold notes on the refrigerator door",
-          "question": "What holds shopping lists onto steel fridge doors?",
-          "answer": "Fridge magnets",
+          "question": "What do fridge magnets hold?",
+          "answer": "Notes on the fridge door",
           "draw": "colourful cartoon fridge magnets holding a child's drawing securely onto a white refrigerator door"
         },
         {
@@ -4054,122 +4054,122 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "An electromagnet uses electricity to become magnetic",
-          "question": "What magnet turns on and off with an electric switch?",
-          "answer": "An electromagnet",
+          "question": "What does an electromagnet use to become magnetic?",
+          "answer": "Electricity",
           "draw": "an iron nail wrapped with copper wire connected to a battery, picking up paperclips while current flows"
         },
         {
           "say": "Scrap yard cranes use giant electromagnets to lift cars",
-          "question": "How do giant cranes lift scrap iron without hooks?",
-          "answer": "A powerful electromagnet",
+          "question": "What do scrap yard cranes use to lift cars?",
+          "answer": "Giant electromagnets",
           "draw": "a massive circular industrial electromagnet suspended from a crane lifting heavy scrap steel in a junkyard"
         },
         {
           "say": "Maglev trains float above tracks using magnetic levitation",
-          "question": "How do superfast maglev trains glide without wheels?",
-          "answer": "Magnetic repulsion floats them",
+          "question": "How do maglev trains float above the tracks?",
+          "answer": "Using magnets",
           "draw": "a sleek modern bullet train levitating slightly above high-tech guide tracks gliding at super speed"
         },
         {
           "say": "Magnetic clasps keep bags and pencil boxes closed",
-          "question": "What silent fastener snaps wallets and laptop cases shut?",
+          "question": "What keeps bags and pencil boxes closed?",
           "answer": "Magnetic clasps",
           "draw": "a stylish school bag flap snapping shut with a hidden round magnetic clasp"
         },
         {
           "say": "Computer hard drives store data using magnetic coatings",
-          "question": "What computer part stores files on spinning magnetic disks?",
-          "answer": "Hard drive",
+          "question": "How do hard drives store data?",
+          "answer": "Using magnetic coatings",
           "draw": "the opened casing of a computer hard disk drive showing a polished magnetic platter and read arm"
         },
         {
           "say": "Electric motors use magnets to spin and produce motion",
-          "question": "What components make fans and toy cars spin?",
-          "answer": "Magnets and electric coils",
+          "question": "What do electric motors use to spin?",
+          "answer": "Magnets",
           "draw": "a small cutaway electric toy motor showing curved permanent magnets surrounding a copper wire rotor"
         },
         {
           "say": "Loudspeakers use magnets to vibrate cones and make sound",
-          "question": "What component inside a speaker moves the cone?",
-          "answer": "A permanent magnet and voice coil",
+          "question": "What do loudspeakers use to make sound?",
+          "answer": "Magnets",
           "draw": "a cross-section of a round audio loudspeaker showing a heavy circular magnet driving the speaker cone"
         },
         {
           "say": "Rubbing an iron needle with a magnet makes a temporary magnet",
-          "question": "How can you magnetize a steel sewing needle?",
-          "answer": "Stroke it with a magnet in one direction",
+          "question": "What does rubbing a needle with a magnet make?",
+          "answer": "A temporary magnet",
           "draw": "a child gently stroking a steel needle along a bar magnet to turn it into a floating compass needle"
         },
         {
           "say": "A floating magnetized needle on water points to North",
-          "question": "How did early sailors make makeshift compasses?",
-          "answer": "Floating a magnetized needle on a leaf in water",
+          "question": "Which way does a floating magnetized needle point?",
+          "answer": "North",
           "draw": "a magnetized sewing needle resting on a green leaf floating in a bowl of water pointing North"
         },
         {
           "say": "Dropping or heating a magnet weakens its magnetic strength",
-          "question": "What can demagnetize a permanent magnet?",
-          "answer": "Dropping, hammering, or heating it",
+          "question": "What weakens a magnet?",
+          "answer": "Dropping or heating it",
           "draw": "an educational illustration showing a magnet being cared for gently to preserve its magnetic strength"
         },
         {
           "say": "Store bar magnets in pairs with soft iron keepers",
-          "question": "How should magnets be stored in the science lab?",
+          "question": "How should bar magnets be stored?",
           "answer": "In pairs with iron keepers",
           "draw": "two bar magnets resting side by side with opposite poles linked by small soft iron metal keeper plates"
         },
         {
           "say": "Magnetic screwdrivers hold screws so they don't drop",
-          "question": "Why do carpenters use magnetic screwdrivers?",
-          "answer": "To hold steel screws securely in place",
+          "question": "What do magnetic screwdrivers hold?",
+          "answer": "Screws",
           "draw": "a yellow-handled screwdriver holding a shiny steel screw on its magnetic tip above a wooden board"
         },
         {
           "say": "Magnetic cabinet catches keep cupboard doors closed",
-          "question": "What keeps kitchen cabinet doors from swinging open?",
-          "answer": "Magnetic door catches",
+          "question": "What keeps cupboard doors closed?",
+          "answer": "Magnetic catches",
           "draw": "a white kitchen cabinet door clicking shut against a small magnetic latch inside the frame"
         },
         {
           "say": "Credit cards have a dark magnetic stripe on the back",
-          "question": "What black stripe on store cards holds encoded data?",
-          "answer": "A magnetic stripe",
+          "question": "What is on the back of a credit card?",
+          "answer": "A dark magnetic stripe",
           "draw": "the back of a bank card showing a smooth black magnetic stripe and signature strip"
         },
         {
           "say": "mri scanners in hospitals use powerful magnets to see inside the body",
-          "question": "What medical scanner uses giant magnets without X-rays?",
-          "answer": "An mri scanner",
+          "question": "What do mri scanners use to see inside the body?",
+          "answer": "Powerful magnets",
           "draw": "a modern hospital room with a large round mri scanning machine providing safe clear body images"
         },
         {
           "say": "Birds and sea turtles use Earth's magnetic field to navigate",
-          "question": "How do migrating birds find their way across continents?",
-          "answer": "Magnetic sense (magnetoreception)",
+          "question": "What do birds and sea turtles use to find their way?",
+          "answer": "Earth's magnetic field",
           "draw": "migrating geese flying in a neat V-formation across sunset skies guided by Earth's magnetic field"
         },
         {
           "say": "Magnetic whiteboard erasers stick directly to the board",
-          "question": "What prevents whiteboard erasers from falling off?",
-          "answer": "A built-in magnet",
+          "question": "Where do magnetic whiteboard erasers stick?",
+          "answer": "On the board",
           "draw": "a blue felt whiteboard eraser sticking securely to the corner of a metal whiteboard"
         },
         {
           "say": "Magnetic chess sets keep pieces stable during travel",
-          "question": "How do travel board games keep pieces from tumbling?",
-          "answer": "Magnets in each piece base",
+          "question": "What keeps travel chess pieces in place?",
+          "answer": "Magnets",
           "draw": "a folding travel chessboard with magnetic chess pieces standing upright even when tilted"
         },
         {
           "say": "Magnetic forces are non-contact forces that act at a distance",
-          "question": "Does a magnet need to touch an iron nail to pull it?",
-          "answer": "No, it pulls across empty space",
+          "question": "Does a magnet need to touch things to pull them?",
+          "answer": "No, it acts at a distance",
           "draw": "an iron paperclip leaping up through the air towards a hovering magnet before touching"
         },
         {
           "say": "Magnets are fascinating tools of science and everyday technology",
-          "question": "Can you name three everyday uses of magnets?",
-          "answer": "Fridge doors, motors, and compasses",
+          "question": "Where do we use magnets?",
+          "answer": "In science and everyday technology",
           "draw": "a child enthusiastically exploring magnets and paperclips with a magnifying glass at a science fair"
         }
       ]
@@ -4189,248 +4189,248 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "The heart pumps oxygen-rich blood through the entire body",
-          "question": "Which muscular pump circulates blood day and night?",
-          "answer": "The heart",
+          "question": "What does the heart pump through the body?",
+          "answer": "Oxygen-rich blood",
           "draw": "a friendly anatomical illustration of a healthy heart showing four chambers pumping oxygen-rich red blood through vessels"
         },
         {
           "say": "The lungs take in oxygen gas when we inhale",
-          "question": "Which vital gas do our lungs absorb from the air?",
+          "question": "What gas do the lungs take in when we inhale?",
           "answer": "Oxygen",
           "draw": "a child taking a refreshing deep breath of crisp mountain air with two healthy pink lungs expanding in the chest"
         },
         {
           "say": "The lungs expel carbon dioxide gas when we exhale",
-          "question": "Which waste gas do our lungs breathe out?",
+          "question": "What gas do the lungs push out when we exhale?",
           "answer": "Carbon dioxide",
           "draw": "a child exhaling gently into cool morning air showing misty breath and lungs deflating smoothly"
         },
         {
           "say": "Running fast makes your heart beat faster",
-          "question": "What happens to your pulse rate during exercise?",
-          "answer": "It speeds up to deliver more oxygen",
+          "question": "What happens to your heart when you run fast?",
+          "answer": "It beats faster",
           "draw": "a boy running enthusiastically along a park path with his heart beating fast and cheeks glowing with fitness"
         },
         {
           "say": "The human heart has four chambers",
-          "question": "How many chambers make up the human heart?",
-          "answer": "Four (two atria and two ventricles)",
+          "question": "How many chambers does the human heart have?",
+          "answer": "Four",
           "draw": "a clear cross-section diagram of the heart showing the right and left atria and ventricles with neat valves"
         },
         {
           "say": "Red arteries carry blood away from the heart",
-          "question": "Which blood vessels carry fresh blood out to body muscles?",
+          "question": "Which blood vessels carry blood away from the heart?",
           "answer": "Arteries",
           "draw": "an anatomical diagram showing branching bright red arteries delivering oxygenated blood to arms and legs"
         },
         {
           "say": "Blue veins carry blood back to the heart",
-          "question": "Which blood vessels return blood to the heart for refilling?",
+          "question": "Which blood vessels carry blood back to the heart?",
           "answer": "Veins",
           "draw": "an anatomical diagram showing deep blue veins carrying blood back towards the heart and lungs"
         },
         {
           "say": "Microscopic capillaries connect arteries to veins",
-          "question": "Where does oxygen pass into muscle cells?",
-          "answer": "In tiny capillaries",
+          "question": "What connects arteries to veins?",
+          "answer": "Tiny capillaries",
           "draw": "a magnified view of microscopic capillary networks wrapping around body cells exchanging oxygen and nutrients"
         },
         {
           "say": "A resting pulse is about seventy to eighty beats per minute",
-          "question": "How many times does a normal child's heart beat in a minute?",
-          "answer": "About seventy to ninety times",
+          "question": "How many times does a resting heart beat in a minute?",
+          "answer": "About seventy to eighty times",
           "draw": "a doctor checking a child's wrist pulse with two fingers while looking at a stopwatch"
         },
         {
           "say": "The windpipe branches into two bronchial tubes",
-          "question": "What airway tube connects the throat to the lungs?",
-          "answer": "The windpipe (trachea)",
+          "question": "What does the windpipe branch into?",
+          "answer": "Two bronchial tubes",
           "draw": "an educational illustration of the windpipe branching cleanly into two bronchial tubes leading into both lungs"
         },
         {
           "say": "Alveoli are tiny air sacs where gas exchange happens",
-          "question": "What microscopic grape-like clusters fill the lungs?",
-          "answer": "Alveoli (air sacs)",
+          "question": "What are alveoli?",
+          "answer": "Tiny air sacs in the lungs",
           "draw": "a magnified view of spongy pink alveoli sacs wrapped in capillaries exchanging oxygen and carbon dioxide"
         },
         {
           "say": "The diaphragm is a dome muscle that helps us breathe",
-          "question": "What muscle below the lungs moves down when inhaling?",
+          "question": "Which dome muscle helps us breathe?",
           "answer": "The diaphragm",
           "draw": "an anatomical diagram showing the dome-shaped diaphragm muscle contracting downward to pull air into lungs"
         },
         {
           "say": "Red blood cells carry oxygen using haemoglobin",
-          "question": "What round red cells carry oxygen throughout our body?",
-          "answer": "Red blood cells",
+          "question": "What do red blood cells carry?",
+          "answer": "Oxygen",
           "draw": "friendly colourful disc-shaped red blood cells flowing smoothly through a clear blood vessel"
         },
         {
           "say": "White blood cells defend our body against disease germs",
-          "question": "Which blood cells fight off infections and viruses?",
-          "answer": "White blood cells",
+          "question": "What do white blood cells fight?",
+          "answer": "Disease germs",
           "draw": "protective white blood cells surrounding and destroying tiny bacteria to keep the body healthy"
         },
         {
           "say": "Platelets help our blood clot to heal small cuts",
-          "question": "What tiny cell fragments stop bleeding from a scrape?",
+          "question": "What helps our blood clot to heal cuts?",
           "answer": "Platelets",
           "draw": "platelets weaving a mesh of healing fibres over a small cut on clean skin"
         },
         {
           "say": "The ribcage forms a protective bone cage around heart and lungs",
-          "question": "What bones protect our heart and lungs from injury?",
-          "answer": "The ribcage (ribs)",
+          "question": "What does the ribcage protect?",
+          "answer": "The heart and lungs",
           "draw": "a view of curved white rib bones sheltering the heart and pink lungs inside the chest safely"
         },
         {
           "say": "Aerobic exercise like swimming strengthens the heart muscle",
-          "question": "What sports build cardiovascular stamina?",
-          "answer": "Swimming, jogging, and cycling",
+          "question": "What does swimming strengthen?",
+          "answer": "The heart muscle",
           "draw": "a child swimming smoothly with strong strokes in a clear blue pool showing great lung capacity"
         },
         {
           "say": "Clean fresh park air is best for lung health",
-          "question": "Why should we avoid breathing smoky polluted air?",
-          "answer": "Pollution damages delicate alveoli",
+          "question": "Which air is best for our lungs?",
+          "answer": "Clean fresh park air",
           "draw": "children exercising joyfully in a lush green pine forest where the air is pure and fragrant"
         },
         {
           "say": "Deep breathing calms the nervous system and relaxes the body",
-          "question": "How can slow breathing help when feeling nervous?",
-          "answer": "It lowers heart rate and calms the mind",
+          "question": "What does deep breathing do?",
+          "answer": "Calms us and relaxes the body",
           "draw": "a child sitting peacefully in yoga pose taking slow mindful breaths with eyes gently closed"
         },
         {
           "say": "The heart is about the size of a clenched fist",
-          "question": "How big is your own heart?",
-          "answer": "About the size of your clenched fist",
+          "question": "How big is the heart?",
+          "answer": "About the size of a clenched fist",
           "draw": "a child holding up a clenched fist near the centre-left of the chest to show the heart's size"
         },
         {
           "say": "Blood pressure measures the force of blood against artery walls",
-          "question": "What medical sleeve measures blood pressure?",
-          "answer": "A blood pressure cuff (sphygmomanometer)",
+          "question": "What does blood pressure measure?",
+          "answer": "The force of blood on artery walls",
           "draw": "a doctor wrapping an inflatable fabric blood pressure cuff gently around a patient's upper arm"
         },
         {
           "say": "A stethoscope lets doctors hear the lub-dub sound of heart valves",
-          "question": "What sound do healthy heart valves make?",
-          "answer": "Lub-dub, lub-dub",
+          "question": "What sound does the heart make in a stethoscope?",
+          "answer": "Lub-dub",
           "draw": "a friendly doctor listening carefully with a stethoscope to the steady rhythm of a child's heart"
         },
         {
           "say": "Breathing through the nose filters and warms incoming air",
-          "question": "Why is nose breathing healthier than mouth breathing?",
-          "answer": "Nose hairs filter dust and warm the air",
+          "question": "What does the nose do to the air we breathe?",
+          "answer": "Filters and warms it",
           "draw": "a diagram showing nasal passages trapping dust particles and warming air before it enters the lungs"
         },
         {
           "say": "Yawning helps take in a large gulp of oxygen when tired",
-          "question": "Why do people yawn when sleepy?",
-          "answer": "To take in extra oxygen and cool the brain",
+          "question": "Why do we yawn when tired?",
+          "answer": "To take in a big gulp of oxygen",
           "draw": "a child stretching arms and yawning comfortably before going to sleep in a cosy bedroom"
         },
         {
           "say": "Coughing clears irritating dust from the airways",
-          "question": "Why does the body cough automatically?",
-          "answer": "To expel dust or mucus from windpipes",
+          "question": "What does coughing clear?",
+          "answer": "Dust from the airways",
           "draw": "a child politely coughing into their elbow to protect others and clear the airway"
         },
         {
           "say": "Drinking water keeps blood flowing smoothly without thickening",
-          "question": "Why is good hydration essential for circulation?",
-          "answer": "Blood plasma is ninety percent water",
+          "question": "What does drinking water do for our blood?",
+          "answer": "Keeps it flowing smoothly",
           "draw": "a glass of pure clear water beside an active child resting after a sports match"
         },
         {
           "say": "A resting athlete has a strong and efficient heart",
-          "question": "Why do trained runners have lower resting pulse rates?",
-          "answer": "Their heart pumps more blood per beat",
+          "question": "What kind of heart does a fit athlete have?",
+          "answer": "A strong and efficient heart",
           "draw": "a fit athlete stretching in a stadium after training with a calm steady heartbeat"
         },
         {
           "say": "The left side of the heart pumps blood to the whole body",
-          "question": "Which side of the heart has thicker muscle walls?",
-          "answer": "The left ventricle (pumps to whole body)",
+          "question": "Where does the left side of the heart pump blood?",
+          "answer": "To the whole body",
           "draw": "a diagram highlighting the muscular left ventricle pumping blood into the great aorta arch"
         },
         {
           "say": "The right side of the heart sends blood to the lungs for oxygen",
-          "question": "Where does the right ventricle send blood?",
+          "question": "Where does the right side of the heart send blood?",
           "answer": "To the lungs",
           "draw": "a diagram highlighting the pulmonary artery carrying blood from right ventricle to lungs"
         },
         {
           "say": "Cigarette smoke contains harmful tar that damages lungs",
-          "question": "Why must people avoid smoking completely?",
-          "answer": "Smoke blackens lungs and causes severe illness",
+          "question": "What does cigarette smoke damage?",
+          "answer": "The lungs",
           "draw": "a healthy pink lung contrasting against a clear warning symbol showing clean air is essential"
         },
         {
           "say": "Sneezing expels irritants from the nasal cavity at high speed",
-          "question": "What reflex cleans our nose?",
-          "answer": "A sneeze",
+          "question": "What does sneezing push out of the nose?",
+          "answer": "Irritants",
           "draw": "a child sneezing into a clean tissue to stop germs from spreading in the classroom"
         },
         {
           "say": "Eating foods rich in iron helps make new red blood cells",
-          "question": "Which foods boost blood haemoglobin?",
-          "answer": "Spinach, lentils, dates, and eggs",
+          "question": "What do iron-rich foods help make?",
+          "answer": "New red blood cells",
           "draw": "a plate of iron-rich fresh spinach leaves, red dates, and hard-boiled eggs on a kitchen table"
         },
         {
           "say": "Good posture allows lungs to expand to their full capacity",
-          "question": "Why should we sit straight rather than slouching?",
-          "answer": "Sitting upright gives lungs space to breathe",
+          "question": "What helps our lungs expand fully?",
+          "answer": "Good posture",
           "draw": "a student sitting upright comfortably at a study desk with open shoulders and free breathing"
         },
         {
           "say": "Asthma inhalers help open tight bronchial airways",
-          "question": "What medicine inhaler helps people who have asthma breathe?",
-          "answer": "An inhaler",
+          "question": "What do asthma inhalers open?",
+          "answer": "Tight airways",
           "draw": "a blue medical inhaler releasing a gentle fine aerosol mist to help open airways"
         },
         {
           "say": "High altitude mountain air has lower oxygen pressure",
-          "question": "Why do mountain climbers breathe faster high up?",
-          "answer": "There is less oxygen per breath",
+          "question": "Does mountain air have more or less oxygen?",
+          "answer": "Less oxygen",
           "draw": "a climber on a snowy mountain ridge taking deep breaths under a deep blue sky"
         },
         {
           "say": "The heart muscle beats more than one hundred thousand times every day",
-          "question": "Does the heart ever take a holiday or break?",
-          "answer": "No, it works continuously throughout life",
+          "question": "How many times does the heart beat every day?",
+          "answer": "More than one hundred thousand times",
           "draw": "an inspirational illustration of a tireless golden heart beating steadily inside a healthy human silhouette"
         },
         {
           "say": "Warm-ups before sports prepare the heart and lungs gradually",
-          "question": "Why do sports coaches ask players to warm up?",
-          "answer": "To increase heart rate and circulation safely",
+          "question": "What do warm-ups prepare?",
+          "answer": "The heart and lungs",
           "draw": "children jogging in place and doing gentle jumping jacks to warm up on a sports pitch"
         },
         {
           "say": "Restful sleep gives the cardiovascular system time to repair",
-          "question": "What happens to your heart rate while you sleep peacefully?",
-          "answer": "It slows down to rest and restore",
+          "question": "What does restful sleep give the heart?",
+          "answer": "Time to repair",
           "draw": "a child sleeping deeply in a quiet room with a slow peaceful heartbeat"
         },
         {
           "say": "Laughter increases oxygen intake and stimulates circulation",
-          "question": "Why does laughing feel so good for health?",
-          "answer": "It boosts oxygen and relaxes blood vessels",
+          "question": "What does laughter increase?",
+          "answer": "Oxygen intake",
           "draw": "cheerful children laughing wholeheartedly together in a sunny playground"
         },
         {
           "say": "A healthy heart and clean lungs are foundation of a long active life",
-          "question": "What three habits protect heart and lungs?",
-          "answer": "Exercise, clean air, and nutritious food",
+          "question": "What gives us a long active life?",
+          "answer": "A healthy heart and clean lungs",
           "draw": "a child holding an apple, running shoes, and a water bottle standing triumphantly on a green hilltop"
         },
         {
           "say": "We take care of our body by making healthy choices every single day",
-          "question": "Who is responsible for caring for our health?",
-          "answer": "We are responsible for our own body",
+          "question": "How do we take care of our body?",
+          "answer": "By making healthy choices every day",
           "draw": "a smiling confident child giving a thumbs up in a bright healthy lifestyle setting"
         }
       ]
@@ -4448,248 +4448,248 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "An electric current is the flow of tiny electrons",
-          "question": "What flows through wires to deliver electric power?",
-          "answer": "Electric current (electrons)",
+          "question": "What is an electric current?",
+          "answer": "The flow of tiny electrons",
           "draw": "an educational illustration of glowing blue electrons flowing steadily through a copper wire"
         },
         {
           "say": "A complete circuit allows electric current to flow and light a bulb",
-          "question": "What is needed for a bulb to shine?",
-          "answer": "A closed complete circuit",
+          "question": "What lets current flow and light a bulb?",
+          "answer": "A complete circuit",
           "draw": "a simple working electric circuit: a battery cell connected by two wires to a glowing bulb in a socket"
         },
         {
           "say": "An open switch breaks the circuit and turns off the light",
-          "question": "What happens when a circuit is broken by an open switch?",
-          "answer": "Current stops and the bulb goes out",
+          "question": "What does an open switch do?",
+          "answer": "Breaks the circuit and turns off the light",
           "draw": "a circuit board showing an open knife switch with a dark unlit bulb and interrupted current"
         },
         {
           "say": "A chemical battery stores electrical energy safely",
-          "question": "What portable cell powers torches and toys?",
-          "answer": "A battery",
+          "question": "What does a battery store?",
+          "answer": "Electrical energy",
           "draw": "a standard cylindrical battery cell showing clear positive (+) and negative (-) terminals on a table"
         },
         {
           "say": "Copper metal is an excellent electrical conductor",
-          "question": "What metal is used inside most electrical cables?",
-          "answer": "Copper",
+          "question": "Is copper a conductor or an insulator?",
+          "answer": "An excellent conductor",
           "draw": "shiny reddish-brown copper wire strands emerging from a stripped insulated plastic wire"
         },
         {
           "say": "Plastic coating is an insulator that prevents electric shocks",
-          "question": "Why are electric wires covered in coloured plastic?",
-          "answer": "Plastic is an insulator for safety",
+          "question": "What does plastic coating on wires prevent?",
+          "answer": "Electric shocks",
           "draw": "neat bundles of flexible electric wires covered in red, blue, and yellow insulating plastic"
         },
         {
           "say": "A light bulb glows when electric current heats the thin filament",
-          "question": "What part inside a traditional incandescent bulb glows?",
-          "answer": "The filament",
+          "question": "What part of a bulb glows?",
+          "answer": "The thin filament",
           "draw": "a clear glass light bulb showing a bright golden glowing filament inside in the dark"
         },
         {
           "say": "Never touch electrical switches or sockets with wet hands",
-          "question": "Why is water dangerous near electricity?",
-          "answer": "Water conducts electricity and can shock you",
+          "question": "Should we touch switches with wet hands?",
+          "answer": "Never",
           "draw": "a clear safety symbol warning never to touch a wall electrical socket with wet hands"
         },
         {
           "say": "Solar panels convert bright sunlight directly into clean electricity",
-          "question": "What renewable device makes electricity from sun rays?",
-          "answer": "Solar panels (photovoltaics)",
+          "question": "What do solar panels turn sunlight into?",
+          "answer": "Clean electricity",
           "draw": "blue photovoltaic solar panels mounted on a house roof basking in bright golden sunshine"
         },
         {
           "say": "Wind turbines generate green electricity from blowing wind",
-          "question": "What giant rotating blades turn wind into power?",
-          "answer": "Wind turbines",
+          "question": "What do wind turbines use to make electricity?",
+          "answer": "Blowing wind",
           "draw": "tall white wind turbines with rotating three-blade rotors standing across green hills under blue sky"
         },
         {
           "say": "Hydroelectric dams produce electricity using rushing river water",
-          "question": "What power station uses water flow to turn turbines?",
-          "answer": "A hydroelectric dam",
+          "question": "What do hydroelectric dams use to make electricity?",
+          "answer": "Rushing river water",
           "draw": "a massive concrete hydroelectric river dam with foaming water rushing through turbine gates"
         },
         {
           "say": "In a series circuit, removing one bulb turns all bulbs off",
-          "question": "What happens if one bulb breaks in a series circuit?",
-          "answer": "All bulbs go dark",
+          "question": "In a series circuit, what happens if one bulb is removed?",
+          "answer": "All the bulbs turn off",
           "draw": "three small light bulbs connected in one single loop series circuit glowing softly from a battery"
         },
         {
           "say": "In a parallel circuit, each bulb has its own separate branch",
-          "question": "Why do houses use parallel wiring?",
-          "answer": "If one light turns off, others stay on",
+          "question": "In a parallel circuit, what does each bulb have?",
+          "answer": "Its own separate branch",
           "draw": "two light bulbs connected in parallel branches across a battery, both glowing brightly"
         },
         {
           "say": "A fuse protects household circuits from dangerous electrical overloads",
-          "question": "What safety wire melts if current gets too high?",
-          "answer": "A fuse",
+          "question": "What does a fuse protect?",
+          "answer": "Household circuits",
           "draw": "a glass cartridge fuse showing a thin protective wire inside resting on an electrical circuit panel"
         },
         {
           "say": "Circuit breakers flip off automatically when too much current flows",
-          "question": "What modern safety switch replaces old wire fuses?",
-          "answer": "A circuit breaker",
+          "question": "When do circuit breakers flip off?",
+          "answer": "When too much current flows",
           "draw": "a household electrical distribution panel with neat rows of safety circuit breaker switches"
         },
         {
           "say": "An electric motor turns electrical energy into mechanical movement",
-          "question": "What device spins the blades of an electric fan?",
-          "answer": "An electric motor",
+          "question": "What does an electric motor make?",
+          "answer": "Movement",
           "draw": "a small cutaway electric motor showing copper wire coils and magnets spinning a small fan blade"
         },
         {
           "say": "An electric generator turns mechanical movement into electrical current",
-          "question": "What machine creates electricity when its rotor is turned?",
-          "answer": "A generator",
+          "question": "What does a generator make?",
+          "answer": "Electric current",
           "draw": "a hand-cranked demonstration generator producing electric sparks that light a small bulb"
         },
         {
           "say": "A battery has a positive terminal and a negative terminal",
-          "question": "How must batteries be aligned in a flashlight?",
-          "answer": "Positive to negative (+ to -)",
+          "question": "What two terminals does a battery have?",
+          "answer": "Positive and negative",
           "draw": "two AA batteries inserted correctly into a transparent flashlight compartment showing terminal alignment"
         },
         {
           "say": "Static electricity makes hair stand up when rubbed with a balloon",
-          "question": "What causes sparks when pulling off a woollen sweater?",
-          "answer": "Static electrical charges",
+          "question": "What makes hair stand up after rubbing a balloon?",
+          "answer": "Static electricity",
           "draw": "a child with fun upright hair standing up after rubbing a colourful latex balloon on a wool sweater"
         },
         {
           "say": "Lightning is a massive discharge of natural static electricity",
-          "question": "What natural phenomenon is a giant spark of electricity?",
-          "answer": "Lightning in a thunderstorm",
+          "question": "What is lightning?",
+          "answer": "A huge spark of static electricity",
           "draw": "a breathtaking fork of violet lightning striking from dark storm clouds down into open water"
         },
         {
           "say": "A lightning rod on tall buildings safely channels strikes into the ground",
-          "question": "How do skyscrapers survive lightning strikes safely?",
-          "answer": "A lightning rod earthing the strike",
+          "question": "What keeps tall buildings safe from lightning?",
+          "answer": "A lightning rod",
           "draw": "a sharp pointed metal lightning rod on the tip of a tall skyscraper leading down into ground earth"
         },
         {
           "say": "Rubber shoes provide electrical insulation from the ground",
-          "question": "Why do electrical linesmen wear thick rubber boots and gloves?",
-          "answer": "Rubber blocks electrical current",
+          "question": "What do rubber shoes give us?",
+          "answer": "Insulation from electricity",
           "draw": "an electrical technician wearing certified thick orange rubber safety gloves inspecting cables"
         },
         {
           "say": "A digital voltmeter measures electric potential difference in volts",
-          "question": "What unit measures electrical force or push?",
-          "answer": "Volts (V)",
+          "question": "What does a voltmeter measure in?",
+          "answer": "Volts",
           "draw": "a digital yellow multimeter displaying a reading of 9.0 volts connected across a battery"
         },
         {
           "say": "Electric current is measured in amperes using an ammeter",
-          "question": "What unit measures the rate of flow of electric current?",
-          "answer": "Amperes (amps)",
+          "question": "What measures electric current?",
+          "answer": "An ammeter, in amperes",
           "draw": "an analog ammeter with a needle pointing to 2 amperes on a clean school laboratory bench"
         },
         {
           "say": "Rechargeable batteries can be used hundreds of times",
-          "question": "Why are rechargeable batteries better for our planet?",
-          "answer": "They reduce chemical waste",
+          "question": "How many times can rechargeable batteries be used?",
+          "answer": "Hundreds of times",
           "draw": "four rechargeable green batteries resting inside a smart charging dock plugged into a socket"
         },
         {
           "say": "Geothermal power plants tap into heat deep beneath the Earth crust",
-          "question": "What renewable energy uses heat from underground rocks?",
-          "answer": "Geothermal energy",
+          "question": "Where does geothermal power get its heat?",
+          "answer": "Deep beneath the Earth's crust",
           "draw": "steam rising cleanly from a modern geothermal power plant in a volcanic mountain landscape"
         },
         {
           "say": "Never fly kites near overhead high-voltage power lines",
-          "question": "Why is it dangerous to fly kites near electrical cables?",
-          "answer": "The string can carry deadly voltage",
+          "question": "Where should we never fly kites?",
+          "answer": "Near power lines",
           "draw": "a clear outdoor warning sign near electrical pylons showing a kite with a safety cross"
         },
         {
           "say": "Wall electrical sockets supply high-voltage alternating current",
-          "question": "Is house mains electricity safe to touch?",
-          "answer": "No, high voltage (220V/110V) is dangerous",
+          "question": "Is the electricity in wall sockets safe to touch?",
+          "answer": "No, it is high voltage",
           "draw": "a clean three-pin wall electrical outlet with protective child safety shutter covers"
         },
         {
           "say": "Energy-saving led bulbs use much less electricity than old bulbs",
-          "question": "Which modern bulbs save the most electrical energy?",
+          "question": "Which bulbs use less electricity?",
           "answer": "Led bulbs",
           "draw": "a modern energy-efficient white led bulb shining brilliant light while consuming very little power"
         },
         {
           "say": "Electric cars run on battery power instead of petrol",
-          "question": "What vehicles produce zero tailpipe emissions on roads?",
-          "answer": "Electric vehicles (EVs)",
+          "question": "What do electric cars run on?",
+          "answer": "Battery power",
           "draw": "a sleek modern electric car plugged into a curbside charging station under green street trees"
         },
         {
           "say": "A doorbell uses an electromagnet to chime a chime bar",
-          "question": "What magnetic device rings traditional doorbells?",
-          "answer": "An electromagnet chime mechanism",
+          "question": "What does a doorbell use to chime?",
+          "answer": "An electromagnet",
           "draw": "the internal chime mechanism of a doorbell showing an electromagnet striking a metal chime bar"
         },
         {
           "say": "A graphite pencil lead can conduct a tiny amount of electricity",
-          "question": "Is graphite carbon a conductor or insulator?",
-          "answer": "A conductor of electricity",
+          "question": "Can pencil lead conduct electricity?",
+          "answer": "Yes, a tiny amount",
           "draw": "a simple science experiment with wires touching pencil graphite completing a circuit to light an led"
         },
         {
           "say": "Saltwater conducts electricity because of free dissolved ions",
-          "question": "Does pure distilled water conduct as well as saltwater?",
-          "answer": "No, saltwater conducts much better",
+          "question": "Does saltwater conduct electricity?",
+          "answer": "Yes",
           "draw": "beaker of saltwater with two electrodes carrying current to light a small demonstration bulb"
         },
         {
           "say": "Dry wood and glass do not conduct electric current",
-          "question": "Are wood and dry paper conductors or insulators?",
-          "answer": "Insulators",
+          "question": "Do dry wood and glass conduct electric current?",
+          "answer": "No, they do not conduct",
           "draw": "a wooden stick placed in a circuit showing that current cannot pass through it"
         },
         {
           "say": "Switch off lights and fans when leaving an empty room",
-          "question": "How can you save electrical energy at home?",
-          "answer": "Turn off unused appliances",
+          "question": "What should we do when leaving a room?",
+          "answer": "Switch off lights and fans",
           "draw": "a child's finger clicking a wall light switch off when walking out of a sunny bedroom"
         },
         {
           "say": "Unplugging phone chargers when not in use saves phantom power",
-          "question": "Why should we unplug unused power adaptors?",
-          "answer": "To avoid wasting standby electricity",
+          "question": "What saves power when chargers are not in use?",
+          "answer": "Unplugging them",
           "draw": "a clean white phone charger unplugged neatly from a wall socket on a study desk"
         },
         {
           "say": "Biomass energy generates electricity from organic waste",
-          "question": "What renewable energy burns agricultural husks and crop waste?",
-          "answer": "Biomass energy",
+          "question": "What does biomass energy use to make electricity?",
+          "answer": "Organic waste",
           "draw": "a clean modern biomass energy facility processing agricultural plant stalks into electricity"
         },
         {
           "say": "Smart electricity meters help families track daily energy consumption",
-          "question": "What digital meter displays home electricity use in real time?",
-          "answer": "A smart meter",
+          "question": "What do smart meters help families track?",
+          "answer": "Their daily energy use",
           "draw": "a modern digital home energy display showing kilowatt-hours used and green savings tips"
         },
         {
           "say": "Electricity powers modern hospitals, computers, and water systems",
-          "question": "Could modern cities function without electricity?",
-          "answer": "No, electricity powers essential infrastructure",
+          "question": "What does electricity power?",
+          "answer": "Hospitals, computers and water systems",
           "draw": "a glowing night skyline of a modern city powered by reliable clean electrical grids"
         },
         {
           "say": "Renewable energy will power a sustainable and clean future",
-          "question": "What clean energy sources will replace coal and oil?",
-          "answer": "Solar, wind, and water power",
+          "question": "What will renewable energy power?",
+          "answer": "A clean future",
           "draw": "a vibrant panoramic landscape featuring solar farms, wind turbines, and clean blue skies together"
         },
         {
           "say": "Handle all electrical appliances with care, respect, and knowledge",
-          "question": "What is the most important rule of electricity?",
-          "answer": "Safety first at all times",
+          "question": "How should we handle electrical appliances?",
+          "answer": "With care",
           "draw": "a school science class with students wearing safety goggles while building simple battery circuits"
         }
       ]
@@ -4707,92 +4707,92 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "The sun is a giant glowing star at the centre of our solar system",
-          "question": "What massive star provides heat and light to all planets?",
-          "answer": "The Sun",
+          "question": "What is at the centre of our solar system?",
+          "answer": "The Sun, a giant star",
           "draw": "the magnificent glowing golden Sun radiating solar flares and light against the velvet black expanse of deep space"
         },
         {
           "say": "Mercury is the smallest planet and closest to the sun",
-          "question": "Which planet is closest to the Sun?",
+          "question": "Which is the smallest planet and closest to the Sun?",
           "answer": "Mercury",
           "draw": "the rocky cratered surface of grey planet Mercury orbiting near the fiery golden Sun in space"
         },
         {
           "say": "Venus is the hottest planet with thick swirling clouds",
-          "question": "Which planet is covered in thick greenhouse clouds?",
+          "question": "Which is the hottest planet?",
           "answer": "Venus",
           "draw": "planet Venus glowing with golden yellowish-white cloud bands in dark space"
         },
         {
           "say": "Earth is our home planet with liquid water and life",
-          "question": "Which planet is known as the blue planet?",
+          "question": "Which planet has liquid water and life?",
           "answer": "Earth",
           "draw": "the breathtaking blue and green planet Earth showing swirling white clouds and blue oceans seen from space"
         },
         {
           "say": "Mars is called the red planet because of rusty iron soil",
-          "question": "Which planet has red dusty rocks and two small moons?",
+          "question": "Which planet is called the red planet?",
           "answer": "Mars",
           "draw": "the dusty rust-red sphere of planet Mars with polar ice caps floating in dark space"
         },
         {
           "say": "Jupiter is the largest planet with a great red spot storm",
-          "question": "Which planet is the biggest giant of our solar system?",
+          "question": "Which is the largest planet?",
           "answer": "Jupiter",
           "draw": "the enormous gas giant planet Jupiter with striped atmospheric bands and its famous swirling Great Red Spot"
         },
         {
           "say": "Saturn is famous for its magnificent glowing ring system",
-          "question": "Which gas giant has thousands of dazzling icy rings?",
+          "question": "Which planet is famous for its rings?",
           "answer": "Saturn",
           "draw": "planet Saturn surrounded by wide spectacular rings of shimmering ice and rock against a field of stars"
         },
         {
           "say": "Uranus is an icy blue planet that spins on its side",
-          "question": "Which ice giant planet rotates tilted completely on its side?",
+          "question": "Which icy blue planet spins on its side?",
           "answer": "Uranus",
           "draw": "pale cyan-blue planet Uranus tilted sideways with faint delicate rings in the outer solar system"
         },
         {
           "say": "Neptune is a deep blue windy planet far from the sun",
-          "question": "Which planet is the eighth and farthest from the Sun?",
+          "question": "Which deep blue windy planet is far from the Sun?",
           "answer": "Neptune",
           "draw": "deep azure blue planet Neptune showing white swirling storm clouds in the cold outer space"
         },
         {
           "say": "The moon orbits the Earth once every twenty-seven days",
-          "question": "What natural satellite circles planet Earth?",
-          "answer": "The Moon",
+          "question": "How long does the Moon take to orbit the Earth?",
+          "answer": "About twenty-seven days",
           "draw": "the cratered silver Moon orbiting close to the beautiful illuminated crescent of planet Earth"
         },
         {
           "say": "Earth rotates on its axis once every twenty-four hours to make day and night",
-          "question": "What causes the cycle of day and night on Earth?",
-          "answer": "Earth rotation on its axis",
+          "question": "What makes day and night?",
+          "answer": "Earth rotating on its axis",
           "draw": "planet Earth spinning on its tilted axis with one hemisphere bathed in sunlight and the other in night"
         },
         {
           "say": "Earth orbits the sun once every 365 days to make one full year",
-          "question": "How long does Earth take to travel around the Sun?",
-          "answer": "One year (365 days)",
+          "question": "How long does Earth take to orbit the Sun?",
+          "answer": "365 days, one year",
           "draw": "planet Earth travelling along its elliptical orbit around the bright central Sun marking the four seasons"
         },
         {
           "say": "The asteroid belt orbits between Mars and Jupiter",
-          "question": "Where do millions of rocky asteroids circle the Sun?",
+          "question": "Where is the asteroid belt?",
           "answer": "Between Mars and Jupiter",
           "draw": "irregular grey rocky asteroids drifting through dark space in the asteroid belt between Mars and Jupiter"
         },
         {
           "say": "A comet is a dirty snowball of ice and dust with a glowing tail",
-          "question": "What space body develops a bright tail when near the Sun?",
-          "answer": "A comet",
+          "question": "What is a comet made of?",
+          "answer": "Ice and dust",
           "draw": "a glowing comet with a brilliant blue and white tail streaming across the starry night sky"
         },
         {
           "say": "Shooting stars are meteors burning up in Earth's atmosphere",
-          "question": "What are shooting stars really?",
-          "answer": "Meteors burning in air friction",
+          "question": "What are shooting stars?",
+          "answer": "Meteors burning up in the air",
           "draw": "a bright streak of a meteor (shooting star) shooting across a dark star-filled night sky"
         },
         {
@@ -4803,152 +4803,152 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
         },
         {
           "say": "Pluto is classified as a dwarf planet in the Kuiper belt",
-          "question": "What small icy world was formerly called the ninth planet?",
-          "answer": "Pluto",
+          "question": "What kind of planet is Pluto?",
+          "answer": "A dwarf planet",
           "draw": "dwarf planet Pluto showing its pale brownish-red surface with a heart-shaped nitrogen ice glacier"
         },
         {
           "say": "Astronauts float in weightlessness inside the space station",
-          "question": "Why do astronauts float in orbit?",
-          "answer": "Microgravity (free fall in orbit)",
+          "question": "Why do astronauts float in the space station?",
+          "answer": "They are weightless",
           "draw": "an astronaut in a white spacesuit floating weightlessly inside the cupola window of the International Space Station looking down at Earth"
         },
         {
           "say": "The International Space Station circles Earth every ninety minutes",
-          "question": "What orbiting laboratory has scientists living in space?",
-          "answer": "The International Space Station",
+          "question": "How often does the space station circle Earth?",
+          "answer": "Every ninety minutes",
           "draw": "the International Space Station with glowing gold solar arrays orbiting high above the blue curved horizon of Earth"
         },
         {
           "say": "Rockets use powerful engines to overcome Earth gravity",
-          "question": "What vehicle launches satellites and astronauts into orbit?",
-          "answer": "A rocket",
+          "question": "What do rockets use to overcome gravity?",
+          "answer": "Powerful engines",
           "draw": "a tall multi-stage space rocket blasting off into the sky with enormous plumes of fiery exhaust smoke"
         },
         {
           "say": "Satellites orbiting Earth help forecast weather and transmit internet",
-          "question": "What machines orbit Earth to beam television and gps signals?",
-          "answer": "Satellites",
+          "question": "What do satellites help with?",
+          "answer": "Weather forecasts and the internet",
           "draw": "a high-tech communications satellite with blue solar wings orbiting in sunlight above continent maps on Earth"
         },
         {
           "say": "Telescopes like Hubble and James Webb capture distant galaxies",
-          "question": "What space observatory peers deep into the early universe?",
-          "answer": "Space telescopes (Hubble, Webb)",
+          "question": "What do space telescopes capture?",
+          "answer": "Distant galaxies",
           "draw": "the golden hexagonal mirrors of the James Webb Space Telescope capturing colorful glowing nebulae in deep cosmos"
         },
         {
           "say": "Gravity is the invisible force holding planets in orbit around the sun",
-          "question": "What keeps Earth from flying off into deep cold space?",
-          "answer": "The Sun gravitational pull",
+          "question": "What holds the planets in orbit around the Sun?",
+          "answer": "Gravity",
           "draw": "an educational solar system diagram showing elliptical planetary orbits anchored by the Sun mass"
         },
         {
           "say": "A lunar eclipse occurs when Earth blocks sunlight from reaching the moon",
-          "question": "What turns the full moon reddish during an eclipse?",
-          "answer": "Earth shadow (lunar eclipse)",
+          "question": "When does a lunar eclipse happen?",
+          "answer": "When Earth blocks sunlight from the Moon",
           "draw": "a dramatic reddish-orange Blood Moon during a total lunar eclipse in a dark starry night sky"
         },
         {
           "say": "A solar eclipse occurs when the moon passes between Earth and the sun",
-          "question": "What happens when the Moon blocks the Sun daytime light?",
-          "answer": "A solar eclipse",
+          "question": "When does a solar eclipse happen?",
+          "answer": "When the Moon passes between Earth and the Sun",
           "draw": "a total solar eclipse showing the black silhouette of the Moon surrounded by the Sun glowing white corona"
         },
         {
           "say": "Moon phases change from new moon to crescent to full moon",
-          "question": "Why does the Moon appear to change shape throughout the month?",
-          "answer": "We see different illuminated portions as it orbits",
+          "question": "What are the phases of the Moon?",
+          "answer": "New moon, crescent and full moon",
           "draw": "an educational chart showing eight phases of the Moon from dark new moon to brilliant full moon"
         },
         {
           "say": "A lunar rover explored the dusty surface of the Moon",
-          "question": "What wheeled vehicle did astronauts drive on the Moon?",
-          "answer": "The Lunar Rover",
+          "question": "What explored the surface of the Moon?",
+          "answer": "A lunar rover",
           "draw": "a lunar rover vehicle parked on powdery grey Moon soil with astronaut bootprints and Earth in the black sky"
         },
         {
           "say": "Mars rovers search for signs of ancient water on Mars",
-          "question": "What robotic explorers drive on the surface of Mars?",
-          "answer": "Mars rovers (Curiosity, Perseverance)",
+          "question": "What do Mars rovers search for?",
+          "answer": "Signs of ancient water",
           "draw": "a robotic wheeled Mars rover exploring a rocky red canyon on Mars under an amber sky"
         },
         {
           "say": "A black hole has gravity so strong that even light cannot escape",
-          "question": "What mysterious cosmic object pulls in all matter and light?",
-          "answer": "A black hole",
+          "question": "Can light escape a black hole?",
+          "answer": "No, its gravity is too strong",
           "draw": "a glowing orange accretion disk of swirling gas surrounding the dark sphere of a black hole in deep space"
         },
         {
           "say": "A nebula is a vast glowing cloud of space gas and dust where new stars are born",
-          "question": "What cosmic nursery gives birth to new stars?",
-          "answer": "A nebula",
+          "question": "Where are new stars born?",
+          "answer": "In a nebula",
           "draw": "the colourful glowing clouds of the Orion Nebula with vibrant pink, purple, and blue gases cradling newborn stars"
         },
         {
           "say": "Light from the sun takes about eight minutes to reach Earth",
-          "question": "How long does a ray of sunlight take to travel to Earth?",
+          "question": "How long does sunlight take to reach Earth?",
           "answer": "About eight minutes",
           "draw": "a beam of golden sunlight traversing the dark space void from the Sun to planet Earth"
         },
         {
           "say": "The constellation of Orion is easy to spot by its three belt stars",
-          "question": "What star pattern resembles a mighty celestial hunter?",
-          "answer": "The constellation Orion",
+          "question": "How can we spot Orion?",
+          "answer": "By its three belt stars",
           "draw": "the constellation Orion traced with luminous lines connecting bright stars including Betelgeuse and Rigel"
         },
         {
           "say": "The North Star (Polaris) stays stationary in the northern night sky",
-          "question": "What reliable star helps navigators find true North at night?",
+          "question": "Which star stays still in the northern sky?",
           "answer": "The North Star (Polaris)",
           "draw": "star trails swirling in concentric circles around the steady bright North Star in a night sky"
         },
         {
           "say": "Solar flares are sudden explosions of energy on the sun surface",
-          "question": "What massive eruptions release magnetic energy from the Sun?",
-          "answer": "Solar flares",
+          "question": "What are solar flares?",
+          "answer": "Explosions of energy on the Sun",
           "draw": "a dramatic glowing solar prominence looping up like a giant arch of fiery plasma from the Sun edge"
         },
         {
           "say": "Europa is an icy moon of Jupiter with an ocean underneath",
-          "question": "Which moon of Jupiter might harbour liquid water under ice?",
-          "answer": "Europa",
+          "question": "What is under Europa's ice?",
+          "answer": "An ocean",
           "draw": "icy cracked surface of Jupiter's moon Europa with giant banded Jupiter looming in the background"
         },
         {
           "say": "Titan is Saturn largest moon with thick orange nitrogen smog",
-          "question": "Which moon has liquid methane lakes on its surface?",
-          "answer": "Titan (moon of Saturn)",
+          "question": "What is Titan?",
+          "answer": "Saturn's largest moon",
           "draw": "the orange hazy atmosphere of Titan with dark liquid hydrocarbon lakes seen beneath clouds"
         },
         {
           "say": "Space suits provide astronauts with oxygen, pressure, and thermal shielding",
-          "question": "Why can astronauts not walk on the Moon in regular clothes?",
-          "answer": "Space has no air, pressure, or warmth",
+          "question": "What do space suits give astronauts?",
+          "answer": "Oxygen, pressure and warmth",
           "draw": "an astronaut in a pressurized white space suit with a gold reflective helmet visor standing on space soil"
         },
         {
           "say": "The universe is expanding and filled with billions of wondrous galaxies",
-          "question": "How big is our universe?",
-          "answer": "Immense and expanding with billions of galaxies",
+          "question": "What is the universe filled with?",
+          "answer": "Billions of galaxies",
           "draw": "the deep cosmic web of space filled with thousands of distant colourful swirling spiral and elliptical galaxies"
         },
         {
           "say": "Studying space inspires science, wonder, and technological discovery",
-          "question": "Why do humans explore outer space?",
-          "answer": "To learn about our origins and expand knowledge",
+          "question": "What does studying space inspire?",
+          "answer": "Science, wonder and discovery",
           "draw": "a young student looking through an observatory telescope with eyes wide in wonder at the stars"
         },
         {
           "say": "Earth is our unique oasis of life that we must treasure and protect",
-          "question": "What makes Earth different from all other known planets?",
-          "answer": "It has liquid water, breathable air, and life",
+          "question": "What must we do for Earth?",
+          "answer": "Treasure and protect it",
           "draw": "planet Earth floating peacefully like a precious blue jewel amidst the vast dark universe"
         },
         {
           "say": "Curious young minds are the future astronomers and space explorers",
-          "question": "Who will discover the secrets of distant planets tomorrow?",
-          "answer": "The curious learners of today",
+          "question": "Who are the future space explorers?",
+          "answer": "Curious young minds",
           "draw": "a smiling child holding a model rocket looking up with dream-filled eyes towards the starry cosmos"
         }
       ]
@@ -4966,248 +4966,248 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "Trees absorb carbon dioxide and release fresh oxygen",
-          "question": "How do green forests clean the air we breathe?",
-          "answer": "Absorb carbon dioxide, release oxygen",
+          "question": "What do trees release?",
+          "answer": "Fresh oxygen",
           "draw": "a magnificent dense green forest with morning sunbeams streaming through leaves, releasing fresh clean air"
         },
         {
           "say": "Smoke from factory chimneys causes air pollution",
-          "question": "What causes harmful smog and dirty air in cities?",
-          "answer": "Industrial and vehicle smoke",
+          "question": "What causes air pollution?",
+          "answer": "Smoke from factory chimneys",
           "draw": "tall grey factory chimneys releasing dark smoke plumes into an overcast sky over an industrial city"
         },
         {
           "say": "Plastic trash in rivers causes water pollution and harms fish",
-          "question": "What harms fish and marine animals in rivers and seas?",
-          "answer": "Plastic waste and rubbish",
+          "question": "What does plastic trash in rivers harm?",
+          "answer": "Fish",
           "draw": "a riverbank where plastic bottles float in polluted murky water, highlighting the urgent need for cleanup"
         },
         {
           "say": "Recycling plastic, paper, and metal conserves natural resources",
-          "question": "What do the three recycling arrows represent?",
-          "answer": "Reduce, Reuse, Recycle",
+          "question": "What does recycling conserve?",
+          "answer": "Natural resources",
           "draw": "three bright recycling bins in green, blue, and yellow with children happily sorting paper and plastic bottles"
         },
         {
           "say": "Planting young saplings restores green cover to our planet",
-          "question": "What activity helps combat deforestation?",
-          "answer": "Tree planting (afforestation)",
+          "question": "What restores green cover to our planet?",
+          "answer": "Planting young saplings",
           "draw": "smiling school children planting a young green tree sapling into dark soil and watering it with care"
         },
         {
           "say": "Turning off running water taps saves precious freshwater",
-          "question": "Why should you turn the tap off while brushing teeth?",
-          "answer": "To conserve clean water",
+          "question": "What does turning off running taps save?",
+          "answer": "Precious freshwater",
           "draw": "a child's hand turning a shiny metal tap completely off over a clean sink, stopping any water drops"
         },
         {
           "say": "Switching off unused lights saves electrical energy and coal",
-          "question": "How does saving electricity protect the environment?",
-          "answer": "Reduces burning of fossil fuels",
+          "question": "What does switching off unused lights save?",
+          "answer": "Electrical energy and coal",
           "draw": "a child turning off an unused bedroom light switch to conserve energy in a sunlit room"
         },
         {
           "say": "Littering parks damages soil and harms foraging wildlife",
-          "question": "Where should we always throw our food wrappers?",
-          "answer": "In the litter bin",
+          "question": "What does littering harm?",
+          "answer": "The soil and wildlife",
           "draw": "a child putting a banana peel and wrapper responsibly into a green park trash bin"
         },
         {
           "say": "Using reusable cloth bags reduces single-use plastic waste",
-          "question": "What should you carry for grocery shopping instead of plastic bags?",
-          "answer": "Cloth bags",
+          "question": "What do reusable cloth bags reduce?",
+          "answer": "Plastic waste",
           "draw": "a sturdy reusable cotton tote bag filled with fresh colourful vegetables at a farmers market"
         },
         {
           "say": "Riding a bicycle produces zero greenhouse emissions",
-          "question": "What eco-friendly vehicle helps you travel without burning petrol?",
-          "answer": "A bicycle",
+          "question": "How much pollution does riding a bicycle make?",
+          "answer": "Zero",
           "draw": "a happy child riding a bicycle along a tree-lined green bicycle path in clean morning air"
         },
         {
           "say": "Composting kitchen scraps creates rich organic fertilizer for gardens",
-          "question": "What can we make from fruit peels and vegetable cuttings?",
-          "answer": "Rich compost",
+          "question": "What does composting kitchen scraps make?",
+          "answer": "Rich fertilizer for gardens",
           "draw": "a wooden garden compost bin with decomposing vegetable peels turning into dark rich crumbly soil"
         },
         {
           "say": "Deforestation destroys animal habitats and leads to soil erosion",
-          "question": "What is the cutting down of large forests called?",
-          "answer": "Deforestation",
+          "question": "What does deforestation destroy?",
+          "answer": "Animal habitats",
           "draw": "a landscape contrasting a clear-cut hillside with a flourishing protected green nature reserve"
         },
         {
           "say": "Coral reefs need clean, cool ocean water to thrive",
-          "question": "What colourful underwater ecosystems are threatened by ocean warming?",
-          "answer": "Coral reefs",
+          "question": "What do coral reefs need?",
+          "answer": "Clean, cool ocean water",
           "draw": "a vibrant coral reef bustling with colourful tropical fish, sea turtles, and healthy living corals"
         },
         {
           "say": "Acid rain is caused by sulfur and nitrogen pollution in the air",
-          "question": "What damages tree leaves and stone statues when air is polluted?",
-          "answer": "Acid rain",
+          "question": "What causes acid rain?",
+          "answer": "Pollution in the air",
           "draw": "an educational illustration showing factory smoke mixing with clouds to form acidic rain on trees"
         },
         {
           "say": "Solar and wind energy produce clean power without smoke",
-          "question": "What clean energy sources do not pollute the atmosphere?",
+          "question": "Which energy makes clean power without smoke?",
           "answer": "Solar and wind energy",
           "draw": "a sunny landscape dotted with white wind turbines and blue solar panels under a clear blue sky"
         },
         {
           "say": "The ozone layer shields all life from harmful ultraviolet rays",
-          "question": "What atmospheric layer acts like planet Earth sunscreen?",
-          "answer": "The ozone layer",
+          "question": "What does the ozone layer shield us from?",
+          "answer": "Harmful ultraviolet rays",
           "draw": "an educational globe showing the protective blue ozone layer blocking harsh ultraviolet rays from space"
         },
         {
           "say": "Global warming is caused by trapped greenhouse gases in the atmosphere",
-          "question": "What phenomenon is causing planet Earth average temperature to rise?",
-          "answer": "Global warming",
+          "question": "What causes global warming?",
+          "answer": "Trapped greenhouse gases",
           "draw": "a scientific diagram showing the greenhouse effect trapping heat around Earth to explain climate change"
         },
         {
           "say": "Melting polar glaciers cause ocean sea levels to rise",
-          "question": "What happens in the Arctic as global temperatures increase?",
-          "answer": "Ice caps and glaciers melt",
+          "question": "What happens when polar glaciers melt?",
+          "answer": "Sea levels rise",
           "draw": "a majestic polar ice glacier in the Arctic calving a block of ice into the cold blue sea"
         },
         {
           "say": "Protecting wetlands provides natural flood defense and bird sanctuaries",
-          "question": "What marshy habitats filter water naturally and shelter birds?",
-          "answer": "Wetlands and marshes",
+          "question": "What do wetlands provide for birds?",
+          "answer": "Bird sanctuaries",
           "draw": "a serene freshwater wetland with tall green reeds, clean water, and white egrets resting peacefully"
         },
         {
           "say": "Overfishing threatens the balance of marine food webs",
-          "question": "Why must we catch fish sustainably with care?",
-          "answer": "To allow fish populations to replenish",
+          "question": "What does overfishing threaten?",
+          "answer": "The balance of sea life",
           "draw": "a healthy ocean with diverse shoals of fish swimming freely among underwater kelp forests"
         },
         {
           "say": "Pesticides and chemicals can seep into groundwater aquifers",
-          "question": "Why should farmers use natural organic farming methods?",
-          "answer": "To protect soil and drinking water",
+          "question": "Where can pesticides seep?",
+          "answer": "Into groundwater",
           "draw": "an organic vegetable farm with ladybugs controlling aphids naturally on lush green crops"
         },
         {
           "say": "Using reusable steel water bottles avoids thousands of plastic bottles",
-          "question": "What eco-friendly bottle can you refill every day?",
-          "answer": "A stainless steel bottle",
+          "question": "What do reusable steel bottles help us avoid?",
+          "answer": "Plastic bottles",
           "draw": "a stylish reusable stainless steel water bottle resting on a wooden school desk"
         },
         {
           "say": "Walking short distances keeps you fit and saves fuel",
-          "question": "How can you travel to nearby shops sustainably?",
-          "answer": "Walk or cycle",
+          "question": "What does walking short distances do?",
+          "answer": "Keeps you fit and saves fuel",
           "draw": "friends walking together happily along a sidewalk with trees and green nature all around"
         },
         {
           "say": "National parks protect endangered wildlife from poaching and logging",
-          "question": "What protected zones shelter animals and wild nature?",
-          "answer": "National parks and wildlife reserves",
+          "question": "What do national parks protect?",
+          "answer": "Endangered wildlife",
           "draw": "a wide panoramic national park with wild deer grazing peacefully under towering mountain peaks"
         },
         {
           "say": "Recycling one ton of paper saves seventeen mature trees",
-          "question": "Why is it important to recycle old newspapers and cardboard?",
-          "answer": "It saves trees and water",
+          "question": "How many trees does recycling one ton of paper save?",
+          "answer": "Seventeen trees",
           "draw": "a stack of recycled paper and cardboard being transformed into new notebooks in an eco-friendly mill"
         },
         {
           "say": "Turning off the tap while soaping dishes saves gallons of water",
-          "question": "How can we wash dishes responsibly at home?",
-          "answer": "Turn tap off while scrubbing",
+          "question": "What should we do while soaping dishes?",
+          "answer": "Turn off the tap",
           "draw": "a tidy kitchen sink where dishes are scrubbed with soapy foam before a quick clean rinse"
         },
         {
           "say": "Rainwater harvesting collects clean rain from rooftops for garden use",
-          "question": "What system stores rainwater from roof gutters in tanks?",
-          "answer": "Rainwater harvesting",
+          "question": "Where does rainwater harvesting collect rain from?",
+          "answer": "Rooftops",
           "draw": "a clean house rooftop gutter channeling rainwater into a storage barrel for watering garden plants"
         },
         {
           "say": "Planting wildflowers in gardens feeds declining honeybee populations",
-          "question": "How can you help pollinating bees in your neighborhood?",
-          "answer": "Plant flowering plants",
+          "question": "What do wildflowers in gardens feed?",
+          "answer": "Honeybees",
           "draw": "a vibrant community garden blooming with lavender, sunflowers, and clover visited by happy bees"
         },
         {
           "say": "Noise pollution from traffic disrupts bird calls and human rest",
-          "question": "What causes noise pollution in large cities?",
-          "answer": "Excessive vehicle honking and loud engines",
+          "question": "What does traffic noise disturb?",
+          "answer": "Bird calls and human rest",
           "draw": "a quiet green neighborhood street where cars drive slowly and birds sing audibly in trees"
         },
         {
           "say": "Light pollution in cities hides the stars from view",
-          "question": "Why can we see more stars in the countryside than in big cities?",
-          "answer": "Less light pollution from streetlamps",
+          "question": "What does light pollution hide?",
+          "answer": "The stars",
           "draw": "a countryside night sky ablaze with the Milky Way contrasted against a glowing distant city horizon"
         },
         {
           "say": "Soil erosion occurs when wind and rain wash unprotected topsoil away",
-          "question": "What prevents fertile topsoil from washing away in rain?",
-          "answer": "Plant and tree roots",
+          "question": "What washes topsoil away?",
+          "answer": "Wind and rain",
           "draw": "a hillside protected from erosion by deep terraced grass and healthy tree roots"
         },
         {
           "say": "Biodegradable materials break down naturally in the soil",
-          "question": "What kinds of materials rot away safely in nature?",
-          "answer": "Banana peels, leaves, and paper",
+          "question": "What happens to biodegradable materials in soil?",
+          "answer": "They break down naturally",
           "draw": "an apple core decaying naturally into dark rich garden soil over several weeks"
         },
         {
           "say": "Non-biodegradable plastics can stay in the environment for centuries",
-          "question": "Why are plastic bags so persistent in nature?",
-          "answer": "They do not decay naturally",
+          "question": "How long can plastics stay in the environment?",
+          "answer": "For centuries",
           "draw": "a cleanup volunteer using tongs to collect discarded plastic into a heavy-duty recycling sack"
         },
         {
           "say": "Public transport buses and trains carry dozens of commuters together",
-          "question": "Why is taking a bus better for air quality than driving alone?",
-          "answer": "Fewer cars means less exhaust smoke",
+          "question": "How many people can a bus or train carry?",
+          "answer": "Dozens together",
           "draw": "a modern clean electric city bus picking up passengers at a shaded green bus stop"
         },
         {
           "say": "Fixing leaking taps prevents thousands of litres of water waste",
-          "question": "What should you do if a water tap is dripping steadily?",
-          "answer": "Repair or tighten the washer",
+          "question": "What does fixing leaking taps prevent?",
+          "answer": "Wasting water",
           "draw": "a plumber tightening a bathroom tap with a wrench, stopping all drips completely"
         },
         {
           "say": "Feeding wild birds with birdseed and clean water during dry summers",
-          "question": "How can we help urban wildlife during hot dry weather?",
-          "answer": "Put out fresh water dishes",
+          "question": "What can we give wild birds in dry summers?",
+          "answer": "Birdseed and clean water",
           "draw": "a terracotta bird bath in a shaded garden with small sparrows drinking clean water peacefully"
         },
         {
           "say": "Conserving electricity reduces the burning of polluting fossil fuels",
-          "question": "Where does most coal-fired electricity come from?",
-          "answer": "Burning coal which pollutes air",
+          "question": "What does saving electricity reduce?",
+          "answer": "Burning of fossil fuels",
           "draw": "a family enjoying an evening reading by natural daylight near an open window"
         },
         {
           "say": "Buying local produce reduces long transport fuel emissions",
-          "question": "What is the benefit of buying locally grown fruits and vegetables?",
-          "answer": "Fewer food miles and fresher produce",
+          "question": "Why should we buy local produce?",
+          "answer": "It needs less transport fuel",
           "draw": "a vibrant local farmers market stall laden with freshly harvested regional fruits and vegetables"
         },
         {
           "say": "Community cleanup days bring neighbors together to clean local parks",
-          "question": "How can communities improve their shared public spaces?",
-          "answer": "Organizing park cleanup drives",
+          "question": "What do community cleanup days clean?",
+          "answer": "Local parks",
           "draw": "volunteers of all ages wearing gloves joyfully cleaning litter from a riverside park together"
         },
         {
           "say": "Small daily actions by millions of people create huge positive change",
-          "question": "Can one person make a difference to planet Earth?",
-          "answer": "Yes, every positive action counts",
+          "question": "What creates huge positive change?",
+          "answer": "Small daily actions by many people",
           "draw": "children working together in an eco-club tending a flourishing school vegetable garden"
         },
         {
           "say": "Planet Earth is our shared home and we are its proud caretakers",
-          "question": "What does being a good steward of Earth mean?",
-          "answer": "Protecting nature for future generations",
+          "question": "Who are the caretakers of planet Earth?",
+          "answer": "We are",
           "draw": "diverse children joining hands around a lush green globe with butterflies and blooming flowers"
         }
       ]
@@ -5225,248 +5225,248 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
       "lessons": [
         {
           "say": "Friction is the force that opposes motion between touching surfaces",
-          "question": "What force resists the sliding of one surface over another?",
+          "question": "What force opposes motion between touching surfaces?",
           "answer": "Friction",
           "draw": "a wooden block sliding along a rough surface showing microscopic rough peaks interlocking to create friction"
         },
         {
           "say": "Bicycle brakes press rubber pads against the wheel rim to stop",
-          "question": "Which force slows down a moving bicycle when you squeeze brakes?",
-          "answer": "Friction",
+          "question": "What do bicycle brakes press against the wheel?",
+          "answer": "Rubber pads",
           "draw": "a close-up of black rubber brake pads gripping the metal rim of a bicycle wheel bringing it safely to a stop"
         },
         {
           "say": "A ball rolls farther on smooth ice than on rough grass",
-          "question": "Why does a football stop quickly on thick lawn grass?",
-          "answer": "Grass produces higher friction",
+          "question": "Where does a ball roll farther, on ice or grass?",
+          "answer": "On smooth ice",
           "draw": "a soccer ball gliding smoothly across polished ice compared to slowing down quickly on thick bumpy grass"
         },
         {
           "say": "Sports running shoes have deep rubber grooves for better grip",
-          "question": "Why do athletic sneakers have textured soles?",
-          "answer": "To increase friction and prevent slipping",
+          "question": "Why do running shoes have deep grooves?",
+          "answer": "For better grip",
           "draw": "an athletic running shoe turned over to show deep rubber tread grooves designed to grip a running track"
         },
         {
           "say": "Ice skaters glide easily because smooth ice has very low friction",
-          "question": "Why is it easy to glide on frozen ice?",
-          "answer": "Ice has low friction and a thin water layer",
+          "question": "Why do ice skaters glide easily?",
+          "answer": "Smooth ice has very low friction",
           "draw": "a graceful figure skater gliding effortlessly across a smooth glistening indoor ice rink"
         },
         {
           "say": "Rubbing your hands together produces friction and warmth",
-          "question": "What happens when you rub your cold palms together briskly?",
-          "answer": "Friction produces heat",
+          "question": "What does rubbing your hands together produce?",
+          "answer": "Friction and warmth",
           "draw": "a child in winter rubbing both hands together vigorously to warm cold palms with friction"
         },
         {
           "say": "Car tyres have deep treads to channel water and grip wet roads",
-          "question": "Why do car tyres need deep grooves in rainy weather?",
-          "answer": "To maintain grip and prevent skidding",
+          "question": "Why do car tyres have deep treads?",
+          "answer": "To grip wet roads",
           "draw": "a heavy-duty all-weather car tyre gripping a wet asphalt road securely without slipping"
         },
         {
           "say": "Lubricating squeaky door hinges with oil reduces friction",
-          "question": "What does adding a drop of oil to a squeaky hinge do?",
-          "answer": "Reduces friction and noise",
+          "question": "What does oil on door hinges reduce?",
+          "answer": "Friction",
           "draw": "an oil can placing a small golden drop of lubricating oil onto a metal door hinge, making it swing smoothly"
         },
         {
           "say": "Ball bearings help skateboard wheels spin with minimal friction",
-          "question": "What tiny steel balls help machine axles rotate smoothly?",
+          "question": "What helps skateboard wheels spin?",
           "answer": "Ball bearings",
           "draw": "a precision steel ball bearing with shiny round metal balls rolling smoothly inside circular rings"
         },
         {
           "say": "Sand is sprinkled on icy roads to increase grip and prevent slipping",
-          "question": "Why do trucks spread sand or salt on frozen winter streets?",
-          "answer": "To increase friction for car tyres",
+          "question": "Why is sand put on icy roads?",
+          "answer": "To increase grip",
           "draw": "a maintenance truck spreading coarse sand over an icy road, giving pedestrian boots firm grip"
         },
         {
           "say": "Air resistance slows down a descending parachute skydiver",
-          "question": "What upward friction force slows a skydiver falling through air?",
-          "answer": "Air resistance (drag)",
+          "question": "What slows down a parachute?",
+          "answer": "Air resistance",
           "draw": "a colourful round parachute open wide in the blue sky, slowly floating a skydiver gently down to Earth"
         },
         {
           "say": "Streamlined racing cars cut through air with low air resistance",
-          "question": "Why are sports cars designed with sleek pointed curves?",
-          "answer": "To reduce air drag",
+          "question": "Why are racing cars streamlined?",
+          "answer": "To have low air resistance",
           "draw": "a sleek aerodynamic red racing car speeding on a track with smooth airflow lines passing over its roof"
         },
         {
           "say": "Water resistance slows down objects moving through water",
-          "question": "What force makes moving through swimming pool water feel heavy?",
+          "question": "What slows things down in water?",
           "answer": "Water resistance",
           "draw": "a swimmer gliding streamlined through clear pool water with arms extended forward to minimize drag"
         },
         {
           "say": "Dolphins have sleek bodies that glide with minimal water drag",
-          "question": "Why can dolphins swim so fast in the ocean?",
-          "answer": "Their streamlined body shape reduces water resistance",
+          "question": "Why do dolphins glide easily?",
+          "answer": "They have sleek bodies",
           "draw": "a sleek grey dolphin swimming effortlessly through ocean waves with water flowing smoothly around its skin"
         },
         {
           "say": "Rough sandpaper uses high friction to smooth rough wood planks",
-          "question": "Why does sandpaper scratch and polish wooden boards?",
-          "answer": "High abrasive friction",
+          "question": "What does sandpaper smooth?",
+          "answer": "Rough wood planks",
           "draw": "a carpenter using rough gritty sandpaper to smooth a wooden table edge, creating fine sawdust"
         },
         {
           "say": "Gymnasts apply white chalk powder to their hands for a firm grip",
-          "question": "Why do rock climbers and gymnasts use chalk powder?",
-          "answer": "To absorb sweat and increase friction",
+          "question": "Why do gymnasts put chalk on their hands?",
+          "answer": "For a firm grip",
           "draw": "a gymnast clapping hands together creating a small cloud of white chalk before gripping the wooden parallel bars"
         },
         {
           "say": "Without friction our shoes would slide and we could not walk",
-          "question": "Can humans walk easily on completely frictionless ground?",
-          "answer": "No, we need friction to push forward",
+          "question": "Could we walk without friction?",
+          "answer": "No, our shoes would slide",
           "draw": "a person walking confidently on dry pavement showing their shoe sole pushing back on the ground to move forward"
         },
         {
           "say": "Striking a matchstick against the rough box side creates fire",
-          "question": "What lights a safety match when struck on the box strip?",
-          "answer": "Friction creates heat that ignites the chemical tip",
+          "question": "What happens when a match is struck on the box?",
+          "answer": "It makes fire",
           "draw": "a matchstick striking the rough brown friction strip on a matchbox, producing a bright cheerful flame"
         },
         {
           "say": "A bowling ball rolls smoothly along a polished wooden lane",
-          "question": "Why does a heavy bowling ball roll so far?",
-          "answer": "Polished oiled wood has very low friction",
+          "question": "How does a bowling ball roll on a polished lane?",
+          "answer": "Smoothly",
           "draw": "a shiny black bowling ball rolling smoothly down a polished wooden bowling alley towards ten white pins"
         },
         {
           "say": "A hovercraft floats on a cushion of air with almost zero friction",
-          "question": "How does a hovercraft travel over land and water equally?",
-          "answer": "Floats on air cushion (no surface contact)",
+          "question": "What does a hovercraft float on?",
+          "answer": "A cushion of air",
           "draw": "a hovercraft skimming swiftly over coastal water and mudflats on an inflated rubber skirt cushion of air"
         },
         {
           "say": "Sledges slide down snowy hills easily on smooth plastic runners",
-          "question": "Why do sledges move fast on snow?",
-          "answer": "Snow provides very low friction to smooth runners",
+          "question": "Why do sledges slide easily on snow?",
+          "answer": "They have smooth runners",
           "draw": "children laughing happily as they slide down a snowy winter hill on a red plastic toboggan sledge"
         },
         {
           "say": "A wet water slide uses water as a lubricant to make sliders go fast",
-          "question": "Why does water make playground slides so slippery and fast?",
-          "answer": "Water acts as a slippery lubricant",
+          "question": "What makes a water slide fast?",
+          "answer": "Water acting as a lubricant",
           "draw": "children sliding down a colourful twisting outdoor water slide into a splash pool with water spraying"
         },
         {
           "say": "Bicycle chains need regular lubrication with chain oil to prevent wear",
-          "question": "What happens to a bicycle chain that never gets oiled?",
-          "answer": "High friction wears out metal links and squeaks",
+          "question": "What do bicycle chains need regularly?",
+          "answer": "Chain oil",
           "draw": "clean bicycle maintenance: applying oil drops along a clean bicycle chain while turning the pedal"
         },
         {
           "say": "Friction always produces heat energy when two surfaces rub",
-          "question": "What unwanted side effect does friction cause inside car engines?",
-          "answer": "Heat and metal wear",
+          "question": "What does friction always produce?",
+          "answer": "Heat energy",
           "draw": "an educational cutaway of a car engine cylinder with engine oil lubricating moving pistons to control heat"
         },
         {
           "say": "Climbing ropes have high friction weaves to keep climbers safe",
-          "question": "Why are mountaineering ropes textured and woven?",
-          "answer": "To allow secure knots and strong grip",
+          "question": "How do climbing ropes keep climbers safe?",
+          "answer": "With high friction weaves",
           "draw": "a mountain climber securely tied with a textured nylon climbing rope anchored firmly into rock carabiners"
         },
         {
           "say": "Friction helps pencil graphite stick to paper so we can write",
-          "question": "Why does a pencil leave marks on paper?",
-          "answer": "Friction rubs off tiny graphite particles onto paper",
+          "question": "What helps pencil marks stick to paper?",
+          "answer": "Friction",
           "draw": "a sharp pencil drawing a smooth dark line on textured art paper under clear study lighting"
         },
         {
           "say": "Bath mats with rubber suction cups prevent slipping in showers",
-          "question": "Why do we place rubber mats inside wet bathtubs?",
-          "answer": "To provide high friction and prevent falls",
+          "question": "What do rubber bath mats prevent?",
+          "answer": "Slipping in the shower",
           "draw": "a textured rubber bath mat firmly suctioned to the floor of a clean modern shower stall"
         },
         {
           "say": "Heavy cargo crates are pushed easily on wooden rollers",
-          "question": "How did ancient builders move giant stone blocks?",
-          "answer": "They placed rolling logs underneath",
+          "question": "How are heavy crates pushed easily?",
+          "answer": "On wooden rollers",
           "draw": "workers rolling a heavy wooden crate along cylindrical wooden rollers across a warehouse floor"
         },
         {
           "say": "Airplane wings are shaped to produce lift while reducing drag",
-          "question": "What is aerodynamic wing design called?",
-          "answer": "Airfoil streamlining",
+          "question": "What do airplane wings produce?",
+          "answer": "Lift",
           "draw": "a modern commercial jetliner wing with winglets cutting smoothly through high altitude clouds"
         },
         {
           "say": "Screws hold tightly in wood because of thread friction",
-          "question": "What stops a metal screw from pulling straight out of a wooden wall?",
-          "answer": "Friction along its spiral threads",
+          "question": "Why do screws hold tightly in wood?",
+          "answer": "Friction on their threads",
           "draw": "a steel screw driven securely into a piece of solid oak wood showing tight spiral threads"
         },
         {
           "say": "A baseball pitcher uses the seams to grip and spin the ball",
-          "question": "Why does a baseball have raised red stitches?",
-          "answer": "To increase finger grip and aerodynamic curve",
+          "question": "What does a pitcher use to grip the ball?",
+          "answer": "The seams",
           "draw": "a pitcher gripping the raised red stitching of a white baseball before throwing a curveball"
         },
         {
           "say": "A rolling wheel experiences rolling friction which is smaller than sliding friction",
-          "question": "Which is easier: sliding a heavy box or rolling it on wheels?",
-          "answer": "Rolling on wheels is much easier",
+          "question": "Which friction is smaller, rolling or sliding?",
+          "answer": "Rolling friction",
           "draw": "an educational comparison: pushing a flat crate on the floor versus pulling a wheeled cart with ease"
         },
         {
           "say": "Curling stones slide across pebble-textured ice in winter sports",
-          "question": "Why do curling players sweep the ice in front of the stone?",
-          "answer": "Sweeping slightly melts ice to reduce friction",
+          "question": "Where do curling stones slide?",
+          "answer": "Across the ice",
           "draw": "athletes in the sport of curling vigorously sweeping the ice ahead of a gliding granite stone"
         },
         {
           "say": "Braking distance increases dramatically on wet or icy roads",
-          "question": "Why should drivers slow down during rain and snow?",
-          "answer": "Less friction means cars take longer to stop",
+          "question": "On which roads do cars take longer to stop?",
+          "answer": "Wet or icy roads",
           "draw": "a car stopping safely at a traffic light in the rain leaving ample distance on wet asphalt"
         },
         {
           "say": "Friction prevents nails from slipping out of wooden frames",
-          "question": "What keeps picture frames hanging securely on wall hooks?",
-          "answer": "Friction between nail and wall",
+          "question": "What stops nails slipping out of wood?",
+          "answer": "Friction",
           "draw": "a picture frame hanging steadily on a small steel hook driven securely into a wall"
         },
         {
           "say": "A parachute opens to create massive surface area against air",
-          "question": "What happens to air resistance when surface area increases?",
-          "answer": "Air resistance increases greatly",
+          "question": "Why does a parachute open wide?",
+          "answer": "To push against lots of air",
           "draw": "a skydiver in bright jumpsuit safely floating with a huge open red and white parachute in sunny skies"
         },
         {
           "say": "Birds tuck their wings when diving to reduce air resistance",
-          "question": "How does a peregrine falcon dive at top speeds?",
-          "answer": "It tucks wings into a streamlined bullet shape",
+          "question": "Why do birds tuck their wings when diving?",
+          "answer": "To reduce air resistance",
           "draw": "a peregrine falcon diving vertically at high speed through the sky with sleek tucked wings"
         },
         {
           "say": "High friction between tyres and tarmac allows cars to turn corners safely",
-          "question": "What keeps a fast-turning car on the road?",
-          "answer": "Centripetal force from tyre friction",
+          "question": "What lets cars turn corners safely?",
+          "answer": "Friction between tyres and road",
           "draw": "a car steering smoothly around a sharp bend on a dry mountain road with firm tyre grip"
         },
         {
           "say": "Friction is both a helpful friend and a challenging obstacle in engineering",
-          "question": "Give an example of helpful friction and unhelpful friction?",
-          "answer": "Helpful for brakes, unhelpful in engine wear",
+          "question": "Is friction helpful or a problem?",
+          "answer": "Both",
           "draw": "an engineering design bench with blueprints of car brakes and polished engine components side by side"
         },
         {
           "say": "Understanding friction helps scientists design faster trains and safer footwear",
-          "question": "How do engineers use friction science?",
-          "answer": "To optimize grip, speed, and safety",
+          "question": "What does understanding friction help design?",
+          "answer": "Faster trains and safer shoes",
           "draw": "a high-tech laboratory testing running shoe rubber compounds on a motorized friction test track"
         },
         {
           "say": "Friction is an essential force that makes our everyday actions possible",
-          "question": "Could you hold a glass of water without friction?",
-          "answer": "No, it would slip right out of your fingers",
+          "question": "Which force makes our everyday actions possible?",
+          "answer": "Friction",
           "draw": "a smiling child holding a tall glass of orange juice securely in hand, appreciating the science of grip"
         }
       ]
