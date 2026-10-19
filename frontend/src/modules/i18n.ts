@@ -823,6 +823,9 @@ const WORD_AR: Record<string, string> = {
   Neck: 'الرقبة', Shoulders: 'الكتفان', Chest: 'الصدر', Arms: 'الذراعان', Elbows: 'المرفقان',
   Hands: 'اليدان', Fingers: 'الأصابع', Tummy: 'البطن', Hips: 'الوركان', Legs: 'الساقان',
   Knees: 'الركبتان', Feet: 'القدمان', Toes: 'أصابع القدم', Back: 'الظهر', Torso: 'الجذع', Body: 'الجسم',
+  Thumbs: 'الإبهامان', Palms: 'الكفان', Wrists: 'المعصمان', Ankles: 'الكاحلان', Fingernails: 'أظافر اليدين', Toenails: 'أظافر القدمين',
+  Heels: 'العقبان', Eyebrows: 'الحاجبان', Eyelashes: 'الرموش', Lips: 'الشفاه', Cheeks: 'الخدان', Chin: 'الذقن',
+  Forehead: 'الجبهة', Throat: 'الحلق', Spine: 'العمود الفقري', Ribs: 'الأضلاع', Skull: 'الجمجمة', Muscles: 'العضلات', Skin: 'الجلد',
   Baby: 'طفل', Brother: 'أخ', Sister: 'أخت', Mom: 'أم', Dad: 'أب', Grandma: 'جدة', Grandpa: 'جد', Aunt: 'خالة', Uncle: 'عم',
   // core AAC words (the default "Core" board — the most-used words of all)
   I: 'أنا', You: 'أنت', Want: 'أريد', More: 'المزيد', Stop: 'توقف', Go: 'اذهب', Like: 'يعجبني', Help: 'مساعدة',

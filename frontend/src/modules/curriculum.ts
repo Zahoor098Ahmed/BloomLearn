@@ -653,6 +653,12 @@ const CHAPTER_RULES: Record<string, ChapterRule> = {
   "sc2-plantparts": science("the parts of a plant (root, stem, leaf, flower)", PLANT_WORDS),
   "sc2-habitats": science("animals and where they live", [...ANIMALS, "desert", "forest", "jungle", "sea", "ocean", "pond", "river", "farm", "nest", "burrow", "cave", "ice", "hive"]),
   "sc2-materials": science("things and what they are made of (wood, metal, glass, cloth…)", ["wood", "wooden", "metal", "glass", "plastic", "cloth", "paper", "rubber", "stone", "cotton", "wool", "steel", "iron"], isNamingPhrase),
+  "sc3-living": science("living things (plants, animals, breathing, oxygen, water, food, herbivores, carnivores, omnivores…)", [
+    "living", "things", "earth", "oxygen", "water", "food", "air", "breathing", "breathe", "energy", "fish", "gills",
+    "lungs", "leaves", "stomata", "insects", "thirsty", "plants", "sunlight", "herbivores", "herbivore",
+    "cow", "cows", "sheep", "horses", "carnivores", "carnivore", "lion", "lions", "tigers", "cats",
+    "omnivores", "omnivore", "hens", "crows", "people", "grow", "fat", "roots", "stems", "seeds", "fruits", "animals", "body"
+  ]),
   "sc3-food": science("food (fruit, vegetables, milk, junk food…)", FOODS),
   "sc3-matter": science("solids, liquids and gases (rock, water, ice, air, steam…)", ["rock", "stone", "water", "ice", "snow", "steam", "air", "gas", "liquid", "solid", "balloon", "juice", "milk", "oil", "smoke", "bubble", "melting", "boiling"]),
   "sc3-light": science("light and shadows (sun, lamp, torch, candle, shadow…)", ["sun", "lamp", "torch", "candle", "moon", "light", "shadow", "bulb", "fire", "star", "sunlight", "wall"]),

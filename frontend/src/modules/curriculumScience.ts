@@ -2101,6 +2101,253 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
   ],
   "3": [
     {
+          "id": "sc3-living",
+          "title": {
+                "en": "Living things",
+                "ar": "الكائنات الحية"
+          },
+          "summary": {
+                "en": "What living things need to live and grow",
+                "ar": "ما تحتاجه الكائنات الحية للعيش والنمو"
+          },
+          "lessons": [
+                {
+                      "say": "There are many kinds of living things on Earth",
+                      "question": "Where are there many kinds of living things?",
+                      "answer": "On Earth",
+                      "draw": "a sunny green park with tall leafy trees, colourful blooming flowers, a butterfly landing on a flower, birds perched on a branch, and children playing on grass in soft daylight"
+                },
+                {
+                      "say": "Earth has water and a gas called oxygen",
+                      "question": "What gas does Earth have?",
+                      "answer": "Oxygen",
+                      "draw": "planet Earth seen from space slowly rotating with blue oceans, green continents, white swirling clouds, and bright atmosphere"
+                },
+                {
+                      "say": "All living things need water, oxygen and food to live",
+                      "question": "What do all living things need to live?",
+                      "answer": "Water, oxygen and food",
+                      "draw": "a smiling child sitting on green grass under a shady tree on a breezy day, holding a clear water bottle and a red apple"
+                },
+                {
+                      "say": "All living things need air",
+                      "question": "What do all living things need?",
+                      "answer": "Air",
+                      "draw": "a child in a green park closing their eyes and taking one slow deep breath of fresh air as leaves move gently"
+                },
+                {
+                      "say": "Taking in oxygen from the air is called breathing",
+                      "question": "What is taking in oxygen called?",
+                      "answer": "Breathing",
+                      "draw": "a cute sleeping puppy resting on a soft blanket, its tummy gently rising and falling with each breath in warm light"
+                },
+                {
+                      "say": "Oxygen helps our body turn food into energy",
+                      "question": "What does oxygen help our body turn food into?",
+                      "answer": "Energy",
+                      "draw": "a happy child eating a fresh banana on a park bench, then jumping up and running across the green grass"
+                },
+                {
+                      "say": "Energy helps living things move and work",
+                      "question": "What helps living things move and work?",
+                      "answer": "Energy",
+                      "draw": "honeybees flying actively from flower to flower, collecting golden pollen in a sunny flower garden"
+                },
+                {
+                      "say": "Fish take in oxygen from water through their gills",
+                      "question": "What do fish breathe through?",
+                      "answer": "Their gills",
+                      "draw": "an underwater close-up view of a colourful fish in clear water showing its open gills taking in oxygen"
+                },
+                {
+                      "say": "Animals that live on land breathe air into their lungs",
+                      "question": "Where do land animals breathe air into?",
+                      "answer": "Their lungs",
+                      "draw": "a dog resting on grass after a run with mouth open, its chest moving in and out with each breath"
+                },
+                {
+                      "say": "Plants breathe through tiny holes in their leaves called stomata",
+                      "question": "What are the tiny breathing holes in leaves called?",
+                      "answer": "Stomata",
+                      "draw": "a magnified microscope view of a green leaf surface showing tiny mouth-shaped breathing pores called stomata between cells"
+                },
+                {
+                      "say": "Insects breathe through tiny holes on the sides of their bodies",
+                      "question": "Where are the breathing holes of insects?",
+                      "answer": "On the sides of their bodies",
+                      "draw": "a macro photo of a green grasshopper on a leaf showing a row of tiny round breathing holes along its body"
+                },
+                {
+                      "say": "Every living thing is made mostly of water",
+                      "question": "What is every living thing made mostly of?",
+                      "answer": "Water",
+                      "draw": "a freshly cut watermelon and sliced cucumber on a wooden table, glistening with juice and water droplets in bright daylight"
+                },
+                {
+                      "say": "Most of our body is made of water too",
+                      "question": "What is most of our body made of?",
+                      "answer": "Water",
+                      "draw": "a smiling child holding a tall clear glass of water beside their face, with sunlight sparkling through the water"
+                },
+                {
+                      "say": "Water carries food to all parts of our body",
+                      "question": "What carries food to all parts of our body?",
+                      "answer": "Water",
+                      "draw": "a clear microscope view of tiny red blood cells flowing smoothly along a thin capillary blood vessel"
+                },
+                {
+                      "say": "Water stops our body from getting dry",
+                      "question": "What stops our body from getting dry?",
+                      "answer": "Water",
+                      "draw": "a child on a warm sunny day splashing cool water on their face at an outdoor fountain with water droplets"
+                },
+                {
+                      "say": "When we feel thirsty, our body needs water",
+                      "question": "What does our body need when we feel thirsty?",
+                      "answer": "Water",
+                      "draw": "a child playing sports in the sunshine stopping to wipe their forehead and drink from a clean water bottle"
+                },
+                {
+                      "say": "Plants use water to make food",
+                      "question": "What do plants use to make food?",
+                      "answer": "Water",
+                      "draw": "a hand gently watering a green potted plant with a watering can under warm morning sunlight"
+                },
+                {
+                      "say": "Water helps plants stand upright",
+                      "question": "What helps plants stand upright?",
+                      "answer": "Water",
+                      "draw": "a healthy green potted plant with upright stems and crisp leaves standing straight and fresh"
+                },
+                {
+                      "say": "Without water, a plant dries up and dies",
+                      "question": "What happens to a plant without water?",
+                      "answer": "A plant dries up and dies",
+                      "draw": "a potted plant in dry cracked soil slowly drooping, its green leaves turning brown and dry"
+                },
+                {
+                      "say": "All living things need food to stay alive",
+                      "question": "What do all living things need to stay alive?",
+                      "answer": "Food",
+                      "draw": "a sunny farmyard with hens pecking at grain while a friendly goat eats hay peacefully"
+                },
+                {
+                      "say": "Food gives them energy to grow and stay healthy",
+                      "question": "What does food give living things?",
+                      "answer": "Energy to grow and stay healthy",
+                      "draw": "a healthy breakfast table with a boiled egg, a bowl of apples, fresh orange slices, and vegetables"
+                },
+                {
+                      "say": "Food also repairs parts of the body that are worn out",
+                      "question": "What does food repair in the body?",
+                      "answer": "Parts that are worn out",
+                      "draw": "a healthy child eating a nutritious meal and running happily on the grass with strong healed bones"
+                },
+                {
+                      "say": "Green plants make their own food using sunlight",
+                      "question": "What do green plants use to make food?",
+                      "answer": "Sunlight",
+                      "draw": "lush green tree leaves glowing as sunbeams shine through them in a gentle morning breeze"
+                },
+                {
+                      "say": "Animals cannot make their own food",
+                      "question": "Can animals make their own food?",
+                      "answer": "Animals cannot make their own food",
+                      "draw": "a tall giraffe stretching its long neck to pull tender green leaves from a tree and chewing them"
+                },
+                {
+                      "say": "Animals that eat only plants are called herbivores",
+                      "question": "What are animals that eat only plants called?",
+                      "answer": "Herbivores",
+                      "draw": "a soft rabbit nibbling fresh green clover and grass in a sunny peaceful garden"
+                },
+                {
+                      "say": "Cows, sheep and horses are herbivores too",
+                      "question": "What kind of animals are cows, sheep and horses?",
+                      "answer": "Herbivores",
+                      "draw": "brown cows, woolly sheep, and a horse grazing peacefully in a wide green sunny pasture"
+                },
+                {
+                      "say": "Animals that eat the meat of other animals are called carnivores",
+                      "question": "What are animals that eat meat called?",
+                      "answer": "Carnivores",
+                      "draw": "a magnificent lion lying calmly in golden savanna grass, a majestic carnivore in the wild"
+                },
+                {
+                      "say": "Lions, tigers and cats are carnivores",
+                      "question": "What group do lions, tigers and cats belong to?",
+                      "answer": "Carnivores",
+                      "draw": "a majestic tiger walking calmly beside a forest stream under soft daylight"
+                },
+                {
+                      "say": "Animals that eat both plants and animals are called omnivores",
+                      "question": "What are animals that eat both plants and animals called?",
+                      "answer": "Omnivores",
+                      "draw": "a brown bear in the forest eating wild berries from a bush near a clear flowing stream"
+                },
+                {
+                      "say": "Hens and crows are omnivores",
+                      "question": "Are hens and crows herbivores, carnivores, or omnivores?",
+                      "answer": "Omnivores",
+                      "draw": "a farmyard hen pecking at corn grains and finding a small insect in the soil"
+                },
+                {
+                      "say": "People are omnivores too",
+                      "question": "Are people herbivores, carnivores, or omnivores?",
+                      "answer": "Omnivores",
+                      "draw": "a happy family sharing a healthy dinner of rice, vegetables, salad, and chicken around a table"
+                },
+                {
+                      "say": "Our body breaks food down into tiny pieces",
+                      "question": "What does our body break food down into?",
+                      "answer": "Tiny pieces",
+                      "draw": "a cheerful child biting into a crisp red apple slice and chewing slowly"
+                },
+                {
+                      "say": "The body uses these tiny pieces to grow",
+                      "question": "What does the body use tiny food pieces for?",
+                      "answer": "To grow",
+                      "draw": "a smiling child standing against a wooden height chart on a wall showing growth"
+                },
+                {
+                      "say": "Some food is stored in the body to use later",
+                      "question": "Why is some food stored in the body?",
+                      "answer": "To use later",
+                      "draw": "a cute hedgehog curled up asleep in a cosy nest of dry autumn leaves for winter"
+                },
+                {
+                      "say": "Animals store food as a layer of fat under their skin",
+                      "question": "How do animals store food under their skin?",
+                      "answer": "As a layer of fat",
+                      "draw": "a plump grey seal resting comfortably on a smooth rock by the sea, its body shining in the sun"
+                },
+                {
+                      "say": "A camel stores fat in its hump",
+                      "question": "Where does a camel store fat?",
+                      "answer": "In its hump",
+                      "draw": "a camel walking slowly across golden desert dunes, its hump clear against a blue sky"
+                },
+                {
+                      "say": "Plants store food in their roots, stems, seeds, leaves and fruits",
+                      "question": "Where do plants store food?",
+                      "answer": "In their roots, stems, seeds, leaves and fruits",
+                      "draw": "a harvest basket showing fresh carrots, sugarcane stalks, green peas, spinach leaves, and ripe mangoes"
+                },
+                {
+                      "say": "All living things need air, water and food",
+                      "question": "What three things do all living things need?",
+                      "answer": "Air, water and food",
+                      "draw": "a bright sunny park with children, animals, and trees enjoying clean fresh air, pure water, and healthy food"
+                },
+                {
+                      "say": "Herbivores eat plants, carnivores eat meat and omnivores eat both",
+                      "question": "What do herbivores, carnivores and omnivores eat?",
+                      "answer": "Herbivores eat plants, carnivores eat meat and omnivores eat both",
+                      "draw": "an educational illustration showing a cow eating grass, a lion resting in savanna, and a bear eating berries"
+                }
+          ]
+    },
+    {
       "id": "sc3-food",
       "title": {
         "en": "Healthy food",
