@@ -1,3 +1,4 @@
+import "./testNativeStubs";
 import {
   cosineSimilarity,
   normalizeVector,
