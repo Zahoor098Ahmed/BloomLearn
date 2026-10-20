@@ -283,8 +283,11 @@ export function layoutScene(items: SceneItem[]): Placed[] {
   // 1. Precise spatial relations for prepositions:
   for (const n of nodes) {
     if (n.it.reference) {
-      // the exact name first: "flowerpot right seedling" is next to the seedling, not the seed
+      // the exact name first: "flowerpot right seedling" is next to the seedling,
+      // not the seed; with two sunflowers already placed, the nearest one before it
+      const before = nodes.slice(0, nodes.indexOf(n)).reverse();
       const ref =
+        before.find((other) => other.it.type === n.it.reference) ??
         nodes.find((other) => other !== n && other.it.type === n.it.reference) ??
         nodes.find(
           (other) =>

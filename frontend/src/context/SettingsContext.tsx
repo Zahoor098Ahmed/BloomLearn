@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from "
 import type { AppSettings } from "../types";
 import { loadSettings, saveSettings, hydrateStorage, isHydrated, defaultSettings } from "../modules/storage";
 import { loadApiKeys } from "../modules/apiKeys";
-import { applyLanguageDirection } from "../modules/i18n";
+import { applyLanguageDirection, setPageDirection } from "../modules/i18n";
 
 interface SettingsContextType {
   settings: AppSettings;
@@ -28,12 +28,14 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
       } catch {
         /* ignore */
       }
+      setPageDirection(s.language);
       setSettings(s);
       setReady(true);
     });
   }, []);
 
   function update(patch: Partial<AppSettings>) {
+    if (patch.language) setPageDirection(patch.language);
     setSettings((prev) => {
       const next = { ...prev, ...patch };
       saveSettings(next);

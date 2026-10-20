@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { View, Text, Pressable, TextInput, StyleSheet, ScrollView, Image, ActivityIndicator, Alert, Platform, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LanguageToggle from "../components/LanguageToggle";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
@@ -42,10 +43,13 @@ import {
   type SubjectId,
   type Grade,
   GRADES,
+  partOf,
 } from "../modules/curriculum";
 import SceneComposer from "../components/SceneComposer";
 import SceneStage from "../components/SceneStage";
 import MathStage from "../components/MathStage";
+import LessonVideo from "../components/LessonVideo";
+import { lessonVideo } from "../modules/lessonVideos";
 import { parseMath, parseWordProblem, storyWithoutQuestion, sumStory } from "../modules/mathScene";
 import { getActiveProfile } from "../modules/childProfiles";
 import { snapToLesson } from "../modules/voiceMatch";
@@ -55,7 +59,7 @@ interface Props {
   /** Sentence to start with (from Home). */
   initialText?: string;
   /** Open a school chapter: its lessons drive the sentence, and pictures follow the subject. */
-  lesson?: { chapterId: string; index: number };
+  lesson?: { chapterId: string; index?: number };
   onBack: () => void;
   onOpenSettings: () => void;
 }
@@ -74,8 +78,14 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
   const [activeChapterId, setActiveChapterId] = useState<string>(lesson?.chapterId ?? "en1-prepositions");
   const course = useMemo(() => chapterById(activeChapterId) ?? chapterById("en1-prepositions")!, [activeChapterId]);
   const [lessonIdx, setLessonIdx] = useState(lesson?.index ?? 0);
+  // a chapter opens with no lesson picked: nothing is drawn until the child taps one
+  const [picked, setPicked] = useState(lesson?.index !== undefined);
   const [showAnswer, setShowAnswer] = useState(false);
-  const current = course.chapter.lessons[lessonIdx] ?? null;
+  const current = picked ? course.chapter.lessons[lessonIdx] ?? null : null;
+  const currentPart = picked ? partOf(course.chapter, lessonIdx) : null;
+  // the part open in the lesson list — all closed when a chapter opens
+  const [openPart, setOpenPart] = useState<number | null>(null);
+  useEffect(() => setOpenPart(null), [course.chapter.id]);
   /** Extra prompt words so AI pictures match the subject (English / Math / Science). */
   const imageStyle = course.subject.imageStyle;
 
@@ -102,7 +112,22 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     setPickerGrade(course.grade);
   }, [course]);
 
-  const [text, setText] = useState(current?.say ?? (initialText || course.chapter.lessons[0]?.say || ""));
+  const [text, setText] = useState(current?.say ?? initialText);
+  // only while the box still says this lesson's sentence
+  // the chapter lesson whose sentence is in the box — typed, spoken or tapped — and its clip
+  const said = text.trim().toLowerCase().replace(/[.!?]+$/, "");
+  const saidLesson = said ? course.chapter.lessons.find((l) => l.say.toLowerCase() === said) ?? null : null;
+  const currentVideo = saidLesson ? lessonVideo(saidLesson.id) : null;
+  // saying another lesson's sentence moves to that lesson (header, list, answer)
+  useEffect(() => {
+    if (!saidLesson) return;
+    const i = course.chapter.lessons.indexOf(saidLesson);
+    if (i !== lessonIdx || !picked) {
+      setLessonIdx(i);
+      setPicked(true);
+      setShowAnswer(false);
+    }
+  }, [saidLesson]);
 
   // `sentence` = the sentence the picture was made for, so it survives that sentence being re-read
   const [img, setImg] = useState<{ uri: string; source: ImgSource; sentence?: string } | null>(null);
@@ -200,7 +225,17 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
   useEffect(() => {
     if (!buildMode) return;
     const q = text.trim();
-    if (!q || q === mergedRef.current || parseMath(q) || parseWordProblem(q)) return;
+    if (!q) {
+      // an empty box shows an empty picture, not the last sentence's
+      if (mergedRef.current) {
+        mergedRef.current = "";
+        setSession(newSession());
+        setItemUris({});
+        setImg(null);
+      }
+      return;
+    }
+    if (q === mergedRef.current || parseMath(q) || parseWordProblem(q)) return;
     if (!validateChapterSentence(activeChapterId, q).valid) return;
     const t = setTimeout(async () => {
       mergedRef.current = q;
@@ -280,6 +315,7 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
     resetScene();
     setShowAnswer(false);
     setLessonIdx(i);
+    setPicked(true);
     typeText(next.say);
     // Show the AI picture already made for this lesson in this chapter, if any
     // (never a word picture, nor one drawn for another chapter's lesson)
@@ -289,8 +325,8 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
   }
 
   useEffect(() => {
-    recordLesson(course.chapter.id, lessonIdx);
-  }, [lessonIdx, activeChapterId]);
+    if (picked) recordLesson(course.chapter.id, lessonIdx);
+  }, [lessonIdx, activeChapterId, picked]);
 
   // Auto-generation of story picture is disabled so images are only created when the user taps Generate Picture
   useEffect(() => {
@@ -421,7 +457,10 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
   }
 
   function readBack(sentence: string) {
-    if (settings.autoSpeak && sentence.trim()) speak(sentence, lang, settings.soundEnabled, settings.speechRate);
+    // a lesson clip already says its sentence in its own voice
+    const s = sentence.trim().toLowerCase().replace(/[.!?]+$/, "");
+    const hasClip = course.chapter.lessons.some((l) => l.say.toLowerCase() === s && !!lessonVideo(l.id));
+    if (settings.autoSpeak && sentence.trim() && !hasClip) speak(sentence, lang, settings.soundEnabled, settings.speechRate);
   }
 
   async function toggleMic() {
@@ -508,10 +547,15 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                 <Ionicons name="chevron-down-circle" size={19} color={colors.forest} />
               </View>
               <Text style={styles.headerSub}>
-                {`${label(course.subject.title, lang)} · ${tt("sbGrade").replace("{n}", String(course.grade))} · ${tt("lsLessonOf")
+                {`${label(course.subject.title, lang)} · ${tt("sbGrade").replace("{n}", String(course.grade))} · ${picked ? tt("lsLessonOf")
                   .replace("{i}", String(lessonIdx + 1))
-                  .replace("{n}", String(course.chapter.lessons.length))}`}
+                  .replace("{n}", String(course.chapter.lessons.length)) : tt("lsPartLessons").replace("{n}", String(course.chapter.lessons.length))}`}
               </Text>
+              {currentPart && (
+                <Text style={styles.headerPart} numberOfLines={1}>
+                  {`${tt("lsPart").replace("{n}", String(currentPart.number))} · ${label(currentPart.part.title, lang)}`}
+                </Text>
+              )}
             </Pressable>
             {getActiveProfile() && (
               <View style={styles.childHeaderPill}>
@@ -521,6 +565,7 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                 </Text>
               </View>
             )}
+            <LanguageToggle />
             <Pressable onPress={onOpenSettings} style={styles.squareBtn} accessibilityLabel={tt("stTitle")}>
               <Ionicons name="settings-outline" size={21} color={colors.textDark} />
             </Pressable>
@@ -529,7 +574,16 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
 
         <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} keyboardShouldPersistTaps="handled">
           <View style={[styles.stageWrap, isTablet && styles.stageWrapTablet]}>
-            {img ? (
+            {!picked && !text.trim() ? (
+              // a chapter just opened: nothing is drawn until a lesson is tapped
+              <View style={styles.pickStage}>
+                <Ionicons name="hand-left-outline" size={40} color={colors.forest} />
+                <Text style={styles.pickStageText}>{tt("lsPickLesson")}</Text>
+              </View>
+            ) : currentVideo ? (
+              // the lesson's own real-life clip takes the place of the picture
+              <LessonVideo key={saidLesson?.id} source={currentVideo} />
+            ) : img ? (
               <Pressable
                 onPress={() => setZoomModalOpen(true)}
                 style={styles.stageImgPressable}
@@ -654,8 +708,8 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
           <View style={styles.lessonNavRow}>
             <Pressable
               onPress={() => goToLesson(lessonIdx - 1)}
-              disabled={lessonIdx === 0}
-              style={[styles.navBtn, lessonIdx === 0 && { opacity: 0.35 }]}
+              disabled={!picked || lessonIdx === 0}
+              style={[styles.navBtn, (!picked || lessonIdx === 0) && { opacity: 0.35 }]}
               accessibilityLabel={tt("lsPrevious")}
             >
               <Ionicons name="chevron-back" size={18} color={colors.forestDark} />
@@ -663,12 +717,12 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
             </Pressable>
             <Pressable onPress={() => setPickerOpen(true)} style={styles.lessonCounter}>
               <Text style={styles.lessonCounterText}>
-                {`${tt("lsLessonOf").replace("{i}", String(lessonIdx + 1)).replace("{n}", String(course.chapter.lessons.length))}`}
+                {picked ? `${tt("lsLessonOf").replace("{i}", String(lessonIdx + 1)).replace("{n}", String(course.chapter.lessons.length))}` : tt("lsPickLesson")}
               </Text>
               <Ionicons name="chevron-down" size={14} color={colors.forest} />
             </Pressable>
             <Pressable
-              onPress={() => goToLesson(lessonIdx + 1)}
+              onPress={() => goToLesson(picked ? lessonIdx + 1 : 0)}
               disabled={lessonIdx >= course.chapter.lessons.length - 1}
               style={[styles.navBtn, lessonIdx >= course.chapter.lessons.length - 1 && { opacity: 0.35 }]}
               accessibilityLabel={tt("lsNext")}
@@ -756,9 +810,36 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
               <Text style={styles.sectionLabel}>{tt("lsAllLessons")}</Text>
               <View style={styles.exampleWrap}>
                 {course.chapter.lessons.map((l, i) => {
-                  const on = i === lessonIdx;
+                  const on = picked && i === lessonIdx;
+                  const parts = course.chapter.parts ?? [];
+                  const partIdx = parts.findIndex((p) => p.from === i);
+                  const part = partIdx >= 0 ? parts[partIdx] : null;
+                  // a chapter with parts is an accordion: one part's lessons open at a time
+                  const inPart = parts.length ? partOf(course.chapter, i)!.number - 1 : -1;
+                  const shown = !parts.length || openPart === inPart;
+                  const partLessons = part ? (parts[partIdx + 1]?.from ?? course.chapter.lessons.length) - part.from : 0;
                   return (
-                    <Pressable key={i} onPress={() => goToLesson(i)} style={[styles.example, styles.lessonRow, on && styles.lessonRowOn]}>
+                    <Fragment key={i}>
+                    {part && (
+                      <Pressable
+                        onPress={() => setOpenPart((p) => (p === partIdx ? null : partIdx))}
+                        style={[styles.partHeader, openPart === partIdx && styles.partHeaderOn]}
+                        accessibilityRole="button"
+                        accessibilityState={{ expanded: openPart === partIdx }}
+                      >
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.partHeading}>
+                            {`${tt("lsPart").replace("{n}", String(partIdx + 1))} · ${label(part.title, lang)}`}
+                          </Text>
+                          <Text style={styles.partCount}>
+                            {tt("lsPartLessons").replace("{n}", String(partLessons))}
+                          </Text>
+                        </View>
+                        <Ionicons name={openPart === partIdx ? "chevron-up" : "chevron-down"} size={20} color={colors.forest} />
+                      </Pressable>
+                    )}
+                    {shown && (
+                    <Pressable onPress={() => goToLesson(i)} style={[styles.example, styles.lessonRow, on && styles.lessonRowOn]}>
                       <Text style={[styles.lessonNum, on && { color: "white", backgroundColor: colors.forest }]}>{i + 1}</Text>
                       <View style={{ flex: 1, gap: 4 }}>
                         {/* the sentence first — the same words as the box and the picture —
@@ -782,6 +863,8 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                         ))}
                       </View>
                     </Pressable>
+                    )}
+                    </Fragment>
                   );
                 })}
               </View>
@@ -900,17 +983,12 @@ export default function SentencePictureScreen({ initialText = "", lesson, onBack
                           onPress={() => {
                             setActiveChapterId(c.id);
                             setLessonIdx(0);
+                            setPicked(false);
                             setShowAnswer(false);
                             resetScene();
                             setImg(null);
-                            const first = c.lessons[0]?.say ?? "";
-                            setText(first);
+                            setText("");
                             setPickerOpen(false);
-                            if (first) {
-                              findLessonPicture(c.id, first).then((uri) => {
-                                if (uri && textRef.current === first) setImg({ uri, source: "ai-saved", sentence: first.trim() });
-                              });
-                            }
                           }}
                           style={[styles.modalChapterItem, isCur && styles.modalChapterItemActive]}
                         >
@@ -1271,6 +1349,33 @@ const styles = StyleSheet.create({
   understood: { fontSize: 11.5, color: colors.textMid, marginTop: -4 },
   answerText: { fontSize: 14, fontWeight: "800", color: colors.forest },
   questionText: { fontSize: 13.5, color: colors.textLight, fontWeight: "600" },
+  pickStage: {
+    width: "100%",
+    aspectRatio: 320 / 300,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  pickStageText: { fontSize: 17, fontWeight: "800", color: colors.forestDark, textAlign: "center" },
+  headerPart: { fontSize: 12, color: colors.forest, fontWeight: "700", marginTop: 1 },
+  partHeading: { fontSize: 14.5, fontWeight: "800", color: colors.forest },
+  partCount: { fontSize: 12, color: colors.textLight, fontWeight: "600", marginTop: 2 },
+  partHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+  },
+  partHeaderOn: { borderColor: colors.forest },
   answerLink: { flexDirection: "row", alignItems: "center", gap: 6, alignSelf: "flex-start" },
   answerLinkText: { fontSize: 14, fontWeight: "700", color: colors.forest },
   lessonRow: { flexDirection: "row", alignItems: "center", gap: 12 },

@@ -57,7 +57,8 @@ function AppInner() {
     go("talk");
   }
 
-  function openChapter(chapterId: string, index = 0) {
+  /** No index: the chapter opens with no lesson picked until the child taps one. */
+  function openChapter(chapterId: string, index?: number) {
     setTalk((cur) => ({ key: (cur?.key ?? 0) + 1, text: "", chapterId, index }));
     go("talk");
   }
@@ -134,7 +135,7 @@ function AppInner() {
             <SentencePictureScreen
               key={talk.key}
               initialText={talk.text}
-              lesson={talk.chapterId ? { chapterId: talk.chapterId, index: talk.index ?? 0 } : undefined}
+              lesson={talk.chapterId ? { chapterId: talk.chapterId, index: talk.index } : undefined}
               onBack={back}
               onOpenSettings={() => go("settings")}
             />

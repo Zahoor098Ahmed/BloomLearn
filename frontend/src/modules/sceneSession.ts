@@ -790,10 +790,10 @@ export function sceneFromSpec(spec: string): SceneSession {
   }
   // a spec names each thing once ("new moon", "moon", "full moon" are three
   // things), so only an exact repeat — a reference placed before it was listed
-  // — is merged
+  // — is merged. A small, a normal and a big sunflower stay three sunflowers.
   const kept: SceneItem[] = [];
   for (const it of s.items) {
-    const twin = kept.find((k) => k.type === it.type);
+    const twin = kept.find((k) => k.type === it.type && (k.size === it.size || k.size === "normal" || it.size === "normal") && !(k.size !== it.size && it.relation));
     if (!twin) kept.push(it);
     else {
       twin.count = Math.max(twin.count, it.count);
@@ -889,8 +889,14 @@ export function sessionChipEntries(s: SceneSession): SessionChipEntry[] {
     if (i.action) out.push({ key: `${i.id}_action`, text: i.action, itemId: i.id });
     if (i.adverb) out.push({ key: `${i.id}_adverb`, text: i.adverb, itemId: i.id });
     if (i.eyes) out.push({ key: `${i.id}_eyes`, text: `eyes ${i.eyes}`, itemId: i.id });
-    if (i.relation && i.reference) {
-      out.push({ key: `${i.id}_rel`, text: `${i.relation} ${i.reference}`, itemId: i.id });
+    // "under table", "on tree" help a child; "right wither" (two things side by
+    // side) means nothing, so side-by-side places get no chip
+    const REL_WORD: Partial<Record<Rel, string>> = {
+      on: "on", below: "under", above: "above", inside: "in", behind: "behind", "in front of": "in front of",
+    };
+    const relWord = i.relation ? REL_WORD[i.relation] : undefined;
+    if (relWord && i.reference) {
+      out.push({ key: `${i.id}_rel`, text: `${relWord} ${i.reference}`, itemId: i.id });
     }
   }
   return out;

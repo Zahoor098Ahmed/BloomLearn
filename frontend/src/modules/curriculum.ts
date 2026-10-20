@@ -41,6 +41,21 @@ export interface Lesson {
    * It never paints or labels the answer to the lesson's question.
    */
   draw?: string;
+  /**
+   * A stable id ("sc3-plants-p1-01"), for anything stored per lesson — e.g.
+   * its video, made once and shared — so it survives lessons being reordered.
+   */
+  id?: string;
+  /** The prompt for the lesson's short video clip (what we see and how it moves). */
+  video?: string;
+}
+
+/** A titled group of a chapter's lessons, from lesson index `from` to the next part. */
+export interface ChapterPart {
+  title: Text;
+  from: number;
+  /** The school courses and objectives this part covers. */
+  serves?: string;
 }
 
 export interface Chapter {
@@ -48,6 +63,15 @@ export interface Chapter {
   title: Text;
   summary: Text;
   lessons: Lesson[];
+  /** Optional parts the lessons are grouped into ("Part 1 – Plants are alive"). */
+  parts?: ChapterPart[];
+}
+
+/** The part a lesson index belongs to, if the chapter has parts. */
+export function partOf(chapter: Chapter, index: number): { part: ChapterPart; number: number } | null {
+  const parts = chapter.parts ?? [];
+  for (let i = parts.length - 1; i >= 0; i--) if (index >= parts[i].from) return { part: parts[i], number: i + 1 };
+  return null;
 }
 
 export interface Subject {
@@ -653,6 +677,11 @@ const CHAPTER_RULES: Record<string, ChapterRule> = {
   "sc2-plantparts": science("the parts of a plant (root, stem, leaf, flower)", PLANT_WORDS),
   "sc2-habitats": science("animals and where they live", [...ANIMALS, "desert", "forest", "jungle", "sea", "ocean", "pond", "river", "farm", "nest", "burrow", "cave", "ice", "hive"]),
   "sc2-materials": science("things and what they are made of (wood, metal, glass, cloth…)", ["wood", "wooden", "metal", "glass", "plastic", "cloth", "paper", "rubber", "stone", "cotton", "wool", "steel", "iron"], isNamingPhrase),
+  "sc3-plants": science("plants: their parts, what they need, seeds, flowers and life cycles", [
+    ...PLANT_WORDS, "bean", "palm", "date", "dates", "seedling", "shoot", "pollen", "pollination", "nectar",
+    "germination", "photosynthesis", "oxygen", "sunlight", "soil", "compost", "pod", "peach", "watermelon",
+    "dandelion", "coconut", "mangrove", "samr", "carrot", "spinach", "celery", "carnation", "honeybee", "bee",
+  ]),
   "sc3-food": science("food (fruit, vegetables, milk, junk food…)", FOODS),
   "sc3-matter": science("solids, liquids and gases (rock, water, ice, air, steam…)", ["rock", "stone", "water", "ice", "snow", "steam", "air", "gas", "liquid", "solid", "balloon", "juice", "milk", "oil", "smoke", "bubble", "melting", "boiling"]),
   "sc3-light": science("light and shadows (sun, lamp, torch, candle, shadow…)", ["sun", "lamp", "torch", "candle", "moon", "light", "shadow", "bulb", "fire", "star", "sunlight", "wall"]),

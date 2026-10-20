@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
 import { isRTL } from "../modules/i18n";
 import { colors } from "../theme";
+import LanguageToggle from "./LanguageToggle";
 
 /** Round back button with the screen title beside it. */
 export default function TopBar({ title, onBack, right }: { title: string; onBack?: () => void; right?: ReactNode }) {
@@ -19,6 +20,7 @@ export default function TopBar({ title, onBack, right }: { title: string; onBack
         {title}
       </Text>
       {right}
+      <LanguageToggle />
     </View>
   );
 }

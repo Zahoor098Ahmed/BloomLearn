@@ -1,4 +1,4 @@
-import { I18nManager } from 'react-native';
+import { I18nManager, Platform } from 'react-native';
 import type { Language, LanguageCode } from '../types';
 
 export const LANGUAGES: Language[] = [
@@ -207,6 +207,9 @@ export type TKey =
   | 'lsShowAnswer'
   | 'lsAnswer'
   | 'lsQuestion'
+  | 'lsPart'
+  | 'lsPartLessons'
+  | 'lsPickLesson'
   | 'lsAllLessons'
   | 'sbSource'
   | 'prReportTitle'
@@ -443,6 +446,9 @@ const T: AllTranslations = {
     lsShowAnswer: "Show answer",
     lsAnswer: "Answer",
     lsQuestion: "Question",
+    lsPart: "Part {n}",
+    lsPartLessons: "{n} lessons",
+    lsPickLesson: "Choose a lesson below",
     lsAllLessons: "All lessons in this chapter",
     sbSource: "Chapter topics follow Pakistan's Single National Curriculum (2020) and the Cambridge Primary curriculum. Lessons are written for BloomLearn, not copied from any textbook — check them with your school book.",
     prReportTitle: "Learning report",
@@ -675,6 +681,9 @@ const T: AllTranslations = {
     lsShowAnswer: "أظهر الإجابة",
     lsAnswer: "الإجابة",
     lsQuestion: "السؤال",
+    lsPart: "الجزء {n}",
+    lsPartLessons: "{n} دروس",
+    lsPickLesson: "اختر درسًا من الأسفل",
     lsAllLessons: "كل دروس هذا الفصل",
     sbSource: "مواضيع الفصول تتبع المنهج الوطني الموحد في باكستان (2020) ومنهج كامبريدج للمرحلة الابتدائية. الدروس مكتوبة لتطبيق BloomLearn وليست منسوخة من أي كتاب مدرسي — راجعها مع كتاب مدرستك.",
     prReportTitle: "تقرير التعلّم",
@@ -737,6 +746,14 @@ export function t(key: TKey, lang: LanguageCode): string {
 
 export function isRTL(lang: LanguageCode): boolean {
   return lang === 'ar-SA';
+}
+
+/** On the web the page direction can flip at once; native apps need a restart. */
+export function setPageDirection(lang: LanguageCode): void {
+  if (Platform.OS === "web" && typeof document !== "undefined") {
+    document.documentElement.dir = isRTL(lang) ? "rtl" : "ltr";
+    document.documentElement.lang = lang;
+  }
 }
 
 /** BCP-47 tag for the device speech engine. */

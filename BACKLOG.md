@@ -610,3 +610,84 @@
     - `frontend/src/modules/curriculum.ts`
     - `frontend/src/modules/testNativeStubs.ts`
     - `frontend/src/modules/faceBiometrics.test.ts`
+
+- **11:13:52 – 11:48:40** ⏱️ Active Coding Session (**35 min**)
+  - 📁 **Files Worked On (20):**
+    - `AGENTS.md`
+    - `.gitattributes`
+    - `.gitignore`
+    - `frontend/src/modules/curriculum.ts`
+    - `frontend/src/modules/curriculumPlants.ts.tmp.8560.235caafabd1d`
+    - `frontend/src/modules/curriculumPlants.ts`
+    - `frontend/src/modules/sedRW5fkn`
+    - `frontend/src/modules/sedqW8cTa`
+    - `frontend/src/modules/curriculumScience.ts`
+    - `frontend/src/modules/aacPictograms.ts`
+    - `frontend/src/modules/lessonScenes.data.ts`
+    - `frontend/src/modules/sed1AOK0c`
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/modules/sceneLayout.ts`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/sedMie3s9`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/src/modules/sedHNuYHc`
+    - `frontend/src/modules/sedzSHz8b`
+    - `frontend/src/screens/sedhhN07O`
+
+- **11:57:03 – 12:15:36** ⏱️ Active Coding Session (**19 min**)
+  - 📁 **Files Worked On (3):**
+    - `frontend/src/modules/sceneSession.ts`
+    - `frontend/src/modules/lessonScenes.data.ts`
+    - `.gitignore`
+
+- **12:19:39 – 12:47:06** ⏱️ Active Coding Session (**27 min**)
+  - 📁 **Files Worked On (26):**
+    - `AGENTS.md`
+    - `.gitattributes`
+    - `frontend/package.json`
+    - `frontend/assets/videos/sc3-plants-001.mp4`
+    - `frontend/src/modules/lessonVideos.ts`
+    - `frontend/src/components/LessonVideo.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.8560.1245df00a7c3`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.8560.62820bfc5df5`
+    - `frontend/src/screens/sedc7lyax`
+    - `frontend/src/components/sedDD4gBl`
+    - `frontend/src/components/LanguageToggle.tsx.tmp.8560.8f196cc963de`
+    - `frontend/src/components/LanguageToggle.tsx`
+    - `frontend/src/components/TopBar.tsx`
+    - `frontend/src/components/TopBar.tsx.tmp.8560.0ef63740dea0`
+    - `frontend/src/components/TopBar.tsx.tmp.8560.bdb5b948c20c`
+    - `frontend/src/screens/HomeScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.8560.6ced4531770b`
+    - `frontend/src/screens/ProgressScreen.tsx`
+    - `frontend/src/screens/sedyBl23c`
+    - `frontend/src/context/SettingsContext.tsx`
+    - `frontend/src/modules/i18n.ts`
+    - `frontend/App.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.8560.519d09292d9a`
+    - `frontend/assets/videos/sc3-plants-002.mp4`
+    - `frontend/src/modules/lessonVideos.ts.tmp.8560.f299e99d39d6`
+
+- **12:58:58 – 13:16:00** ⏱️ Active Coding Session (**17 min**)
+  - 📁 **Files Worked On (6):**
+    - `frontend/assets/videos/sc3-plants-003.mp4`
+    - `frontend/src/modules/lessonVideos.ts`
+    - `frontend/assets/videos/sc3-plants-004.mp4`
+    - `frontend/src/screens/SentencePictureScreen.tsx`
+    - `frontend/src/screens/SentencePictureScreen.tsx.tmp.8560.813bc581ab59`
+    - `.gitignore`
+
+- **14:52:43 – 14:52:43** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `.gitignore`
+
+- **15:21:17 – 15:21:17** ⏱️ Active Coding Session (**1 min**)
+  - 📁 **Files Worked On (1):**
+    - `AGENTS.md`
+
+- **15:38:44 – 15:53:51** ⏱️ Active Coding Session (**15 min**)
+  - 📁 **Files Worked On (3):**
+    - `.gitattributes`
+    - `frontend/src/components/LessonVideo.tsx`
+    - `.gitignore`

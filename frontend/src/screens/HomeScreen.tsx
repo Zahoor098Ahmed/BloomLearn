@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LanguageToggle from "../components/LanguageToggle";
 import { Ionicons } from "@expo/vector-icons";
 import { useSettings } from "../context/SettingsContext";
 import { t, type TKey, isRTL } from "../modules/i18n";
@@ -58,6 +59,7 @@ export default function HomeScreen({ onOpenTalk, onOpenSubject, onOpenSettings, 
               <Text style={styles.greeting}>{greeting}</Text>
               <Text style={styles.brand}>BloomLearn</Text>
             </View>
+            <LanguageToggle />
             <Pressable onPress={onOpenSettings} style={styles.roundBtn} accessibilityLabel={tt("stTitle")}>
               <Ionicons name="settings-outline" size={21} color={colors.textDark} />
             </Pressable>

@@ -318,8 +318,8 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   stem: arasaac(3159), // stem
   seed: arasaac(8689),
   seeds: arasaac(8689),
-  plant: arasaac(2828),
-  plants: arasaac(2828),
+  plant: arasaac(3126), // a potted plant (2828 is the verb "to plant")
+  plants: arasaac(3126),
   cactus: arasaac(3070), // cactus
   leaves: arasaac(3114),
   soil: arasaac(3160), // ground with a plant and its roots
@@ -519,6 +519,15 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   mri: arasaac(33112), // the scanner (the word list files a scan image)
   "electrical danger": arasaac(8656),
   "starry sky": arasaac(6978),
+  "date palm": arasaac(11227), // a palm with bunches of dates
+  "water the plants": arasaac(22082), // someone watering a row of plants
+  "water drop": arasaac(8592),
+  "water drops": arasaac(24605),
+  "glass of water": arasaac(4768),
+  "flower vase": arasaac(3271), // flowers standing in a glass of water
+  planting: arasaac(2828), // hands setting a plant in the soil (the verb)
+  "rice plant": arasaac(6911),
+  carnation: arasaac(3080),
   steam: arasaac(31478), // water vapour rising (the word list files steamed food)
   vapour: arasaac(31478),
   "building a wall": arasaac(2713), // a builder laying bricks

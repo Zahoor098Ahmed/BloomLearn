@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { View, Text, Pressable, StyleSheet, ScrollView, Share } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import LanguageToggle from "../components/LanguageToggle";
 import { Ionicons } from "@expo/vector-icons";
 import Svg, { Circle } from "react-native-svg";
 import { useSettings } from "../context/SettingsContext";
@@ -91,7 +92,10 @@ export default function ProgressScreen({ onOpenSubject, onOpenChapter }: Props) 
     <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <SafeAreaView style={{ flex: 1 }} edges={["top"]}>
         <ScrollView contentContainerStyle={[styles.body, isTablet && styles.bodyTablet]} showsVerticalScrollIndicator={false}>
-          <Text style={[type.display, { marginTop: 10 }]}>{tt("prReportTitle")}</Text>
+          <View style={{ flexDirection: "row", alignItems: "center", marginTop: 10, gap: 10 }}>
+            <Text style={[type.display, { flex: 1 }]}>{tt("prReportTitle")}</Text>
+            <LanguageToggle />
+          </View>
           <Text style={[type.lead, { marginTop: 4 }]}>{tt("prReportSub")}</Text>
 
           {/* Child & Doctor Plan Header */}
