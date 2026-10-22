@@ -682,10 +682,68 @@ const CHAPTER_RULES: Record<string, ChapterRule> = {
     "germination", "photosynthesis", "oxygen", "sunlight", "soil", "compost", "pod", "peach", "watermelon",
     "dandelion", "coconut", "mangrove", "samr", "carrot", "spinach", "celery", "carnation", "honeybee", "bee",
   ]),
-  "sc3-food": science("food (fruit, vegetables, milk, junk food…)", FOODS),
-  "sc3-matter": science("solids, liquids and gases (rock, water, ice, air, steam…)", ["rock", "stone", "water", "ice", "snow", "steam", "air", "gas", "liquid", "solid", "balloon", "juice", "milk", "oil", "smoke", "bubble", "melting", "boiling"]),
-  "sc3-light": science("light and shadows (sun, lamp, torch, candle, shadow…)", ["sun", "lamp", "torch", "candle", "moon", "light", "shadow", "bulb", "fire", "star", "sunlight", "wall"]),
-  "sc3-forces": science("pushing and pulling", ["push", "pull", "pushing", "pulling", "kick", "kicking", "door", "opening", "closing", "ball", "cart", "pram", "bike", "pedal", "kite", "swing", "rope", "drawer", "lifting", "throwing"]),
+  "sc3-water": science("water, states of water, the water cycle, and water conservation", [
+    "water", "ocean", "sea", "river", "lake", "ice", "steam", "vapour", "vapor", "cloud", "rain", "cycle",
+    "stream", "well", "drinking", "saving", "filter", "desalination", "oasis", "wadi", "dam", "evaporate",
+    "condense", "freeze", "melt", "floating", "dissolving",
+  ]),
+  "sc3-matter": science("matter, properties, and states of matter (solids, liquids, gases)", [
+    "matter", "mass", "volume", "solid", "liquid", "gas", "ice", "water", "steam", "vapour", "vapor", "air",
+    "melt", "freeze", "evaporate", "condense", "boil", "temperature", "thermometer", "balance", "element",
+  ]),
+  "sc3-materials": science("materials, properties, magnets, mixtures, and measuring", [
+    "material", "metal", "wood", "plastic", "glass", "paper", "rubber", "sponge", "cloth", "fabric",
+    "magnet", "magnetic", "filter", "dissolve", "mixture", "flexible", "rigid", "iron", "steel",
+    "sieve", "clay", "pot", "pan", "blanket", "cushion", "brick", "rock", "stone", "mirror",
+    "insulator", "conductor", "waterproof", "absorbent", "brittle", "bouncy", "transparent",
+  ]),
+  "sc3-animals": science("animals, their bodies, groups, life cycles, and habitats", [
+    ...ANIMALS, "skeleton", "vertebrate", "invertebrate", "caterpillar", "butterfly", "chrysalis", "tadpole",
+    "frogspawn", "metamorphosis", "camouflage", "adaptation", "predator", "prey", "trait", "variation",
+  ]),
+  "sc3-body": science("the human body, skeleton, muscles, senses, teeth, and health", [
+    ...BODY_WORDS, ...FOODS, "skeleton", "skull", "ribs", "spine", "bone", "muscle", "sense", "senses",
+    "sight", "hearing", "smell", "taste", "touch", "incisor", "canine", "molar", "dentist", "decay",
+    "brushing", "toothpaste", "hygiene", "calcium", "exercise", "nutrition", "dates", "laban",
+  ]),
+  "sc3-heat": science("heat, thermal energy, temperature, and conductors", [
+    "heat", "warm", "thermal", "temperature", "thermometer", "degree", "celsius", "hot", "cold",
+    "conduction", "convection", "radiation", "conductor", "insulator", "sun", "sunlight", "solar",
+    "fire", "burn", "stove", "oven", "friction",
+  ]),
+  "sc3-habitats": science("habitats, ecosystems, adaptations, and environmental changes", [
+    ...ANIMALS, ...PLANT_WORDS, "habitat", "ecosystem", "environment", "desert", "oasis", "pond", "wadi",
+    "adaptation", "camouflage", "migration", "hibernation", "drought", "flood", "extinct", "endangered",
+    "producer", "consumer", "decomposer",
+  ]),
+  "sc3-foodchains": science("food chains, food webs, producers, and consumers", [
+    ...ANIMALS, ...PLANT_WORDS, "food chain", "food web", "producer", "consumer", "decomposer",
+    "herbivore", "carnivore", "omnivore", "predator", "prey", "sun", "energy", "grasshopper",
+    "caterpillar", "algae",
+  ]),
+  "sc3-light": science("light, sources of light, shadows, reflection, and refraction", [
+    "light", "sun", "lamp", "torch", "candle", "star", "fire", "shadow", "shadows", "dark", "darkness",
+    "transparent", "translucent", "opaque", "reflection", "mirror", "refraction", "prism", "rainbow",
+    "colour", "color", "eye", "pupil", "solar",
+  ]),
+  "sc3-adaptations": science("animal groups, classification, life cycles, and adaptations", [
+    ...ANIMALS, "mammal", "bird", "reptile", "amphibian", "fish", "insect", "spider", "snail", "crab",
+    "tadpole", "metamorphosis", "larva", "pupa", "beetle", "camouflage", "mimicry", "hibernation",
+    "migration", "blubber", "backbone", "vertebrate", "invertebrate", "canine", "molar", "colony",
+    "hive", "school", "pack", "herd", "trait", "variation",
+  ]),
+  "sc3-soil": science("soil, rocks, minerals, weathering, layers of soil, and decomposers", [
+    ...PLANT_WORDS, "soil", "rock", "rocks", "mineral", "minerals", "granite", "chalk", "sandstone",
+    "sand", "sandy", "silt", "clay", "loam", "humus", "weathering", "topsoil", "subsoil", "bedrock",
+    "earthworm", "worm", "decomposer", "nutrient", "nutrients", "compost", "terrace", "erosion",
+  ]),
+  "sc3-air": science("air, weather, wind, climate, atmosphere, storms, and air resistance", [
+    "air", "gas", "atmosphere", "nitrogen", "oxygen", "carbon dioxide", "breathe", "breathing",
+    "wind", "breeze", "windsock", "wind vane", "anemometer", "weather", "temperature", "thermometer",
+    "precipitation", "rain", "snow", "hail", "cloud", "clouds", "barometer", "storm", "sandstorm",
+    "thunderstorm", "lightning", "thunder", "water cycle", "climate", "season", "wind turbine",
+    "air resistance", "parachute", "pollution", "clean air",
+  ]),
   "sc4-classify": science("animals and their groups (vertebrates, insects, spiders…)", ANIMALS),
   "sc4-digestion": science("food and digestion (stomach, mouth, teeth, eating…)", [...BODY_WORDS, ...FOODS, "eating", "chewing", "brushing", "toothbrush", "digestion"]),
   "sc4-sound": science("sounds and how we hear them", ["bell", "drum", "guitar", "piano", "flute", "whistle", "singing", "listening", "ear", "music", "sound", "loud", "quiet", "clap", "clapping", "speaker", "phone", "radio", "vibrate", "noise"]),
@@ -708,7 +766,7 @@ function lessonFor(chapterId: string, sentence: string): Lesson | null {
   const clean = sentence.trim().toLowerCase().replace(/[.!?]+$/, "");
   return (
     course?.chapter.lessons.find(
-      (l) => l.say.toLowerCase() === clean || (!!l.question && l.question.toLowerCase().trim() === clean),
+      (l) => l.say.toLowerCase().trim().replace(/[.!?]+$/, "") === clean || (!!l.question && l.question.toLowerCase().trim().replace(/[.!?]+$/, "") === clean),
     ) ?? null
   );
 }
