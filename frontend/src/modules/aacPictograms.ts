@@ -522,6 +522,7 @@ export const AAC_PICTOGRAM_MAP: Record<string, string> = {
   "date palm": arasaac(11227), // a palm with bunches of dates
   "water the plants": arasaac(22082), // someone watering a row of plants
   "water drop": arasaac(8592),
+  "planet earth": arasaac(30014), // the planet; 3160 "earth" is the ground
   "water drops": arasaac(24605),
   "glass of water": arasaac(4768),
   "flower vase": arasaac(3271), // flowers standing in a glass of water

@@ -14,6 +14,12 @@ import { SC3_LIGHT } from "./curriculumLight";
 import { SC3_ADAPTATIONS } from "./curriculumAdaptations";
 import { SC3_SOIL } from "./curriculumSoil";
 import { SC3_AIR } from "./curriculumAir";
+import { SC3_SPACE } from "./curriculumSpace";
+import { SC3_ELECTRICITY } from "./curriculumElectricity";
+import { SC3_FOSSILS } from "./curriculumFossils";
+import { SC3_FORCES } from "./curriculumForces";
+import { SC3_INVESTIGATION } from "./curriculumInvestigation";
+import { SC3_WEATHER } from "./curriculumWeather";
 
 export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
   "1": [
@@ -2126,6 +2132,12 @@ export const SCIENCE_GRADES: Record<Grade, Chapter[]> = {
     SC3_ADAPTATIONS,
     SC3_SOIL,
     SC3_AIR,
+    SC3_SPACE,
+    SC3_ELECTRICITY,
+    SC3_FOSSILS,
+    SC3_FORCES,
+    SC3_INVESTIGATION,
+    SC3_WEATHER,
   ],
   "4": [
     {
